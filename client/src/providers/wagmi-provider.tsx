@@ -6,7 +6,7 @@ import { lightTheme, RainbowKitProvider } from '@rainbow-me/rainbowkit';
 import { WagmiProvider } from 'wagmi';
 import { SessionProvider } from 'next-auth/react';
 import { RainbowKitSiweNextAuthProvider } from '@rainbow-me/rainbowkit-siwe-next-auth';
-import { getWagmiConfig } from '../lib/wagmi';
+import { getWagmiConfig } from '@/lib/wagmi';
 
 const queryClient = new QueryClient();
 const config = getWagmiConfig();

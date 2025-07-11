@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import NavBar from "@/components/shared/navbar";
 import dynamic from "next/dynamic";
+import '@rainbow-me/rainbowkit/styles.css';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
