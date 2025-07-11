@@ -1,0 +1,111 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../node_modules/.prisma/client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  address    String  @id
+  username   String
+  avatar_url String?
+  bio        String?
+
+  nfts       NFT[]
+  bids       Bid[]        @relation("Bidder")
+  rentals    Rental[]     @relation("Renter")
+  RentalPost RentalPost[]
+}
+
+model NFT {
+  address        String  @id
+  user_address   String
+  title          String
+  imageUrl       String
+  description    String?
+  category       String?
+  floorPrice     Float?
+  collectionName String?
+
+  owner     User             @relation(fields: [user_address], references: [address])
+  postItems RentalPostItem[]
+}
+
+model RentalListingStatus {
+  status_code String @id
+  status_name String
+
+  posts RentalPost[]
+}
+
+model RentalPost {
+  rental_post_id    Int       @id @default(autoincrement())
+  poster_address    String
+  name              String
+  description       String?
+  hourly_rate       Float
+  collateral        Float
+  is_biddable       Boolean
+  bidding_starttime DateTime?
+  bidding_endtime   DateTime?
+  is_active         Boolean
+  status_code       String
+
+  poster  User                @relation(fields: [poster_address], references: [address])
+  status  RentalListingStatus @relation(fields: [status_code], references: [status_code])
+  items   RentalPostItem[]
+  bids    Bid[]
+  rentals Rental[]
+}
+
+model RentalPostItem {
+  rental_post_id Int
+  nft_address    String
+
+  post RentalPost @relation(fields: [rental_post_id], references: [rental_post_id])
+  nft  NFT        @relation(fields: [nft_address], references: [address])
+
+  @@id([rental_post_id, nft_address])
+}
+
+model Rental {
+  rental_id      Int      @id @default(autoincrement())
+  renter_address String
+  rental_post_id Int
+  bid_id         Int?     @unique
+  amount         Float
+  duration       Int
+  start_datetime DateTime
+  end_datetime   DateTime
+
+  renter User             @relation("Renter", fields: [renter_address], references: [address])
+  post   RentalPost       @relation(fields: [rental_post_id], references: [rental_post_id])
+  bid    Bid?             @relation("BidToRental", fields: [bid_id], references: [bid_id])
+  txHash TransactionHash?
+}
+
+model Bid {
+  bid_id             Int       @id @default(autoincrement())
+  rental_post_id     Int
+  bidder_address     String
+  message            String?
+  hourly_rate        Float
+  duration           Int
+  is_accepted        Boolean
+  bid_timestamp      DateTime
+  accepted_timestamp DateTime?
+
+  post   RentalPost @relation(fields: [rental_post_id], references: [rental_post_id])
+  bidder User       @relation("Bidder", fields: [bidder_address], references: [address])
+  rental Rental?    @relation("BidToRental")
+}
+
+model TransactionHash {
+  transaction_hash String @id
+  rental_id        Int    @unique
+
+  rental Rental @relation(fields: [rental_id], references: [rental_id])
+}
