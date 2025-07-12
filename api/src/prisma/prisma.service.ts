@@ -1,6 +1,5 @@
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
+import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 
 @Injectable()
 export class PrismaService
@@ -21,5 +20,11 @@ export class PrismaService
         } catch (error) {
             console.error('Failed to disconnect from the database:', error);
         }
+    }
+
+    enableShutdownHooks(): void {
+        process.on('beforeExit', () => {
+            void this.$disconnect();
+        });
     }
 }

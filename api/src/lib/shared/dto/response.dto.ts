@@ -1,19 +1,18 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 export class ResponseDto<T> {
-    readonly body: T;
-
     @ApiProperty()
     statusCode!: number;
 
     @ApiProperty({ type: 'object', additionalProperties: true })
-    data: T;
+    data?: T;
 
     @ApiProperty({ required: false })
     message?: string;
 
-    constructor(statusCode: number, body: T) {
+    constructor(statusCode: number, data?: T, message?: string) {
         this.statusCode = statusCode;
-        this.body = body;
+        this.data = data;
+        this.message = message;
     }
 }
