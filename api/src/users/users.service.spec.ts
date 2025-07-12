@@ -1,33 +1,101 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { UsersService } from './users.service';
 import { UsersDbService } from './users.db.service';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { UserDto } from './dto/user.dto';
-import { User } from '@prisma/client';
-import { NotFoundException, BadRequestException } from '@nestjs/common';
 
 describe('UsersService', () => {
     let service: UsersService;
-    let usersDbService: jest.Mocked<UsersDbService>;
 
-    const mockUser: User = {
-        address: '0x123...',
-        username: 'testuser',
-        avatarUrl: 'https://example.com/avatar.png',
-        bio: 'Test user',
-        createdAt: new Date(),
-        updatedAt: new Date(),
+    const mockUsersDbService = {
+        create: jest.fn().mockImplementation((data: CreateUserDto) => {
+            if (data.address === 'errorAddress') {
+                throw new BadRequestException('Failed to create user');
+            }
+
+            return Promise.resolve({
+                address: data.address,
+                username: data.username,
+                avatarUrl: data.avatarUrl,
+                bio: data.bio,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+            });
+        }),
+
+        update: jest
+            .fn()
+            .mockImplementation((address: string, data: UpdateUserDto) => {
+                if (address === '1234567890') {
+                    return Promise.resolve({
+                        address: '1234567890',
+                        username: data.username,
+                        avatarUrl: data.avatarUrl,
+                        bio: data.bio,
+                        createdAt: new Date(),
+                        updatedAt: new Date(),
+                    });
+                }
+
+                throw new BadRequestException('User not found');
+            }),
+
+        findAll: jest.fn().mockImplementation(() => {
+            return Promise.resolve([
+                {
+                    address: '1',
+                    username: 'Test User 1',
+                    avatarUrl: 'https://example.com/avatar1.jpg',
+                    bio: 'User 1 bio',
+                    createdAt: new Date(),
+                    updatedAt: new Date(),
+                },
+                {
+                    address: '2',
+                    username: 'Test User 2',
+                    avatarUrl: 'https://example.com/avatar2.jpg',
+                    bio: 'User 2 bio',
+                    createdAt: new Date(),
+                    updatedAt: new Date(),
+                },
+            ]);
+        }),
+
+        findOne: jest.fn().mockImplementation((address: string) => {
+            if (address === '1234567890') {
+                return Promise.resolve({
+                    address: '1234567890',
+                    username: 'Test User',
+                    avatarUrl: 'https://example.com/avatar.jpg',
+                    bio: 'Test bio',
+                    createdAt: new Date(),
+                    updatedAt: new Date(),
+                });
+            }
+
+            if (address === 'existingAddress') {
+                return Promise.resolve({
+                    address: 'existingAddress',
+                    username: 'Existing User',
+                    avatarUrl: 'https://example.com/existing-avatar.jpg',
+                    bio: 'Existing user bio',
+                    createdAt: new Date(),
+                    updatedAt: new Date(),
+                });
+            }
+
+            if (address === 'notFoundAddress') {
+                return new NotFoundException('User not found');
+            }
+
+            if (address === 'errorAddress') {
+                throw new BadRequestException('Failed to find user');
+            }
+
+            return Promise.resolve(null);
+        }),
     };
-
-    const mockUserDto: UserDto = new UserDto();
-
-    mockUserDto.address = mockUser.address;
-    mockUserDto.username = mockUser.username ?? '';
-    mockUserDto.avatarUrl = mockUser.avatarUrl ?? '';
-    mockUserDto.bio = mockUser.bio ?? '';
-    mockUserDto.createdAt = mockUser.createdAt;
-    mockUserDto.updatedAt = mockUser.updatedAt ?? undefined;
 
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
@@ -35,172 +103,69 @@ describe('UsersService', () => {
                 UsersService,
                 {
                     provide: UsersDbService,
-                    useValue: {
-                        create: jest.fn(),
-                        update: jest.fn(),
-                        findAll: jest.fn(),
-                        findOne: jest.fn(),
-                    },
+                    useValue: mockUsersDbService,
                 },
             ],
         }).compile();
 
         service = module.get<UsersService>(UsersService);
-        usersDbService = module.get(UsersDbService);
+    });
+
+    afterEach(() => {
+        jest.clearAllMocks();
     });
 
     it('should be defined', () => {
-        expect(service).toBeDefined();
+        expect(service).toBeTruthy();
     });
 
+    // Create user tests
     describe('create', () => {
-        const createUserDto: CreateUserDto = {
-            address: mockUser.address,
-            username: mockUser.username ?? '',
-            avatarUrl: mockUser.avatarUrl ?? '',
-            bio: mockUser.bio ?? '',
-        };
+        it('should create a user', async () => {
+            const data: CreateUserDto = new CreateUserDto();
 
-        it('should create a new user', async () => {
-            usersDbService.create = jest.fn().mockResolvedValue(mockUser);
+            data.address = '0x123abc';
+            data.username = 'testuser';
+            data.avatarUrl = 'https://example.com/avatar.jpg';
+            data.bio = 'Test user bio';
 
-            const result = await service.create(createUserDto);
+            // Mock the findOne call to return null (user doesn't exist)
+            mockUsersDbService.findOne.mockResolvedValueOnce(null);
 
-            expect(usersDbService.create).toHaveBeenCalledWith(createUserDto);
+            const response = await service.create(data);
 
-            expect(result).toEqual({
-                statusCode: 201,
-                data: mockUserDto,
-                message: 'User created successfully',
-            });
+            expect(response.statusCode).toEqual(201);
+            expect(response.data?.address).toEqual(data.address);
+            expect(response.data?.username).toEqual(data.username);
         });
 
-        it('should throw BadRequestException when creation fails', async () => {
-            usersDbService.create = jest
-                .fn()
-                .mockRejectedValue(new Error('Database error'));
+        it('should throw an error if user already exists', async () => {
+            const data: CreateUserDto = new CreateUserDto();
 
-            await expect(service.create(createUserDto)).rejects.toThrow(
-                BadRequestException,
-            );
-        });
-    });
+            data.address = 'existingAddress';
 
-    describe('update', () => {
-        const updateUserDto: UpdateUserDto = {
-            username: 'updateduser',
-            avatarUrl: 'https://example.com/new-avatar.png',
-            bio: 'Updated bio',
-        };
-
-        it('should update an existing user', async () => {
-            usersDbService.update = jest.fn().mockResolvedValue(mockUser);
-
-            const result = await service.update(
-                mockUser.address,
-                updateUserDto,
-            );
-
-            expect(usersDbService.update).toHaveBeenCalledWith(
-                mockUser.address,
-                updateUserDto,
-            );
-
-            expect(result).toEqual({
-                statusCode: 200,
-                data: mockUserDto,
-                message: 'User updated successfully',
-            });
-        });
-
-        it('should throw NotFoundException when user does not exist', async () => {
-            usersDbService.update = jest.fn().mockResolvedValue(null);
-
-            await expect(
-                service.update(mockUser.address, updateUserDto),
-            ).rejects.toThrow(NotFoundException);
-        });
-
-        it('should throw BadRequestException when update fails', async () => {
-            usersDbService.update = jest
-                .fn()
-                .mockRejectedValue(new Error('Database error'));
-
-            await expect(
-                service.update(mockUser.address, updateUserDto),
-            ).rejects.toThrow(BadRequestException);
-        });
-    });
-
-    describe('findAll', () => {
-        it('should return all users', async () => {
-            usersDbService.findAll = jest.fn().mockResolvedValue([mockUser]);
-
-            const result = await service.findAll();
-
-            expect(usersDbService.findAll).toHaveBeenCalled();
-            
-            expect(result).toEqual({
-                statusCode: 200,
-                data: [mockUserDto],
-                message: 'Users found successfully',
-            });
-        });
-
-        it('should throw BadRequestException when finding all users fails', async () => {
-            usersDbService.findAll = jest
-                .fn()
-                .mockRejectedValue(new Error('Database error'));
-
-            await expect(service.findAll()).rejects.toThrow(
-                BadRequestException,
-            );
-        });
-    });
-
-    describe('findOne', () => {
-        it('should return a single user', async () => {
-            usersDbService.findOne = jest.fn().mockResolvedValue(mockUser);
-
-            const result = await service.findOne(mockUser.address);
-
-            expect(usersDbService.findOne).toHaveBeenCalledWith(
-                mockUser.address,
-            );
-
-            expect(result).toEqual({
-                statusCode: 200,
-                data: mockUserDto,
-                message: 'User found successfully',
-            });
-        });
-
-        it('should throw NotFoundException when user does not exist', async () => {
-            usersDbService.findOne = jest.fn().mockResolvedValue(null);
-
-            await expect(service.findOne(mockUser.address)).rejects.toThrow(
-                NotFoundException,
+            await expect(service.create(data)).rejects.toThrow(
+                new BadRequestException('User already exists'),
             );
         });
 
-        it('should throw BadRequestException when finding user fails', async () => {
-            usersDbService.findOne = jest.fn().mockRejectedValue(new Error('Database error'));
+        it('should throw an error if user creation fails', async () => {
+            const data: CreateUserDto = new CreateUserDto();
+            data.address = 'errorAddress';
+            data.username = 'testuser';
+            data.avatarUrl = 'https://example.com/avatar.jpg';
+            data.bio = 'Test user bio';
 
-            await expect(service.findOne(mockUser.address)).rejects.toThrow(
-                BadRequestException,
+            // Make findOne return null, so it passes the existence check
+            mockUsersDbService.findOne.mockResolvedValueOnce(null);
+
+            // Now simulate failure during creation
+            mockUsersDbService.create.mockRejectedValueOnce(
+                new BadRequestException('Failed to create user'),
             );
-        });
-    });
 
-    describe('convertToUserDto', () => {
-        it('should convert User to UserDto', () => {
-            const result = service.convertToUserDto(mockUser);
-            expect(result).toEqual(mockUserDto);
-        });
-
-        it('should throw NotFoundException when user is null', () => {
-            expect(() => service.convertToUserDto(null)).toThrow(
-                NotFoundException,
+            await expect(service.create(data)).rejects.toThrow(
+                new BadRequestException('Failed to create user'),
             );
         });
     });

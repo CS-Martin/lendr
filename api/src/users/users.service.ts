@@ -16,19 +16,31 @@ import { User } from '@prisma/client';
 export class UsersService implements UsersServiceAbstractClass {
     private readonly logger = new Logger(UsersService.name);
 
-    constructor(private readonly usersDbService: UsersDbService) {}
+    constructor(private readonly usersDbService: UsersDbService) { }
 
     async create(createUserDto: CreateUserDto): Promise<ResponseDto<UserDto>> {
         this.logger.log('Creating user', createUserDto);
 
-        const user = await this.usersDbService.create(createUserDto);
-        const userDto = this.convertToUserDto(user);
+        const user = await this.findOne(createUserDto.address);
 
-        return {
-            statusCode: 201,
-            data: userDto,
-            message: 'User created successfully',
-        };
+        if (user) {
+            this.logger.error('User already exists', createUserDto.address);
+            throw new BadRequestException('User already exists');
+        }
+
+        try {
+            const user = await this.usersDbService.create(createUserDto);
+            const userDto = this.convertToUserDto(user);
+
+            return {
+                statusCode: 201,
+                data: userDto,
+                message: 'User created successfully',
+            };
+        } catch (error) {
+            this.logger.error('Failed to create user', error);
+            throw new BadRequestException('Failed to create user');
+        }
     }
 
     async update(
@@ -36,6 +48,13 @@ export class UsersService implements UsersServiceAbstractClass {
         updateUserDto: UpdateUserDto,
     ): Promise<ResponseDto<UserDto>> {
         this.logger.log('Updating user by address', address);
+
+        const user = await this.findOne(address);
+
+        if (!user) {
+            this.logger.error('User not found', address);
+            throw new NotFoundException('User not found');
+        }
 
         try {
             const user: User | null = await this.usersDbService.update(
