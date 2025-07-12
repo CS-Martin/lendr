@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-call */
 import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
 
@@ -7,10 +8,18 @@ export class PrismaService
     implements OnModuleInit, OnModuleDestroy
 {
     async onModuleInit() {
-        await this.$connect();
+        try {
+            await this.$connect();
+        } catch (error) {
+            console.error('Failed to connect to the database:', error);
+        }
     }
 
     async onModuleDestroy() {
-        await this.$disconnect();
+        try {
+            await this.$disconnect();
+        } catch (error) {
+            console.error('Failed to disconnect from the database:', error);
+        }
     }
 }
