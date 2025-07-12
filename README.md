@@ -2,6 +2,7 @@
 
 [![GitHub](https://img.shields.io/github/license/CS-Martin/lendr)](LICENSE)
 [![Docker](https://img.shields.io/docker/pulls/csmartin/lendr)](https://hub.docker.com/r/csmartin/lendr)
+![CodeRabbit Pull Request Reviews](https://img.shields.io/coderabbit/prs/github/CS-Martin/lendr?utm_source=oss&utm_medium=github&utm_campaign=CS-Martin%2Flendr&labelColor=171717&color=FF570A&link=https%3A%2F%2Fcoderabbit.ai&label=CodeRabbit+Reviews)
 
 Lendr is a decentralized platform that allows users to rent NFTs securely using collateralized smart agreements, with an integrated reputation system, support for bidding, and a seamless Web3 login experience via Sign-In With Ethereum (SIWE).
 
