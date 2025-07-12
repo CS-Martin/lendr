@@ -24,4 +24,16 @@ export class UserDto {
         example: 'I am a kaiju',
     })
     bio?: string;
+
+    @ApiProperty({
+        description: 'Creation date of the user',
+        example: '2025-07-12T10:49:03.000Z',
+    })
+    createdAt!: Date;
+
+    @ApiProperty({
+        description: 'Update date of the user',
+        example: '2025-07-12T10:49:03.000Z',
+    })
+    updatedAt?: Date;
 }

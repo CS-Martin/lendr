@@ -115,11 +115,12 @@ export class UsersService implements UsersServiceAbstractClass {
 
         const userDto: UserDto = new UserDto();
 
-        userDto.address = user.address || '';
-        userDto.username = user.username || '';
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        userDto.avatarUrl = user.avatarUrl || '';
-        userDto.bio = user.bio || '';
+        userDto.address = user.address ?? '';
+        userDto.username = user.username ?? '';
+        userDto.avatarUrl = user.avatarUrl ?? '';
+        userDto.bio = user.bio ?? '';
+        userDto.createdAt = user.createdAt;
+        userDto.updatedAt = user.updatedAt ?? undefined;
 
         return userDto;
     }

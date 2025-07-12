@@ -9,10 +9,12 @@ datasource db {
 }
 
 model User {
-    address   String  @id
+    address   String    @id
     username  String?
     avatarUrl String?
     bio       String?
+    createdAt DateTime  @default(now())
+    updatedAt DateTime? @updatedAt
 
     nfts        NFT[]
     bids        Bid[]        @relation("Bidder")
