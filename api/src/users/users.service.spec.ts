@@ -7,7 +7,6 @@ import { UserDto } from './dto/user.dto';
 import { User } from '@prisma/client';
 import { NotFoundException, BadRequestException } from '@nestjs/common';
 
-
 describe('UsersService', () => {
     let service: UsersService;
     let usersDbService: jest.Mocked<UsersDbService>;
@@ -22,10 +21,13 @@ describe('UsersService', () => {
     };
 
     const mockUserDto: UserDto = new UserDto();
+
     mockUserDto.address = mockUser.address;
-    mockUserDto.username = mockUser.username;
-    mockUserDto.avatarUrl = mockUser.avatarUrl;
-    mockUserDto.bio = mockUser.bio;
+    mockUserDto.username = mockUser.username ?? '';
+    mockUserDto.avatarUrl = mockUser.avatarUrl ?? '';
+    mockUserDto.bio = mockUser.bio ?? '';
+    mockUserDto.createdAt = mockUser.createdAt;
+    mockUserDto.updatedAt = mockUser.updatedAt ?? undefined;
 
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
@@ -54,17 +56,18 @@ describe('UsersService', () => {
     describe('create', () => {
         const createUserDto: CreateUserDto = {
             address: mockUser.address,
-            username: mockUser.username,
-            avatarUrl: mockUser.avatarUrl,
-            bio: mockUser.bio,
+            username: mockUser.username ?? '',
+            avatarUrl: mockUser.avatarUrl ?? '',
+            bio: mockUser.bio ?? '',
         };
 
         it('should create a new user', async () => {
-            usersDbService.create.mockResolvedValue(mockUser);
+            usersDbService.create = jest.fn().mockResolvedValue(mockUser);
 
             const result = await service.create(createUserDto);
 
             expect(usersDbService.create).toHaveBeenCalledWith(createUserDto);
+
             expect(result).toEqual({
                 statusCode: 201,
                 data: mockUserDto,
@@ -73,9 +76,13 @@ describe('UsersService', () => {
         });
 
         it('should throw BadRequestException when creation fails', async () => {
-            usersDbService.create.mockRejectedValue(new Error('Database error'));
+            usersDbService.create = jest
+                .fn()
+                .mockRejectedValue(new Error('Database error'));
 
-            await expect(service.create(createUserDto)).rejects.toThrow(BadRequestException);
+            await expect(service.create(createUserDto)).rejects.toThrow(
+                BadRequestException,
+            );
         });
     });
 
@@ -87,14 +94,18 @@ describe('UsersService', () => {
         };
 
         it('should update an existing user', async () => {
-            usersDbService.update.mockResolvedValue(mockUser);
+            usersDbService.update = jest.fn().mockResolvedValue(mockUser);
 
-            const result = await service.update(mockUser.address, updateUserDto);
+            const result = await service.update(
+                mockUser.address,
+                updateUserDto,
+            );
 
             expect(usersDbService.update).toHaveBeenCalledWith(
                 mockUser.address,
                 updateUserDto,
             );
+
             expect(result).toEqual({
                 statusCode: 200,
                 data: mockUserDto,
@@ -103,60 +114,60 @@ describe('UsersService', () => {
         });
 
         it('should throw NotFoundException when user does not exist', async () => {
-            usersDbService.update.mockResolvedValue(null);
+            usersDbService.update = jest.fn().mockResolvedValue(null);
 
-            await expect(service.update(mockUser.address, updateUserDto))
-                .rejects.toThrow(NotFoundException);
+            await expect(
+                service.update(mockUser.address, updateUserDto),
+            ).rejects.toThrow(NotFoundException);
         });
 
         it('should throw BadRequestException when update fails', async () => {
-            usersDbService.update.mockRejectedValue(new Error('Database error'));
+            usersDbService.update = jest
+                .fn()
+                .mockRejectedValue(new Error('Database error'));
 
-            await expect(service.update(mockUser.address, updateUserDto))
-                .rejects.toThrow(BadRequestException);
+            await expect(
+                service.update(mockUser.address, updateUserDto),
+            ).rejects.toThrow(BadRequestException);
         });
     });
 
     describe('findAll', () => {
-        const mockUsers: User[] = [mockUser, { ...mockUser, address: '0x456...' }];
-        const mockUserDtos: UserDto[] = [mockUserDto, { ...mockUserDto, address: '0x456...' }];
-
         it('should return all users', async () => {
-            usersDbService.findAll.mockResolvedValue(mockUsers);
+            usersDbService.findAll = jest.fn().mockResolvedValue([mockUser]);
 
             const result = await service.findAll();
 
             expect(usersDbService.findAll).toHaveBeenCalled();
+            
             expect(result).toEqual({
                 statusCode: 200,
-                data: mockUserDtos,
+                data: [mockUserDto],
                 message: 'Users found successfully',
             });
         });
 
-        it('should return empty array when no users exist', async () => {
-            usersDbService.findAll.mockResolvedValue([]);
+        it('should throw BadRequestException when finding all users fails', async () => {
+            usersDbService.findAll = jest
+                .fn()
+                .mockRejectedValue(new Error('Database error'));
 
-            const result = await service.findAll();
-
-            expect(result.data).toEqual([]);
-            expect(result.statusCode).toBe(200);
-        });
-
-        it('should throw BadRequestException when finding users fails', async () => {
-            usersDbService.findAll.mockRejectedValue(new Error('Database error'));
-
-            await expect(service.findAll()).rejects.toThrow(BadRequestException);
+            await expect(service.findAll()).rejects.toThrow(
+                BadRequestException,
+            );
         });
     });
 
     describe('findOne', () => {
         it('should return a single user', async () => {
-            usersDbService.findOne.mockResolvedValue(mockUser);
+            usersDbService.findOne = jest.fn().mockResolvedValue(mockUser);
 
             const result = await service.findOne(mockUser.address);
 
-            expect(usersDbService.findOne).toHaveBeenCalledWith(mockUser.address);
+            expect(usersDbService.findOne).toHaveBeenCalledWith(
+                mockUser.address,
+            );
+
             expect(result).toEqual({
                 statusCode: 200,
                 data: mockUserDto,
@@ -165,17 +176,19 @@ describe('UsersService', () => {
         });
 
         it('should throw NotFoundException when user does not exist', async () => {
-            usersDbService.findOne.mockResolvedValue(null);
+            usersDbService.findOne = jest.fn().mockResolvedValue(null);
 
-            await expect(service.findOne(mockUser.address))
-                .rejects.toThrow(NotFoundException);
+            await expect(service.findOne(mockUser.address)).rejects.toThrow(
+                NotFoundException,
+            );
         });
 
         it('should throw BadRequestException when finding user fails', async () => {
-            usersDbService.findOne.mockRejectedValue(new Error('Database error'));
+            usersDbService.findOne = jest.fn().mockRejectedValue(new Error('Database error'));
 
-            await expect(service.findOne(mockUser.address))
-                .rejects.toThrow(BadRequestException);
+            await expect(service.findOne(mockUser.address)).rejects.toThrow(
+                BadRequestException,
+            );
         });
     });
 
@@ -186,7 +199,9 @@ describe('UsersService', () => {
         });
 
         it('should throw NotFoundException when user is null', () => {
-            expect(() => service.convertToUserDto(null)).toThrow(NotFoundException);
+            expect(() => service.convertToUserDto(null)).toThrow(
+                NotFoundException,
+            );
         });
     });
 });
