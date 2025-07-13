@@ -5,7 +5,7 @@ import { Rental } from '@prisma/client';
 import { UpdateRentalDto } from './dto/update-rental.dto';
 
 @Injectable()
-export class RentlsDbService {
+export class RentalsDbService {
     constructor(private readonly prisma: PrismaService) { }
 
     async create(createRentalDto: CreateRentalDto): Promise<Rental> {
