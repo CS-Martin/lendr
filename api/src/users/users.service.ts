@@ -105,18 +105,19 @@ export class UsersService implements UsersServiceAbstractClass {
                 await this.usersDbService.findOne(address);
 
             if (!user) {
-                this.logger.error('User not found', address);
-                throw new NotFoundException('User not found');
+                throw new NotFoundException('Failed to find user');
             }
 
             const userDto = this.convertToUserDto(user);
-
             return {
                 statusCode: 200,
                 data: userDto,
                 message: 'User found successfully',
             };
         } catch (error) {
+            if (error instanceof NotFoundException) {
+                throw new BadRequestException('Failed to find user');
+            }
             this.logger.error('Failed to find user', error);
             throw new BadRequestException('Failed to find user');
         }
