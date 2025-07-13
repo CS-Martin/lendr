@@ -5,7 +5,7 @@ export class RentalDto {
         description: 'The rental ID',
         example: '1',
     })
-    rentalId!: string;
+    rentalId!: number;
 
     @ApiProperty({
         description: 'The renter address',
