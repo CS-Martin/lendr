@@ -115,9 +115,6 @@ export class UsersService implements UsersServiceAbstractClass {
                 message: 'User found successfully',
             };
         } catch (error) {
-            if (error instanceof NotFoundException) {
-                throw new BadRequestException('Failed to find user');
-            }
             this.logger.error('Failed to find user', error);
             throw new BadRequestException('Failed to find user');
         }
