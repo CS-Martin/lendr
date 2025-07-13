@@ -39,13 +39,15 @@ export class RentalDto {
 
     @ApiProperty({
         description: 'The start date of the rental',
-        example: '2022-01-01',
+        example: '2025-07-14T12:00:00Z',
+        format: 'date-time',
     })
     startDatetime!: Date;
 
     @ApiProperty({
         description: 'The end date of the rental',
-        example: '2022-01-01',
+        example: '2025-07-21T12:00:00Z',
+        format: 'date-time',
     })
     endDatetime!: Date;
 }

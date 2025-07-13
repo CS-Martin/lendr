@@ -23,7 +23,8 @@ export class RentalsService {
         this.logger.log('Creating rental', createRentalDto);
 
         try {
-            const rental = await this.rentlsDbService.create(createRentalDto);
+            const rental: Rental =
+                await this.rentlsDbService.create(createRentalDto);
 
             if (!rental) {
                 throw new NotFoundException('Rental not found');
