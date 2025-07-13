@@ -4,13 +4,14 @@ import { UsersDbService } from './users.db.service';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { UserDto } from './dto/user.dto';
 
 describe('UsersService', () => {
     let service: UsersService;
 
     const mockUsersDbService = {
         create: jest.fn().mockImplementation((data: CreateUserDto) => {
-            if (data.address === 'errorAddress') {
+            if (data.address === 'createErrorAddress') {
                 throw new BadRequestException('Failed to create user');
             }
 
@@ -38,7 +39,11 @@ describe('UsersService', () => {
                     });
                 }
 
-                throw new BadRequestException('User not found');
+                if (address === 'updateErrorAddress') {
+                    throw new BadRequestException('Failed to update user');
+                }
+
+                throw new NotFoundException('User not found');
             }),
 
         findAll: jest.fn().mockImplementation(() => {
@@ -86,7 +91,7 @@ describe('UsersService', () => {
             }
 
             if (address === 'notFoundAddress') {
-                return new NotFoundException('User not found');
+                return Promise.resolve(null);
             }
 
             if (address === 'errorAddress') {
@@ -123,25 +128,31 @@ describe('UsersService', () => {
     describe('create', () => {
         it('should create a user', async () => {
             const data: CreateUserDto = new CreateUserDto();
-
             data.address = '0x123abc';
             data.username = 'testuser';
             data.avatarUrl = 'https://example.com/avatar.jpg';
             data.bio = 'Test user bio';
 
-            // Mock the findOne call to return null (user doesn't exist)
+            // Mock the findOne call to return null
             mockUsersDbService.findOne.mockResolvedValueOnce(null);
+            // Mock the create call to return a user object
+            mockUsersDbService.create.mockResolvedValueOnce({
+                address: data.address,
+                username: data.username,
+                avatarUrl: data.avatarUrl,
+                bio: data.bio,
+            });
 
             const response = await service.create(data);
 
             expect(response.statusCode).toEqual(201);
             expect(response.data?.address).toEqual(data.address);
             expect(response.data?.username).toEqual(data.username);
+            expect(response.message).toEqual('User created successfully');
         });
 
         it('should throw an error if user already exists', async () => {
             const data: CreateUserDto = new CreateUserDto();
-
             data.address = 'existingAddress';
 
             await expect(service.create(data)).rejects.toThrow(
@@ -151,21 +162,147 @@ describe('UsersService', () => {
 
         it('should throw an error if user creation fails', async () => {
             const data: CreateUserDto = new CreateUserDto();
-            data.address = 'errorAddress';
+            data.address = 'createErrorAddress';
             data.username = 'testuser';
             data.avatarUrl = 'https://example.com/avatar.jpg';
             data.bio = 'Test user bio';
 
-            // Make findOne return null, so it passes the existence check
+            // Mock findOne to return null
             mockUsersDbService.findOne.mockResolvedValueOnce(null);
-
-            // Now simulate failure during creation
+            // Mock create to throw an error
             mockUsersDbService.create.mockRejectedValueOnce(
-                new BadRequestException('Failed to create user'),
+                new Error('Database error'),
             );
 
             await expect(service.create(data)).rejects.toThrow(
-                new BadRequestException('Failed to create user'),
+                new BadRequestException('Failed to find user'),
+            );
+        });
+    });
+
+    // Update user tests
+    describe('update', () => {
+        it('should update a user', async () => {
+            const address = '1234567890';
+            const updateData: UpdateUserDto = {
+                username: 'Updated User',
+                bio: 'Updated bio',
+            };
+
+            const response = await service.update(address, updateData);
+
+            expect(response.statusCode).toEqual(200);
+            expect(response.data?.username).toEqual(updateData.username);
+            expect(response.data?.bio).toEqual(updateData.bio);
+            expect(response.message).toEqual('User updated successfully');
+        });
+
+        it('should throw an error if user not found', async () => {
+            const address = 'notFoundAddress';
+            const updateData: UpdateUserDto = {
+                username: 'Updated User',
+                bio: 'Updated bio',
+            };
+
+            mockUsersDbService.findOne.mockResolvedValueOnce(null);
+
+            await expect(service.update(address, updateData)).rejects.toThrow(
+                new BadRequestException('Failed to find user'),
+            );
+        });
+
+        it('should throw an error if update fails', async () => {
+            const address = 'updateErrorAddress';
+            const updateData: UpdateUserDto = {
+                username: 'Updated User',
+            };
+
+            // First make sure findOne returns a user
+            mockUsersDbService.findOne.mockResolvedValueOnce({
+                address: 'updateErrorAddress',
+                username: 'Existing User',
+                createdAt: new Date(),
+            });
+
+            await expect(service.update(address, updateData)).rejects.toThrow(
+                new BadRequestException('Failed to update user'),
+            );
+        });
+    });
+
+    // Find all users tests
+    describe('findAll', () => {
+        it('should return all users', async () => {
+            const response = await service.findAll();
+
+            expect(response.statusCode).toEqual(200);
+            expect(response.data?.length).toEqual(2);
+            expect(response.message).toEqual('Users found successfully');
+        });
+
+        it('should throw an error if finding users fails', async () => {
+            mockUsersDbService.findAll.mockRejectedValueOnce(
+                new BadRequestException('Failed to find users'),
+            );
+
+            await expect(service.findAll()).rejects.toThrow(
+                new BadRequestException('Failed to find users'),
+            );
+        });
+    });
+
+    // Find one user tests
+    describe('findOne', () => {
+        it('should return a user by address', async () => {
+            const address = '1234567890';
+            const response = await service.findOne(address);
+
+            expect(response.statusCode).toEqual(200);
+            expect(response.data?.address).toEqual(address);
+            expect(response.message).toEqual('User found successfully');
+        });
+
+        it('should throw an error if user not found', async () => {
+            const address = 'notFoundAddress';
+
+            mockUsersDbService.findOne.mockResolvedValueOnce(null);
+
+            await expect(service.findOne(address)).rejects.toThrow(
+                new BadRequestException('Failed to find user'),
+            );
+        });
+
+        it('should throw an error if finding user fails', async () => {
+            const address = 'errorAddress';
+
+            await expect(service.findOne(address)).rejects.toThrow(
+                new BadRequestException('Failed to find user'),
+            );
+        });
+    });
+
+    // ConvertToUserDto tests
+    describe('convertToUserDto', () => {
+        it('should convert User to UserDto', () => {
+            const user = {
+                address: '123',
+                username: 'test',
+                avatarUrl: 'https://example.com/avatar.jpg',
+                bio: 'test bio',
+                createdAt: new Date(),
+                updatedAt: new Date(),
+            };
+
+            const result = service.convertToUserDto(user);
+
+            expect(result).toBeInstanceOf(UserDto);
+            expect(result.address).toEqual(user.address);
+            expect(result.username).toEqual(user.username);
+        });
+
+        it('should throw an error if user is null', () => {
+            expect(() => service.convertToUserDto(null)).toThrow(
+                new NotFoundException('User not found'),
             );
         });
     });
