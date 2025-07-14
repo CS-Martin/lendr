@@ -81,9 +81,10 @@ contract LendrRentalSystem {
         uint256 _tokenId,
         uint256 _rentalFee,
         uint256 _collateral,
-        uint256 _rentalDuration
+        uint256 _rentalDuration,
+        RentalAgreement.RentalType _rentalType
     ) external returns (address) {
         s_totalRentals++;
-        // deploy a new RentalAgreement contract
+        uint256 rentalId = s_totalRentals;      
     }
 }
