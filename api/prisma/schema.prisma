@@ -36,15 +36,16 @@ model NFT {
     postItems RentalPostItem[]
 }
 
-model RentalListingStatus {
-    statusCode String @id
-    statusName String
-
-    posts RentalPost[]
+enum RentalListingStatus {
+    AVAILABLE
+    RENTED
+    DELISTED
+    DISPUTED_FOR_LENDER
+    DISPUTED_FOR_RENTER
 }
 
 model RentalPost {
-    rentalPostId     Int       @id @default(autoincrement())
+    rentalPostId     Int                 @id @default(autoincrement())
     posterAddress    String
     name             String
     description      String?
@@ -54,10 +55,11 @@ model RentalPost {
     biddingStarttime DateTime?
     biddingEndtime   DateTime?
     isActive         Boolean
-    statusCode       String
+    statusCode       RentalListingStatus @default(AVAILABLE)
+    createdAt        DateTime            @default(now())
+    updatedAt        DateTime?           @updatedAt
 
-    poster  User                @relation(fields: [posterAddress], references: [address])
-    status  RentalListingStatus @relation(fields: [statusCode], references: [statusCode])
+    poster  User             @relation(fields: [posterAddress], references: [address])
     items   RentalPostItem[]
     bids    Bid[]
     rentals Rental[]

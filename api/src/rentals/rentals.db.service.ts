@@ -30,7 +30,17 @@ export class RentalsDbService {
         return rental;
     }
 
-    async findAll(): Promise<Rental[] | null> {
+    async findAllByAddress(address: string): Promise<Rental[]> {
+        const rentals = await this.prisma.rental.findMany({
+            where: {
+                renterAddress: address,
+            },
+        });
+
+        return rentals;
+    }
+
+    async findAll(): Promise<Rental[]> {
         const rentals = await this.prisma.rental.findMany();
 
         return rentals;

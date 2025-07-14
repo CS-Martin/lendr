@@ -21,15 +21,9 @@ export class UsersService implements UsersServiceAbstractClass {
     async create(createUserDto: CreateUserDto): Promise<ResponseDto<UserDto>> {
         this.logger.log('Creating user', createUserDto);
 
-        const user = await this.findOne(createUserDto.address);
-
-        if (user) {
-            this.logger.error('User already exists', createUserDto.address);
-            throw new BadRequestException('User already exists');
-        }
-
         try {
             const user = await this.usersDbService.create(createUserDto);
+
             const userDto = this.convertToUserDto(user);
 
             return {

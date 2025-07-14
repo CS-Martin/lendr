@@ -6,16 +6,17 @@ import {
 } from '@nestjs/common';
 import { CreateRentalDto } from './dto/create-rental.dto';
 import { UpdateRentalDto } from './dto/update-rental.dto';
-import { RentlsDbService } from './rentals.db.service';
+import { RentalsDbService } from './rentals.db.service';
 import { ResponseDto } from 'lib/shared/dto/response.dto';
 import { RentalDto } from './dto/rental.dto';
 import { Rental } from '@prisma/client';
+import { RentalsServiceAbstractClass } from './rentals.service.abstract.class';
 
 @Injectable()
-export class RentalsService {
+export class RentalsService implements RentalsServiceAbstractClass {
     private readonly logger = new Logger(RentalsService.name);
 
-    constructor(private readonly rentlsDbService: RentlsDbService) { }
+    constructor(private readonly rentlsDbService: RentalsDbService) { }
 
     async create(
         createRentalDto: CreateRentalDto,
@@ -72,21 +73,14 @@ export class RentalsService {
         }
     }
 
-    async remove(rentalId: number): Promise<ResponseDto<RentalDto>> {
+    async remove(rentalId: number): Promise<ResponseDto<void>> {
         this.logger.log('Removing rental by rentalId', rentalId);
 
         try {
-            const rental = await this.rentlsDbService.remove(rentalId);
-
-            if (!rental) {
-                throw new NotFoundException('Rental not found');
-            }
-
-            const rentalDto = this.convertToRentalDto(rental);
+            await this.rentlsDbService.remove(rentalId);
 
             return {
                 statusCode: 200,
-                data: rentalDto,
                 message: 'Rental removed successfully',
             };
         } catch (error) {
