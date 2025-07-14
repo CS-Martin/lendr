@@ -5,6 +5,7 @@ import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
 import {IERC1155} from '@openzeppelin/contracts/token/ERC1155/IERC1155.sol';
 import {ERC721Holder} from '@openzeppelin/contracts/token/ERC721/utils/ERC721Holder.sol';
 import {ERC1155Holder} from '@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol';
+import {TimeConverter} from './utils/TimeConverter.sol';
 
 interface IERC4907 {
     function setUser(uint256 tokenId, address user, uint64 expires) external;
@@ -29,6 +30,10 @@ contract RentalAgreement is ERC721Holder, ERC1155Holder {
     error RentalAgreement__RenterMustNotBeLender();
     error RentalAgreement__DurationCannotBeZero();
     error RentalAgreement__CollateralCannotBeZeroForCollateralType();
+    error RentalAgreement__InvalidRentalType();
+    error RentalAgreement__InvalidUser(address expected, address actual);
+    error RentalAgreement__NftNotInEscrow();
+    error RentalAgreement__InvalidNftStandardForRentalType();
 
     /*//////////////////////////////////////////////////////////////
                                 EVENTS
@@ -68,19 +73,22 @@ contract RentalAgreement is ERC721Holder, ERC1155Holder {
 
     enum RentalType {
         COLLATERAL,
-        DELEGATION
+        DELEGATION,
+        _MAX
     }
 
     enum NftStandard {
         ERC721,
         ERC1155,
-        ERC4907
+        ERC4907,
+        _MAX
     }
 
     enum NFTDepositDuration {
         ONE_DAY,
         THREE_DAYS,
-        ONE_WEEK
+        ONE_WEEK,
+        _MAX
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -103,7 +111,7 @@ contract RentalAgreement is ERC721Holder, ERC1155Holder {
     /*//////////////////////////////////////////////////////////////
                              MODIFIERS
     //////////////////////////////////////////////////////////////*/
-    modifier notLender() {
+    modifier renterNotLender() {
         if (msg.sender == i_lender) {
             revert RentalAgreement__RenterMustNotBeLender();
         }
@@ -120,6 +128,13 @@ contract RentalAgreement is ERC721Holder, ERC1155Holder {
     modifier inState(State _expected) {
         if (s_rentalState != _expected) {
             revert RentalAgreement__InvalidState(_expected, s_rentalState);
+        }
+        _;
+    }
+
+    modifier onlyRenter() {
+        if (msg.sender != s_renter) {
+            revert RentalAgreement__InvalidUser(s_renter, msg.sender);
         }
         _;
     }
@@ -157,6 +172,12 @@ contract RentalAgreement is ERC721Holder, ERC1155Holder {
         if (_rentalType == RentalType.COLLATERAL && _collateral == 0) {
             revert RentalAgreement__CollateralCannotBeZeroForCollateralType();
         }
+        if (
+            _nftStandard == NftStandard.ERC4907 &&
+            _rentalType == RentalType.COLLATERAL
+        ) {
+            revert RentalAgreement__InvalidNftStandardForRentalType();
+        }
         i_lender = _lender;
         i_nftContract = _nftContract;
         i_tokenId = _tokenId;
@@ -182,7 +203,7 @@ contract RentalAgreement is ERC721Holder, ERC1155Holder {
     function initiateCollateralRental()
         external
         payable
-        notLender
+        renterNotLender
         onlyRentalType(RentalType.COLLATERAL)
     {
         uint256 requiredPayment = getTotalRentalFeeWithCollateral();
@@ -196,11 +217,48 @@ contract RentalAgreement is ERC721Holder, ERC1155Holder {
     function initiateDelegationRental()
         external
         payable
-        notLender
+        renterNotLender
         onlyRentalType(RentalType.DELEGATION)
     {
         uint256 requiredPayment = getTotalHourlyFee();
         _initiateRental(requiredPayment);
+    }
+
+    /**
+     * @notice Renter calls this to receive the NFT from escrow.
+     * @dev Only available for collateral-based rentals.
+     * @dev Uses TimeConverter to convert hours to seconds.
+     */
+    function releaseNFTToRenter()
+        external
+        onlyRenter
+        onlyRentalType(RentalType.COLLATERAL)
+        inState(State.READY_TO_RELEASE)
+    {
+        if (i_nftStandard == NftStandard.ERC721) {
+            if (IERC721(i_nftContract).ownerOf(i_tokenId) != address(this)) {
+                revert RentalAgreement__NftNotInEscrow();
+            }
+        } else if (i_nftStandard == NftStandard.ERC1155) {
+            if (IERC1155(i_nftContract).balanceOf(address(this), i_tokenId) != 1) {
+                revert RentalAgreement__NftNotInEscrow();
+            }
+        } else {
+            revert RentalAgreement__InvalidNftStandardForRentalType();
+        }
+
+        s_rentalEndTime = block.timestamp + TimeConverter.hoursToSeconds(i_rentalDurationInHours);
+
+        s_rentalState = State.ACTIVE_RENTAL;
+
+        if (i_nftStandard == NftStandard.ERC721) {
+            IERC721(i_nftContract).safeTransferFrom(address(this), s_renter, i_tokenId);
+        } else if (i_nftStandard == NftStandard.ERC1155) {
+            IERC1155(i_nftContract).safeTransferFrom(address(this), s_renter, i_tokenId, 1, "");
+        }
+
+        emit NftReleasedToRenter();
+        emit RentalStarted(s_rentalEndTime);
     }
 
     // --- LENDER-FACING FUNCTIONS --- //

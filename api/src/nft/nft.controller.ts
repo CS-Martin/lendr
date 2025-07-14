@@ -17,18 +17,18 @@ export class NftController {
     return this.nftService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.nftService.findOne(+id);
+  @Get(':address')
+  findOne(@Param('address') address: string) {
+    return this.nftService.findOne(address);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateNftDto: UpdateNftDto) {
-    return this.nftService.update(+id, updateNftDto);
+  @Patch(':address')
+  update(@Param('address') address: string, @Body() updateNftDto: UpdateNftDto) {
+    return this.nftService.update(address, updateNftDto);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.nftService.remove(+id);
+  @Delete(':address')
+  remove(@Param('address') address: string) {
+    return this.nftService.remove(address);
   }
 }

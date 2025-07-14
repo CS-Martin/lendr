@@ -38,15 +38,16 @@ model NFT {
   postItems RentalPostItem[]
 }
 
-model RentalListingStatus {
-  statusCode String @id
-  statusName String
-
-  posts RentalPost[]
+enum RentalListingStatus {
+  AVAILABLE
+  RENTED
+  DELISTED
+  DISPUTED_FOR_LENDER
+  DISPUTED_FOR_RENTER
 }
 
 model RentalPost {
-  rentalPostId     Int       @id @default(autoincrement())
+  rentalPostId     Int                 @id @default(autoincrement())
   posterAddress    String
   name             String
   description      String?
@@ -56,12 +57,11 @@ model RentalPost {
   biddingStarttime DateTime?
   biddingEndtime   DateTime?
   isActive         Boolean
-  statusCode       String
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
+  statusCode       RentalListingStatus @default(AVAILABLE)
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime?           @updatedAt
 
-  poster  User                @relation(fields: [posterAddress], references: [address])
-  status  RentalListingStatus @relation(fields: [statusCode], references: [statusCode])
+  poster  User             @relation(fields: [posterAddress], references: [address])
   items   RentalPostItem[]
   bids    Bid[]
   rentals Rental[]
@@ -103,12 +103,11 @@ model Bid {
   bidderAddress     String
   message           String?
   hourlyRate        Float
-  duration          Int
+  rentalDuration    Int
   isAccepted        Boolean
-  bidTimestamp      DateTime
   acceptedTimestamp DateTime?
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
+  createdAt         DateTime
+  updatedAt         DateTime?
 
   post   RentalPost @relation(fields: [rentalPostId], references: [rentalPostId])
   bidder User       @relation("Bidder", fields: [bidderAddress], references: [address])
@@ -116,8 +115,8 @@ model Bid {
 }
 
 model TransactionHash {
-  transactionHash String   @id
-  rentalId        Int      @unique
+  transactionHash String @id
+  rentalId        Int    @unique
 
   rental Rental @relation(fields: [rentalId], references: [rentalId])
 }

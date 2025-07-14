@@ -21,15 +21,9 @@ export class UsersService implements UsersServiceAbstractClass {
     async create(createUserDto: CreateUserDto): Promise<ResponseDto<UserDto>> {
         this.logger.log('Creating user', createUserDto);
 
-        const user = await this.findOne(createUserDto.address);
-
-        if (user) {
-            this.logger.error('User already exists', createUserDto.address);
-            throw new BadRequestException('User already exists');
-        }
-
         try {
             const user = await this.usersDbService.create(createUserDto);
+
             const userDto = this.convertToUserDto(user);
 
             return {
@@ -84,6 +78,11 @@ export class UsersService implements UsersServiceAbstractClass {
 
         try {
             const users: User[] | null = await this.usersDbService.findAll();
+
+            if (!users) {
+                throw new NotFoundException('Users not found');
+            }
+
             const userDtos = users?.map((user) => this.convertToUserDto(user));
 
             return {
@@ -105,12 +104,10 @@ export class UsersService implements UsersServiceAbstractClass {
                 await this.usersDbService.findOne(address);
 
             if (!user) {
-                this.logger.error('User not found', address);
-                throw new NotFoundException('User not found');
+                throw new NotFoundException('Failed to find user');
             }
 
             const userDto = this.convertToUserDto(user);
-
             return {
                 statusCode: 200,
                 data: userDto,

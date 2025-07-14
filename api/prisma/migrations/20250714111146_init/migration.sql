@@ -1,9 +1,14 @@
+-- CreateEnum
+CREATE TYPE "RentalListingStatus" AS ENUM ('AVAILABLE', 'RENTED', 'DELISTED', 'DISPUTED_FOR_LENDER', 'DISPUTED_FOR_RENTER');
+
 -- CreateTable
 CREATE TABLE "User" (
     "address" TEXT NOT NULL,
     "username" TEXT,
     "avatarUrl" TEXT,
     "bio" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3),
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("address")
 );
@@ -23,14 +28,6 @@ CREATE TABLE "NFT" (
 );
 
 -- CreateTable
-CREATE TABLE "RentalListingStatus" (
-    "statusCode" TEXT NOT NULL,
-    "statusName" TEXT NOT NULL,
-
-    CONSTRAINT "RentalListingStatus_pkey" PRIMARY KEY ("statusCode")
-);
-
--- CreateTable
 CREATE TABLE "RentalPost" (
     "rentalPostId" SERIAL NOT NULL,
     "posterAddress" TEXT NOT NULL,
@@ -42,7 +39,9 @@ CREATE TABLE "RentalPost" (
     "biddingStarttime" TIMESTAMP(3),
     "biddingEndtime" TIMESTAMP(3),
     "isActive" BOOLEAN NOT NULL,
-    "statusCode" TEXT NOT NULL,
+    "statusCode" "RentalListingStatus" NOT NULL DEFAULT 'AVAILABLE',
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3),
 
     CONSTRAINT "RentalPost_pkey" PRIMARY KEY ("rentalPostId")
 );
@@ -103,9 +102,6 @@ ALTER TABLE "NFT" ADD CONSTRAINT "NFT_userAddress_fkey" FOREIGN KEY ("userAddres
 
 -- AddForeignKey
 ALTER TABLE "RentalPost" ADD CONSTRAINT "RentalPost_posterAddress_fkey" FOREIGN KEY ("posterAddress") REFERENCES "User"("address") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "RentalPost" ADD CONSTRAINT "RentalPost_statusCode_fkey" FOREIGN KEY ("statusCode") REFERENCES "RentalListingStatus"("statusCode") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "RentalPostItem" ADD CONSTRAINT "RentalPostItem_rentalPostId_fkey" FOREIGN KEY ("rentalPostId") REFERENCES "RentalPost"("rentalPostId") ON DELETE RESTRICT ON UPDATE CASCADE;
