@@ -139,6 +139,13 @@ contract RentalAgreement is ERC721Holder, ERC1155Holder {
         _;
     }
 
+    modifier onlyLender() {
+        if (msg.sender != i_lender) {
+            revert RentalAgreement__InvalidUser(i_lender, msg.sender);
+        }
+        _;
+    }
+
     /*//////////////////////////////////////////////////////////////
                             CONSTRUCTOR
     //////////////////////////////////////////////////////////////*/
@@ -262,6 +269,21 @@ contract RentalAgreement is ERC721Holder, ERC1155Holder {
     }
 
     // --- LENDER-FACING FUNCTIONS --- //
+
+    /**
+     * @notice (Collateral Only) Lender calls this to claim collateral if renter defaults.
+     */
+    function claimCollateral() 
+        external 
+        onlyLender 
+        onlyRentalType(RentalType.COLLATERAL)
+        inState(State.ACTIVE_RENTAL)
+    {
+        // 3. Check that block.timestamp > rentalEndTime.
+        // 4. Change state to DEFAULTED.
+        // 5. Call internal _distributePayouts() function.
+        // 6. Emit CollateralClaimed and RentalDefaulted.
+    }
 
     // --- CANCELLATION FUNCTIONS --- //
 
