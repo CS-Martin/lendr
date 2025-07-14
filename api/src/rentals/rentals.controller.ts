@@ -35,7 +35,7 @@ export class RentalsController {
     })
     @ApiResponse({
         status: 200,
-        description: 'Rental created successfully.',
+        description: 'Rentals found successfully.',
     })
     findAll() {
         return this.rentalsService.findAll();
