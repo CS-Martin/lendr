@@ -1,0 +1,6 @@
+[submodule "rental-escrow-smart-contract/lib/forge-std"]
+	path = rental-escrow-smart-contract/lib/forge-std
+	url = https://github.com/foundry-rs/forge-std.git
+[submodule "rental-escrow-smart-contract/lib/openzeppelin-contracts"]
+	path = rental-escrow-smart-contract/lib/openzeppelin-contracts
+	url = https://github.com/OpenZeppelin/openzeppelin-contracts.git

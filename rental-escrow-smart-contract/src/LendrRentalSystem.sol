@@ -17,6 +17,14 @@ contract LendrRentalSystem {
                                 ERRORS
     //////////////////////////////////////////////////////////////*/
     error LendrRentalSystem__NotDeployer(address sender);
+    error LendrRentalSystem__ZeroAddress();
+    error LendrRentalSystem__FeeMustBeGreaterThanZero();
+    error LendrRentalSystem__InvalidRentalType();
+    error LendrRentalSystem__InvalidNftStandard();
+    error LendrRentalSystem__InvalidDepositDeadline();
+    error LendrRentalSystem__RentalDurationMustBeGreaterThanZero();
+    error LendrRentalSystem__NotLender();
+    error LendrRentalSystem__CollateralMustBeGreaterThanZero();
 
     /*//////////////////////////////////////////////////////////////
                             STATE VARIABLES
@@ -76,14 +84,83 @@ contract LendrRentalSystem {
         emit FeeUpdated(newFeeBps);
     }
 
+    /**
+     * @notice Creates a new rental agreement contract.
+     * @param _lender The address of the NFT owner (lender).
+     * @param _nftContract The contract address of the NFT to be rented.
+     * @param _tokenId The ID of the NFT to be rented.
+     * @param _hourlyRentalFee The rental fee per hour in wei.
+     * @param _collateral The collateral amount in wei (for collateral-based rentals).
+     * @param _rentalDurationInHours The total duration of the rental in hours.
+     * @param _rentalType The type of rental. See {RentalAgreement.RentalType}.
+     * @param _nftStandard The NFT standard of the token. See {RentalAgreement.NftStandard}.
+     * @param _depositDeadline The deadline for the lender to deposit the NFT. See {RentalAgreement.NFTDepositDuration}.
+     * @return The address of the newly created rental agreement contract.
+     */
     function createRentalAgreement(
+        address _lender,
         address _nftContract,
         uint256 _tokenId,
-        uint256 _rentalFee,
+        uint256 _hourlyRentalFee,
         uint256 _collateral,
-        uint256 _rentalDuration
+        uint256 _rentalDurationInHours,
+        RentalAgreement.RentalType _rentalType,
+        RentalAgreement.NftStandard _nftStandard,
+        RentalAgreement.NFTDepositDuration _depositDeadline
     ) external returns (address) {
+        if (msg.sender != _lender) {
+            revert LendrRentalSystem__NotLender();
+        }
+        if (_lender == address(0)) {
+            revert LendrRentalSystem__ZeroAddress();
+        }
+        if (_nftContract == address(0)) {
+            revert LendrRentalSystem__ZeroAddress();
+        }
+        if (_hourlyRentalFee == 0) {
+            revert LendrRentalSystem__FeeMustBeGreaterThanZero();
+        }
+        if (_rentalType == RentalAgreement.RentalType.COLLATERAL && _collateral == 0) {
+            revert LendrRentalSystem__CollateralMustBeGreaterThanZero();
+        }
+        if (_rentalDurationInHours == 0) {
+            revert LendrRentalSystem__RentalDurationMustBeGreaterThanZero();
+        }
+        if (uint8(_rentalType) >= uint8(RentalAgreement.RentalType._MAX)) {
+            revert LendrRentalSystem__InvalidRentalType();
+        }
+        if (uint8(_nftStandard) >= uint8(RentalAgreement.NftStandard._MAX)) {
+            revert LendrRentalSystem__InvalidNftStandard();
+        }
+        if (uint8(_depositDeadline) >= uint8(RentalAgreement.NFTDepositDuration._MAX)) {
+            revert LendrRentalSystem__InvalidDepositDeadline();
+        }
+
         s_totalRentals++;
-        // deploy a new RentalAgreement contract
+        uint256 rentalId = s_totalRentals;
+
+        RentalAgreement rentalAgreement = new RentalAgreement(
+            _lender,
+            _nftContract,
+            _tokenId,
+            _hourlyRentalFee,
+            _collateral,
+            _rentalDurationInHours,
+            _rentalType,
+            _nftStandard,
+            _depositDeadline
+        );
+        
+        s_rentalAgreementById[rentalId] = address(rentalAgreement);
+
+        emit RentalAgreementCreated(
+            rentalId,
+            address(rentalAgreement),
+            _lender,
+            _nftContract,
+            _tokenId
+        );
+
+        return address(rentalAgreement);
     }
 }
