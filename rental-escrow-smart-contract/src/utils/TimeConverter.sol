@@ -16,6 +16,9 @@ library TimeConverter {
     function hoursToSeconds(uint256 _hours) internal pure returns (uint256) {
         // Use Solidity's `hours` keyword for clarity and safety.
         // 1 hours is a literal that evaluates to 3600.
-        return _hours * 1 hours;
+
+        unchecked {
+            return _hours * 1 hours;
+        }
     }
 } 
