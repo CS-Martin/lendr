@@ -22,6 +22,7 @@ contract LendrRentalSystem {
     error LendrRentalSystem__InvalidRentalType();
     error LendrRentalSystem__InvalidNftStandard();
     error LendrRentalSystem__InvalidDepositDeadline();
+    error LendrRentalSystem__NotLender();
 
     /*//////////////////////////////////////////////////////////////
                             STATE VARIABLES
@@ -105,6 +106,9 @@ contract LendrRentalSystem {
         RentalAgreement.NftStandard _nftStandard,
         RentalAgreement.NFTDepositDuration _depositDeadline
     ) external returns (address) {
+        if (msg.sender != _lender) {
+            revert LendrRentalSystem__NotLender();
+        }
         if (_lender == address(0)) {
             revert LendrRentalSystem__ZeroAddress();
         }
