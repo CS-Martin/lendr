@@ -24,6 +24,7 @@ contract LendrRentalSystem {
     error LendrRentalSystem__InvalidDepositDeadline();
     error LendrRentalSystem__RentalDurationMustBeGreaterThanZero();
     error LendrRentalSystem__NotLender();
+    error LendrRentalSystem__CollateralMustBeGreaterThanZero();
 
     /*//////////////////////////////////////////////////////////////
                             STATE VARIABLES
@@ -118,6 +119,9 @@ contract LendrRentalSystem {
         }
         if (_hourlyRentalFee == 0) {
             revert LendrRentalSystem__FeeMustBeGreaterThanZero();
+        }
+        if (_collateral == 0) {
+            revert LendrRentalSystem__CollateralMustBeGreaterThanZero();
         }
         if (_rentalDurationInHours == 0) {
             revert LendrRentalSystem__RentalDurationMustBeGreaterThanZero();
