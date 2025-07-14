@@ -22,6 +22,7 @@ contract LendrRentalSystem {
     error LendrRentalSystem__InvalidRentalType();
     error LendrRentalSystem__InvalidNftStandard();
     error LendrRentalSystem__InvalidDepositDeadline();
+    error LendrRentalSystem__RentalDurationMustBeGreaterThanZero();
     error LendrRentalSystem__NotLender();
 
     /*//////////////////////////////////////////////////////////////
@@ -118,13 +119,16 @@ contract LendrRentalSystem {
         if (_hourlyRentalFee == 0) {
             revert LendrRentalSystem__FeeMustBeGreaterThanZero();
         }
-        if (uint8(_rentalType) > uint8(RentalAgreement.RentalType.DELEGATION)) {
+        if (_rentalDurationInHours == 0) {
+            revert LendrRentalSystem__RentalDurationMustBeGreaterThanZero();
+        }
+        if (uint8(_rentalType) >= uint8(RentalAgreement.RentalType._MAX)) {
             revert LendrRentalSystem__InvalidRentalType();
         }
-        if (uint8(_nftStandard) > uint8(RentalAgreement.NftStandard.ERC4907)) {
+        if (uint8(_nftStandard) >= uint8(RentalAgreement.NftStandard._MAX)) {
             revert LendrRentalSystem__InvalidNftStandard();
         }
-        if (uint8(_depositDeadline) > uint8(RentalAgreement.NFTDepositDuration.ONE_WEEK)) {
+        if (uint8(_depositDeadline) >= uint8(RentalAgreement.NFTDepositDuration._MAX)) {
             revert LendrRentalSystem__InvalidDepositDeadline();
         }
 

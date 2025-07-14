@@ -73,19 +73,22 @@ contract RentalAgreement is ERC721Holder, ERC1155Holder {
 
     enum RentalType {
         COLLATERAL,
-        DELEGATION
+        DELEGATION,
+        _MAX
     }
 
     enum NftStandard {
         ERC721,
         ERC1155,
-        ERC4907
+        ERC4907,
+        _MAX
     }
 
     enum NFTDepositDuration {
         ONE_DAY,
         THREE_DAYS,
-        ONE_WEEK
+        ONE_WEEK,
+        _MAX
     }
 
     /*//////////////////////////////////////////////////////////////
