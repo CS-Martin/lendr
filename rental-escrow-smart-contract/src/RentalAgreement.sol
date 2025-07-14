@@ -32,6 +32,8 @@ contract RentalAgreement is ERC721Holder, ERC1155Holder {
     error RentalAgreement__CollateralCannotBeZeroForCollateralType();
     error RentalAgreement__InvalidRentalType();
     error RentalAgreement__InvalidUser(address expected, address actual);
+    error RentalAgreement__NftNotInEscrow();
+    error RentalAgreement__InvalidNftStandardForRentalType();
 
     /*//////////////////////////////////////////////////////////////
                                 EVENTS
@@ -167,6 +169,12 @@ contract RentalAgreement is ERC721Holder, ERC1155Holder {
         if (_rentalType == RentalType.COLLATERAL && _collateral == 0) {
             revert RentalAgreement__CollateralCannotBeZeroForCollateralType();
         }
+        if (
+            _nftStandard == NftStandard.ERC4907 &&
+            _rentalType == RentalType.COLLATERAL
+        ) {
+            revert RentalAgreement__InvalidNftStandardForRentalType();
+        }
         i_lender = _lender;
         i_nftContract = _nftContract;
         i_tokenId = _tokenId;
@@ -224,6 +232,18 @@ contract RentalAgreement is ERC721Holder, ERC1155Holder {
         onlyRentalType(RentalType.COLLATERAL)
         inState(State.READY_TO_RELEASE)
     {
+        if (i_nftStandard == NftStandard.ERC721) {
+            if (IERC721(i_nftContract).ownerOf(i_tokenId) != address(this)) {
+                revert RentalAgreement__NftNotInEscrow();
+            }
+        } else if (i_nftStandard == NftStandard.ERC1155) {
+            if (IERC1155(i_nftContract).balanceOf(address(this), i_tokenId) != 1) {
+                revert RentalAgreement__NftNotInEscrow();
+            }
+        } else {
+            revert RentalAgreement__InvalidNftStandardForRentalType();
+        }
+
         s_rentalEndTime = block.timestamp + TimeConverter.hoursToSeconds(i_rentalDurationInHours);
 
         s_rentalState = State.ACTIVE_RENTAL;
