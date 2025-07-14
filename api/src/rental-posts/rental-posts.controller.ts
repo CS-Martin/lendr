@@ -7,13 +7,14 @@ import {
     Param,
     Delete,
 } from '@nestjs/common';
-import { ApiOperation, ApiProperty, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CreateRentalPostDto } from './dto/create-rental-post.dto';
 import { UpdateRentalPostDto } from './dto/update-rental-post.dto';
 import { RentalPostsService } from './rental-posts.service';
+import { ConfigService } from '@nestjs/config';
 
 @ApiTags('Rental Posts')
-@Controller('rental-posts')
+@Controller(`${new ConfigService().get('API_VERSION')}/rental-posts`)
 export class RentalPostsController {
     constructor(private readonly rentalPostsService: RentalPostsService) { }
 
@@ -46,7 +47,7 @@ export class RentalPostsController {
     }
 
     @Get('user/:address')
-    @ApiOperation({ summary: 'Get all rental posts by user wallet address' })
+    @ApiOperation({ summary: 'Get all rental posts of a specific user' })
     @ApiResponse({
         status: 200,
         description: 'List of rental posts for the specified user.',

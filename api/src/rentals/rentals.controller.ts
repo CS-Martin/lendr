@@ -10,8 +10,9 @@ import {
 import { RentalsService } from './rentals.service';
 import { CreateRentalDto } from './dto/create-rental.dto';
 import { UpdateRentalDto } from './dto/update-rental.dto';
+import { ConfigService } from '@nestjs/config';
 
-@Controller('rentals')
+@Controller(`${new ConfigService().get('API_VERSION')}/rentals`)
 export class RentalsController {
     constructor(private readonly rentalsService: RentalsService) { }
 
