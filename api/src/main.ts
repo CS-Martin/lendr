@@ -10,6 +10,18 @@ async function bootstrap() {
         .setTitle('Lendr API')
         .setDescription('Lendr API description')
         .setVersion('1.0')
+        .addGlobalResponse({
+            status: 404,
+            description: 'Not Found',
+        })
+        .addGlobalResponse({
+            status: 500,
+            description: 'Internal Server Error',
+        })
+        .addSecurity('basic', {
+            type: 'http',
+            scheme: 'basic',
+        })
         .build();
 
     const document = SwaggerModule.createDocument(app, config);
