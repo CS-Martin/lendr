@@ -81,6 +81,19 @@ contract LendrRentalSystem {
         emit FeeUpdated(newFeeBps);
     }
 
+    /**
+     * @notice Creates a new rental agreement contract.
+     * @param _lender The address of the NFT owner (lender).
+     * @param _nftContract The contract address of the NFT to be rented.
+     * @param _tokenId The ID of the NFT to be rented.
+     * @param _hourlyRentalFee The rental fee per hour in wei.
+     * @param _collateral The collateral amount in wei (for collateral-based rentals).
+     * @param _rentalDurationInHours The total duration of the rental in hours.
+     * @param _rentalType The type of rental. See {RentalAgreement.RentalType}.
+     * @param _nftStandard The NFT standard of the token. See {RentalAgreement.NftStandard}.
+     * @param _depositDeadline The deadline for the lender to deposit the NFT. See {RentalAgreement.NFTDepositDuration}.
+     * @return The address of the newly created rental agreement contract.
+     */
     function createRentalAgreement(
         address _lender,
         address _nftContract,
