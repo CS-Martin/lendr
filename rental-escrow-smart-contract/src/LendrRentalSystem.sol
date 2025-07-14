@@ -120,7 +120,7 @@ contract LendrRentalSystem {
         if (_hourlyRentalFee == 0) {
             revert LendrRentalSystem__FeeMustBeGreaterThanZero();
         }
-        if (_collateral == 0) {
+        if (_rentalType == RentalAgreement.RentalType.COLLATERAL && _collateral == 0) {
             revert LendrRentalSystem__CollateralMustBeGreaterThanZero();
         }
         if (_rentalDurationInHours == 0) {
