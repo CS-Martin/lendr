@@ -77,14 +77,41 @@ contract LendrRentalSystem {
     }
 
     function createRentalAgreement(
+        address _lender,
         address _nftContract,
         uint256 _tokenId,
-        uint256 _rentalFee,
+        uint256 _hourlyRentalFee,
         uint256 _collateral,
-        uint256 _rentalDuration,
-        RentalAgreement.RentalType _rentalType
+        uint256 _rentalDurationInHours,
+        RentalAgreement.RentalType _rentalType,
+        RentalAgreement.NftStandard _nftStandard,
+        RentalAgreement.NFTDepositDuration _depositDeadline
     ) external returns (address) {
         s_totalRentals++;
-        uint256 rentalId = s_totalRentals;      
+        uint256 rentalId = s_totalRentals;
+
+        RentalAgreement rentalAgreement = new RentalAgreement(
+            _lender,
+            _nftContract,
+            _tokenId,
+            _hourlyRentalFee,
+            _collateral,
+            _rentalDurationInHours,
+            _rentalType,
+            _nftStandard,
+            _depositDeadline
+        );
+        
+        s_rentalAgreementById[rentalId] = address(rentalAgreement);
+
+        emit RentalAgreementCreated(
+            rentalId,
+            address(rentalAgreement),
+            _lender,
+            _nftContract,
+            _tokenId
+        );
+
+        return address(rentalAgreement);
     }
 }
