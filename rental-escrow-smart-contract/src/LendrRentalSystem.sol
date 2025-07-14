@@ -17,6 +17,11 @@ contract LendrRentalSystem {
                                 ERRORS
     //////////////////////////////////////////////////////////////*/
     error LendrRentalSystem__NotDeployer(address sender);
+    error LendrRentalSystem__ZeroAddress();
+    error LendrRentalSystem__FeeMustBeGreaterThanZero();
+    error LendrRentalSystem__InvalidRentalType();
+    error LendrRentalSystem__InvalidNftStandard();
+    error LendrRentalSystem__InvalidDepositDeadline();
 
     /*//////////////////////////////////////////////////////////////
                             STATE VARIABLES
@@ -87,6 +92,25 @@ contract LendrRentalSystem {
         RentalAgreement.NftStandard _nftStandard,
         RentalAgreement.NFTDepositDuration _depositDeadline
     ) external returns (address) {
+        if (_lender == address(0)) {
+            revert LendrRentalSystem__ZeroAddress();
+        }
+        if (_nftContract == address(0)) {
+            revert LendrRentalSystem__ZeroAddress();
+        }
+        if (_hourlyRentalFee == 0) {
+            revert LendrRentalSystem__FeeMustBeGreaterThanZero();
+        }
+        if (uint8(_rentalType) > uint8(RentalAgreement.RentalType.DELEGATION)) {
+            revert LendrRentalSystem__InvalidRentalType();
+        }
+        if (uint8(_nftStandard) > uint8(RentalAgreement.NftStandard.ERC4907)) {
+            revert LendrRentalSystem__InvalidNftStandard();
+        }
+        if (uint8(_depositDeadline) > uint8(RentalAgreement.NFTDepositDuration.ONE_WEEK)) {
+            revert LendrRentalSystem__InvalidDepositDeadline();
+        }
+
         s_totalRentals++;
         uint256 rentalId = s_totalRentals;
 
