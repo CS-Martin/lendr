@@ -1,27 +1,18 @@
 import { CreateRentalPostDto } from './dto/create-rental-post.dto';
 import { RentalPost } from '@prisma/client';
 import { UpdateRentalPostDto } from './dto/update-rental-post.dto';
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PrismaService } from '@prisma/prisma.service';
 
 @Injectable()
 export class RentalPostsDbService {
-    private readonly logger = new Logger(RentalPostsDbService.name);
-
-    constructor(private readonly prisma: PrismaService) {
-        this.logger.log('RentalPostsDbService initialized');
-    }
+    constructor(private readonly prisma: PrismaService) { }
 
     async create(
         createRentalPostDto: CreateRentalPostDto,
     ): Promise<RentalPost> {
-        const data = {
-            ...createRentalPostDto,
-        };
-
-        console.log('DATA:', data);
         const rentalPost = await this.prisma.rentalPost.create({
-            data: data,
+            data: createRentalPostDto,
         });
 
         return rentalPost;
@@ -48,8 +39,6 @@ export class RentalPostsDbService {
     }
 
     async findAllByAddress(address: string): Promise<RentalPost[]> {
-        console.log('POSTER ADDRESS:', address);
-
         const rentalPosts = await this.prisma.rentalPost.findMany({
             where: {
                 posterAddress: {

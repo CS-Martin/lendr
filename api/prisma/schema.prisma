@@ -97,10 +97,11 @@ model Bid {
     bidderAddress     String
     message           String?
     hourlyRate        Float
-    duration          Int
+    rentalDuration    Int
     isAccepted        Boolean
-    bidTimestamp      DateTime
     acceptedTimestamp DateTime?
+    createdAt         DateTime
+    updatedAt         DateTime?
 
     post   RentalPost @relation(fields: [rentalPostId], references: [rentalPostId])
     bidder User       @relation("Bidder", fields: [bidderAddress], references: [address])
