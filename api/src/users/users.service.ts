@@ -84,6 +84,11 @@ export class UsersService implements UsersServiceAbstractClass {
 
         try {
             const users: User[] | null = await this.usersDbService.findAll();
+
+            if (!users) {
+                throw new NotFoundException('Users not found');
+            }
+
             const userDtos = users?.map((user) => this.convertToUserDto(user));
 
             return {
