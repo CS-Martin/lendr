@@ -213,7 +213,7 @@ contract RentalAgreement is ERC721Holder, ERC1155Holder {
         i_nftStandard = _nftStandard;
         i_dealDuration = _dealDuration;
         i_platformAddress = _platformAddress;
-        i_factoryContract = LendrRentalSystem(msg.sender);
+        i_factoryContract = LendrRentalSystem(payable(msg.sender));
         s_rentalState = State.LISTED;
     }
 
