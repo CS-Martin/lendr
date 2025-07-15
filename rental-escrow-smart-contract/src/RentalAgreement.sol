@@ -6,6 +6,7 @@ import {IERC1155} from '@openzeppelin/contracts/token/ERC1155/IERC1155.sol';
 import {ERC721Holder} from '@openzeppelin/contracts/token/ERC721/utils/ERC721Holder.sol';
 import {ERC1155Holder} from '@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol';
 import {TimeConverter} from './utils/TimeConverter.sol';
+import {FeeCalculator} from './utils/ComputePercentage.sol';
 
 interface IERC4907 {
     function setUser(uint256 tokenId, address user, uint64 expires) external;
@@ -111,6 +112,8 @@ contract RentalAgreement is ERC721Holder, ERC1155Holder {
     RentalType public immutable i_rentalType;
     NftStandard public immutable i_nftStandard;
     DealDuration public immutable i_dealDuration;
+    address public immutable i_platformAddress;
+    uint256 public immutable i_platformFeeBps;
     address public s_renter;
     State public s_rentalState;
     uint256 public s_rentalEndTime;
@@ -169,7 +172,7 @@ contract RentalAgreement is ERC721Holder, ERC1155Holder {
      * @param _rentalDurationInHours The duration of the rental in hours.
      * @param _rentalType The type of rental (COLLATERAL or DELEGATION).
      * @param _nftStandard The NFT standard (ERC721, ERC1155, or ERC4907).
-     * @param _depositDeadline The deadline for the lender to deposit the NFT.
+     * @param _dealDuration The duration for the lender to deposit the NFT.
      */
     constructor(
         address _lender,
@@ -180,7 +183,9 @@ contract RentalAgreement is ERC721Holder, ERC1155Holder {
         uint256 _rentalDurationInHours,
         RentalType _rentalType,
         NftStandard _nftStandard,
-        DealDuration _depositDeadline
+        DealDuration _dealDuration,
+        address _platformAddress,
+        uint256 _platformFeeBps
     ) {
         if (_rentalDurationInHours == 0) {
             revert RentalAgreement__DurationCannotBeZero();
@@ -194,7 +199,7 @@ contract RentalAgreement is ERC721Holder, ERC1155Holder {
         ) {
             revert RentalAgreement__InvalidNftStandardForRentalType();
         }
-        if (uint256(_depositDeadline) >= uint256(DealDuration._MAX)) {
+        if (uint256(_dealDuration) >= uint256(DealDuration._MAX)) {
             revert RentalAgreement__InvalidDealDuration();
         }
         i_lender = _lender;
@@ -205,7 +210,9 @@ contract RentalAgreement is ERC721Holder, ERC1155Holder {
         i_rentalDurationInHours = _rentalDurationInHours;
         i_rentalType = _rentalType;
         i_nftStandard = _nftStandard;
-        i_dealDuration = _depositDeadline;
+        i_dealDuration = _dealDuration;
+        i_platformAddress = _platformAddress;
+        i_platformFeeBps = _platformFeeBps;
         s_rentalState = State.LISTED;
     }
 
@@ -301,6 +308,8 @@ contract RentalAgreement is ERC721Holder, ERC1155Holder {
 
         s_rentalState = State.COMPLETED;
 
+        _distributePayouts();
+
         if (i_nftStandard == NftStandard.ERC721) {
             IERC721(i_nftContract).safeTransferFrom(s_renter, i_lender, i_tokenId);
         } else if (i_nftStandard == NftStandard.ERC1155) {
@@ -335,7 +344,7 @@ contract RentalAgreement is ERC721Holder, ERC1155Holder {
             emit RentalDefaulted();
         }
 
-        _distributePayoutForDefaultedRental();
+        _distributePayouts();
         emit CollateralClaimed(i_lender, i_collateral);
     }
 
@@ -366,26 +375,40 @@ contract RentalAgreement is ERC721Holder, ERC1155Holder {
 
     /**
      * @dev Internal function to handle the distribution of all funds.
-     */
-    function _distributePayoutForDefaultedRental() private {
-        // Logic to calculate platform fee from rentalFee.
-        // Based on the final state (COMPLETED, DEFAULTED, etc.), transfer:
-        // - rental fee (minus platform fee) to lender.
-        // - platform fee to platform owner/treasury.
-        // - collateral back to renter (if COMPLETED) or to lender (if DEFAULTED).
-        // Emit PayoutsDistributed.
-    }
-
-    /**
-     * @dev Internal function to handle the distribution of all funds.
+     * This function is called when a rental is completed or defaulted.
+     * It handles the distribution of the rental fee to the lender and the platform,
+     * and the collateral to the renter (on completion) or lender (on default).
      */
     function _distributePayouts() private {
-        // Logic to calculate platform fee from rentalFee.
-        // Based on the final state (COMPLETED, DEFAULTED, etc.), transfer:
-        // - rental fee (minus platform fee) to lender.
-        // - platform fee to platform owner/treasury.
-        // - collateral back to renter (if COMPLETED) or to lender (if DEFAULTED).
-        // Emit PayoutsDistributed.
+        uint256 totalRentalFee = getTotalHourlyFee();
+        uint256 platformFee = FeeCalculator.calculateFee(totalRentalFee, i_platformFeeBps);
+        uint256 lenderPayout = totalRentalFee - platformFee;
+
+        if (s_rentalState == State.COMPLETED) {
+            // In a completed rental, the collateral is returned to the renter.
+            if (i_collateral > 0) {
+                (bool success, ) = payable(s_renter).call{value: i_collateral}("");
+                require(success, "Failed to return collateral to renter");
+            }
+        } else if (s_rentalState == State.DEFAULTED) {
+            // In a defaulted rental, the collateral is given to the lender.
+            if (i_collateral > 0) {
+                (bool success, ) = payable(i_lender).call{value: i_collateral}("");
+                require(success, "Failed to send collateral to lender");
+            }
+        }
+
+        // The rental fee is distributed between the lender and the platform.
+        if (lenderPayout > 0) {
+            (bool success, ) = payable(i_lender).call{value: lenderPayout}("");
+            require(success, "Failed to send payout to lender");
+        }
+        if (platformFee > 0) {
+            (bool success, ) = payable(i_platformAddress).call{value: platformFee}("");
+            require(success, "Failed to send fee to platform");
+        }
+
+        emit PayoutsDistributed(i_lender, i_platformAddress, lenderPayout, platformFee);
     }
 
     /*//////////////////////////////////////////////////////////////
