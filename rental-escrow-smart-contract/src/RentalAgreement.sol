@@ -39,6 +39,7 @@ contract RentalAgreement is ERC721Holder, ERC1155Holder {
     error RentalAgreement__RentalNotEnded();
     error RentalAgreement__InvalidDealDuration();
     error RentalAgreement__InvalidStateForDefault();
+    error RentalAgreement__PaymentFailed();
 
     /*//////////////////////////////////////////////////////////////
                                 EVENTS
@@ -385,27 +386,24 @@ contract RentalAgreement is ERC721Holder, ERC1155Holder {
         uint256 lenderPayout = totalRentalFee - platformFee;
 
         if (s_rentalState == State.COMPLETED) {
-            // In a completed rental, the collateral is returned to the renter.
             if (i_collateral > 0) {
                 (bool success, ) = payable(s_renter).call{value: i_collateral}("");
-                require(success, "Failed to return collateral to renter");
+                if (!success) revert RentalAgreement__PaymentFailed();
             }
         } else if (s_rentalState == State.DEFAULTED) {
-            // In a defaulted rental, the collateral is given to the lender.
             if (i_collateral > 0) {
                 (bool success, ) = payable(i_lender).call{value: i_collateral}("");
-                require(success, "Failed to send collateral to lender");
+                if (!success) revert RentalAgreement__PaymentFailed();
             }
         }
 
-        // The rental fee is distributed between the lender and the platform.
         if (lenderPayout > 0) {
             (bool success, ) = payable(i_lender).call{value: lenderPayout}("");
-            require(success, "Failed to send payout to lender");
+            if (!success) revert RentalAgreement__PaymentFailed();
         }
         if (platformFee > 0) {
             (bool success, ) = payable(i_platformAddress).call{value: platformFee}("");
-            require(success, "Failed to send fee to platform");
+            if (!success) revert RentalAgreement__PaymentFailed();
         }
 
         emit PayoutsDistributed(i_lender, i_platformAddress, lenderPayout, platformFee);
