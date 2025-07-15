@@ -267,7 +267,7 @@ contract RentalAgreement is ERC721Holder, ERC1155Holder {
 
         s_rentalState = State.ACTIVE_RENTAL;
         s_rentalEndTime = block.timestamp + TimeConverter.hoursToSeconds(i_rentalDurationInHours);
-        s_returnDeadline = s_rentalEndTime + _getDurationInSeconds(i_DealDuration);
+        s_returnDeadline = s_rentalEndTime + getCustomDuration(i_DealDuration);
 
         if (i_nftStandard == NftStandard.ERC721) {
             IERC721(i_nftContract).safeTransferFrom(address(this), s_renter, i_tokenId);
@@ -352,7 +352,7 @@ contract RentalAgreement is ERC721Holder, ERC1155Holder {
 
         s_renter = msg.sender;
 
-        s_lenderDepositDeadline = block.timestamp + _getDurationInSeconds(i_DealDuration);
+        s_lenderDepositDeadline = block.timestamp + getCustomDuration(i_DealDuration);
 
         s_rentalState = State.READY_TO_RELEASE;
 
@@ -391,7 +391,7 @@ contract RentalAgreement is ERC721Holder, ERC1155Holder {
      * @param _duration The DealDuration enum member.
      * @return The duration in seconds.
      */
-    function _getDurationInSeconds(DealDuration _duration)
+    function getCustomDuration(DealDuration _duration)
         private
         pure
         returns (uint256)
