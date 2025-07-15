@@ -26,9 +26,8 @@ export const StepsToRentAndList = () => {
                     <h2 className='text-3xl text-center md:text-left md:text-5xl font-bold text-white mb-6'>
                         Easy Steps to{' '}
                         <span className='bg-gradient-to-r from-lendr-400 to-cyan-400 bg-clip-text text-transparent'>
-                            Rent & List NFTs
+                            Rent & List NFTs{' '}
                         </span>
-                        <br />
                         in our Marketplace
                     </h2>
                     <p className='text-slate-400 text-sm text-center md:text-left md:text-[16px] font-mono leading-relaxed'>
