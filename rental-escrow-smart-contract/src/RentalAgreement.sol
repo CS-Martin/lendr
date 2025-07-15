@@ -46,6 +46,7 @@ contract RentalAgreement is
     error RentalAgreement__InvalidStateForDefault();
     error RentalAgreement__PaymentFailed();
     error RentalAgreement__DeadlinePassed();
+    error RentalAgreement__LenderStillHasTime();
 
     /*//////////////////////////////////////////////////////////////
                                 EVENTS
@@ -339,6 +340,9 @@ contract RentalAgreement is
         inState(State.READY_TO_RELEASE)
         nonReentrant
     {
+        if (block.timestamp > s_lenderDepositDeadline) {
+            revert RentalAgreement__DeadlinePassed();
+        }
         if (i_rentalType == RentalType.COLLATERAL) {
             if (i_nftStandard == NftStandard.ERC721) {
                 IERC721(i_nftContract).safeTransferFrom(i_lender, address(this), i_tokenId);
@@ -379,6 +383,27 @@ contract RentalAgreement is
     }
 
     // --- CANCELLATION FUNCTIONS --- //
+    function reclaimFundsOnLenderTimeout()
+        external
+        onlyRenter
+        inState(State.READY_TO_RELEASE)
+        nonReentrant
+    {
+        if (block.timestamp <= s_lenderDepositDeadline) {
+            revert RentalAgreement__LenderStillHasTime();
+        }
+
+        s_rentalState = State.CANCELLED;
+        emit RentalCancelled("Lender failed to deposit NFT before deadline.");
+
+            uint256 refundAmount = getTotalRentalFeeWithCollateral();
+            if (refundAmount > 0) {
+                (bool success, ) = payable(s_renter).call{value: refundAmount}("");
+                if (!success) revert RentalAgreement__PaymentFailed();
+            }
+            return;
+        }
+    }
 
     /*//////////////////////////////////////////////////////////////
                         INTERNAL FUNCTIONS
