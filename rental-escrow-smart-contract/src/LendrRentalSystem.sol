@@ -25,6 +25,7 @@ contract LendrRentalSystem {
     error LendrRentalSystem__RentalDurationMustBeGreaterThanZero();
     error LendrRentalSystem__NotLender();
     error LendrRentalSystem__CollateralMustBeGreaterThanZero();
+    error LendrRentalSystem__WithdrawFailed();
 
     /*//////////////////////////////////////////////////////////////
                             STATE VARIABLES
@@ -45,6 +46,7 @@ contract LendrRentalSystem {
         uint256 tokenId
     );
     event FeeUpdated(uint256 newFeePercent);
+    event Withdrawn(address indexed recipient, uint256 amount);
 
     /*//////////////////////////////////////////////////////////////
                               MODIFIERS
@@ -95,8 +97,10 @@ contract LendrRentalSystem {
      * @dev This function is only callable by the deployer.
      */
     function withdraw() external onlyDeployer {
-        (bool success, ) = payable(i_deployer).call{value: address(this).balance}("");
-        require(success, "Failed to withdraw fees");
+        uint256 amount = address(this).balance;
+        (bool success, ) = payable(i_deployer).call{value: amount}("");
+        if (!success) revert LendrRentalSystem__WithdrawFailed();
+        emit Withdrawn(i_deployer, amount);
     }
 
     /**
