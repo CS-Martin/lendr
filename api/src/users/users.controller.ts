@@ -28,7 +28,7 @@ export class UsersController {
     })
     @ApiResponse({
         status: 200,
-        description: 'Rental posts found successfully',
+        description: 'Users found successfully',
     })
     findAll() {
         return this.usersService.findAll();
@@ -40,7 +40,7 @@ export class UsersController {
     })
     @ApiResponse({
         status: 200,
-        description: 'Rental post found successfully',
+        description: 'User found successfully',
     })
     findOne(@Param('address') address: string) {
         return this.usersService.findOne(address);
@@ -48,11 +48,11 @@ export class UsersController {
 
     @Patch(':address')
     @ApiOperation({
-        summary: 'Find a specific user',
+        summary: 'Update a specific user',
     })
     @ApiResponse({
         status: 200,
-        description: 'Rental post updated successfully',
+        description: 'User updated successfully',
     })
     update(
         @Param('address') address: string,
