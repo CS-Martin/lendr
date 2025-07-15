@@ -45,6 +45,7 @@ contract RentalAgreement is
     error RentalAgreement__InvalidDealDuration();
     error RentalAgreement__InvalidStateForDefault();
     error RentalAgreement__PaymentFailed();
+    error RentalAgreement__DeadlinePassed();
 
     /*//////////////////////////////////////////////////////////////
                                 EVENTS
@@ -77,7 +78,7 @@ contract RentalAgreement is
     //////////////////////////////////////////////////////////////*/
     enum State {
         LISTED, // Waiting for a renter
-        READY_TO_RELEASE, // NFT is in escrow, renter can claim it
+        READY_TO_RELEASE, // NFT will be sent to escrow, then renter can claim it
         ACTIVE_RENTAL, // Renter possesses the NFT
         ACTIVE_DELEGATION, // Renter has usage rights
         COMPLETED, // Rental finished successfully
@@ -325,9 +326,33 @@ contract RentalAgreement is
     }
 
     // --- LENDER-FACING FUNCTIONS --- //
+    /**
+     * @notice Lender deposits the NFT to escrow start the rental process.
+     * @dev For collateral rentals, this makes the NFT available for the renter to claim.
+     * Before calling, the lender MUST approve this contract to transfer the NFT.
+     * For ERC721, call `approve(address(this), tokenId)` on the NFT contract.
+     * For ERC1155, call `setApprovalForAll(address(this), true)` on the NFT contract.
+     */
+    function depositNFTByLender()
+        external
+        onlyLender
+        inState(State.READY_TO_RELEASE)
+        nonReentrant
+    {
+        if (i_rentalType == RentalType.COLLATERAL) {
+            if (i_nftStandard == NftStandard.ERC721) {
+                IERC721(i_nftContract).safeTransferFrom(i_lender, address(this), i_tokenId);
+            } else if (i_nftStandard == NftStandard.ERC1155) {
+                IERC1155(i_nftContract).safeTransferFrom(i_lender, address(this), i_tokenId, 1, "");
+            } else {
+                revert RentalAgreement__InvalidNftStandardForRentalType();
+            }
+            emit NftDepositedByLender(i_nftContract, i_tokenId);
+        } 
+    }
 
     /**
-     * @notice (Collateral Only) Lender calls this to claim collateral if renter defaults.
+     * @notice Lender calls this to claim collateral if renter defaults.
      */
     function claimCollateral()
         external
