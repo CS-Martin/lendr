@@ -36,6 +36,7 @@ contract RentalAgreement is ERC721Holder, ERC1155Holder {
     error RentalAgreement__InvalidNftStandardForRentalType();
     error RentalAgreement__RentalNotEnded();
     error RentalAgreement__InvalidDealDuration();
+    error RentalAgreement__InvalidStateForDefault();
 
     /*//////////////////////////////////////////////////////////////
                                 EVENTS
@@ -319,17 +320,23 @@ contract RentalAgreement is ERC721Holder, ERC1155Holder {
         external
         onlyLender
         onlyRentalType(RentalType.COLLATERAL)
-        inState(State.ACTIVE_RENTAL)
     {
-        if (block.timestamp < s_returnDeadline) {
-            revert RentalAgreement__RentalNotEnded();
+
+        if (s_rentalState != State.ACTIVE_RENTAL && s_rentalState != State.DEFAULTED) {
+            revert RentalAgreement__InvalidStateForDefault();
         }
 
-        s_rentalState = State.DEFAULTED;
+        if (s_rentalState == State.ACTIVE_RENTAL) {
+            if (block.timestamp < s_returnDeadline) {
+                revert RentalAgreement__RentalNotEnded();
+            }
+
+            s_rentalState = State.DEFAULTED;
+            emit RentalDefaulted();
+        }
 
         _distributePayoutForDefaultedRental();
         emit CollateralClaimed(i_lender, i_collateral);
-        emit RentalDefaulted();
     }
 
     // --- CANCELLATION FUNCTIONS --- //
