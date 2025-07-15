@@ -151,6 +151,9 @@ contract LendrRentalSystem {
         if (uint8(_nftStandard) >= uint8(RentalAgreement.NftStandard._MAX)) {
             revert LendrRentalSystem__InvalidNftStandard();
         }
+        if (uint8(_dealDuration) >= uint8(RentalAgreement.DealDuration._MAX)) {
+            revert LendrRentalSystem__InvalidDealDuration();
+        }
 
         s_totalRentals++;
         uint256 rentalId = s_totalRentals;
