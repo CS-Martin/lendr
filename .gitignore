@@ -1,1 +1,4 @@
 .env
+
+# Foundry dependencies
+rental-escrow-smart-contract/lib/

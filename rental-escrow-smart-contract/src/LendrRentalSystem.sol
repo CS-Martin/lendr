@@ -21,10 +21,11 @@ contract LendrRentalSystem {
     error LendrRentalSystem__FeeMustBeGreaterThanZero();
     error LendrRentalSystem__InvalidRentalType();
     error LendrRentalSystem__InvalidNftStandard();
-    error LendrRentalSystem__InvalidDepositDeadline();
+    error LendrRentalSystem__InvalidDealDuration();
     error LendrRentalSystem__RentalDurationMustBeGreaterThanZero();
     error LendrRentalSystem__NotLender();
     error LendrRentalSystem__CollateralMustBeGreaterThanZero();
+    error LendrRentalSystem__WithdrawFailed();
 
     /*//////////////////////////////////////////////////////////////
                             STATE VARIABLES
@@ -45,6 +46,7 @@ contract LendrRentalSystem {
         uint256 tokenId
     );
     event FeeUpdated(uint256 newFeePercent);
+    event Withdrawn(address indexed recipient, uint256 amount);
 
     /*//////////////////////////////////////////////////////////////
                               MODIFIERS
@@ -75,6 +77,12 @@ contract LendrRentalSystem {
                         EXTERNAL FUNCTIONS
     //////////////////////////////////////////////////////////////*/
     /**
+     * @notice Allows the contract to receive Ether.
+     * @dev This is necessary for rental agreements to forward fees to this contract.
+     */
+    receive() external payable {}
+
+    /**
      * @notice Sets the platform fee in basis points.
      * @dev 500 bps = 5%
      * @param newFeeBps The new fee in basis points.
@@ -82,6 +90,17 @@ contract LendrRentalSystem {
     function setFeeBps(uint256 newFeeBps) external onlyDeployer {
         s_feeBps = newFeeBps;
         emit FeeUpdated(newFeeBps);
+    }
+
+    /**
+     * @notice Withdraws the fees from the contract.
+     * @dev This function is only callable by the deployer.
+     */
+    function withdraw() external onlyDeployer {
+        uint256 amount = address(this).balance;
+        (bool success, ) = payable(i_deployer).call{value: amount}("");
+        if (!success) revert LendrRentalSystem__WithdrawFailed();
+        emit Withdrawn(i_deployer, amount);
     }
 
     /**
@@ -94,7 +113,7 @@ contract LendrRentalSystem {
      * @param _rentalDurationInHours The total duration of the rental in hours.
      * @param _rentalType The type of rental. See {RentalAgreement.RentalType}.
      * @param _nftStandard The NFT standard of the token. See {RentalAgreement.NftStandard}.
-     * @param _depositDeadline The deadline for the lender to deposit the NFT. See {RentalAgreement.NFTDepositDuration}.
+     * @param _dealDuration The deadline for the lender to deposit the NFT. See {RentalAgreement.DealDuration}.
      * @return The address of the newly created rental agreement contract.
      */
     function createRentalAgreement(
@@ -106,7 +125,7 @@ contract LendrRentalSystem {
         uint256 _rentalDurationInHours,
         RentalAgreement.RentalType _rentalType,
         RentalAgreement.NftStandard _nftStandard,
-        RentalAgreement.NFTDepositDuration _depositDeadline
+        RentalAgreement.DealDuration _dealDuration
     ) external returns (address) {
         if (msg.sender != _lender) {
             revert LendrRentalSystem__NotLender();
@@ -132,8 +151,8 @@ contract LendrRentalSystem {
         if (uint8(_nftStandard) >= uint8(RentalAgreement.NftStandard._MAX)) {
             revert LendrRentalSystem__InvalidNftStandard();
         }
-        if (uint8(_depositDeadline) >= uint8(RentalAgreement.NFTDepositDuration._MAX)) {
-            revert LendrRentalSystem__InvalidDepositDeadline();
+        if (uint8(_dealDuration) >= uint8(RentalAgreement.DealDuration._MAX)) {
+            revert LendrRentalSystem__InvalidDealDuration();
         }
 
         s_totalRentals++;
@@ -148,7 +167,7 @@ contract LendrRentalSystem {
             _rentalDurationInHours,
             _rentalType,
             _nftStandard,
-            _depositDeadline
+            _dealDuration
         );
         
         s_rentalAgreementById[rentalId] = address(rentalAgreement);
