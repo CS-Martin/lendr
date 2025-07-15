@@ -5,6 +5,7 @@ import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
 import {IERC1155} from '@openzeppelin/contracts/token/ERC1155/IERC1155.sol';
 import {ERC721Holder} from '@openzeppelin/contracts/token/ERC721/utils/ERC721Holder.sol';
 import {ERC1155Holder} from '@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol';
+import {ReentrancyGuard} from '@openzeppelin/contracts/utils/ReentrancyGuard.sol';
 import {TimeConverter} from './utils/TimeConverter.sol';
 import {FeeCalculator} from './utils/ComputePercentage.sol';
 import {LendrRentalSystem} from './LendrRentalSystem.sol';
@@ -19,7 +20,11 @@ interface IERC4907 {
  * This contract handles two rental models: collateral-based and delegation-based.
  * Supports both ERC721, ERC1155, and ERC4907 NFTs.
  */
-contract RentalAgreement is ERC721Holder, ERC1155Holder {
+contract RentalAgreement is
+    ERC721Holder,
+    ERC1155Holder,
+    ReentrancyGuard
+{
     /*//////////////////////////////////////////////////////////////
                                 ERRORS
     //////////////////////////////////////////////////////////////*/
@@ -297,6 +302,7 @@ contract RentalAgreement is ERC721Holder, ERC1155Holder {
         onlyRenter
         onlyRentalType(RentalType.COLLATERAL)
         inState(State.ACTIVE_RENTAL)
+        nonReentrant
     {
         if (block.timestamp > s_returnDeadline) {
             s_rentalState = State.DEFAULTED;
@@ -327,6 +333,7 @@ contract RentalAgreement is ERC721Holder, ERC1155Holder {
         external
         onlyLender
         onlyRentalType(RentalType.COLLATERAL)
+        nonReentrant
     {
 
         if (s_rentalState != State.ACTIVE_RENTAL && s_rentalState != State.DEFAULTED) {
