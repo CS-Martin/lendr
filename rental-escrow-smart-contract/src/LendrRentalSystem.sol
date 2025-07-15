@@ -2,7 +2,6 @@
 pragma solidity ^0.8.20;
 
 import {RentalAgreement} from './RentalAgreement.sol';
-import {FeeCalculator} from './utils/ComputePercentage.sol';
 
 /**
  * @title Rental System
