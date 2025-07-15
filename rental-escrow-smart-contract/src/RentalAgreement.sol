@@ -68,7 +68,6 @@ contract RentalAgreement is ERC721Holder, ERC1155Holder {
     //////////////////////////////////////////////////////////////*/
     enum State {
         LISTED, // Waiting for a renter
-        PENDING, // Renter has paid, waiting for lender to deposit the NFT
         READY_TO_RELEASE, // NFT is in escrow, renter can claim it
         ACTIVE_RENTAL, // Renter possesses the NFT
         ACTIVE_DELEGATION, // Renter has usage rights
@@ -359,7 +358,7 @@ contract RentalAgreement is ERC721Holder, ERC1155Holder {
 
         s_lenderDepositDeadline = block.timestamp + _getDurationInSeconds(i_DealDuration);
 
-        s_rentalState = State.PENDING;
+        s_rentalState = State.READY_TO_RELEASE;
 
         emit RentalInitiated(s_renter);
     }
