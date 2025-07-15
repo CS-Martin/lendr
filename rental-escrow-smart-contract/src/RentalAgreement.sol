@@ -34,6 +34,8 @@ contract RentalAgreement is ERC721Holder, ERC1155Holder {
     error RentalAgreement__InvalidUser(address expected, address actual);
     error RentalAgreement__NftNotInEscrow();
     error RentalAgreement__InvalidNftStandardForRentalType();
+    error RentalAgreement__RentalNotEnded();
+    error RentalAgreement__InvalidDealDuration();
 
     /*//////////////////////////////////////////////////////////////
                                 EVENTS
@@ -44,7 +46,11 @@ contract RentalAgreement is ERC721Holder, ERC1155Holder {
         uint256 indexed tokenId
     );
     event NftReleasedToRenter();
-    event NftReturnedByRenter();
+    event NftReturnedByRenter(
+        address indexed renter,
+        address indexed lender,
+        uint256 indexed tokenId
+    );
     event RentalStarted(uint256 endTime);
     event RentalCompleted();
     event RentalDefaulted();
@@ -84,7 +90,9 @@ contract RentalAgreement is ERC721Holder, ERC1155Holder {
         _MAX
     }
 
-    enum NFTDepositDuration {
+    enum DealDuration {
+        SIX_HOURS,
+        TWELVE_HOURS,
         ONE_DAY,
         THREE_DAYS,
         ONE_WEEK,
@@ -102,11 +110,12 @@ contract RentalAgreement is ERC721Holder, ERC1155Holder {
     uint256 public immutable i_rentalDurationInHours;
     RentalType public immutable i_rentalType;
     NftStandard public immutable i_nftStandard;
-    NFTDepositDuration public immutable i_NFTDepositDuration;
+    DealDuration public immutable i_DealDuration;
     address public s_renter;
     State public s_rentalState;
     uint256 public s_rentalEndTime;
     uint256 public s_lenderDepositDeadline;
+    uint256 public s_returnDeadline;
 
     /*//////////////////////////////////////////////////////////////
                              MODIFIERS
@@ -171,7 +180,7 @@ contract RentalAgreement is ERC721Holder, ERC1155Holder {
         uint256 _rentalDurationInHours,
         RentalType _rentalType,
         NftStandard _nftStandard,
-        NFTDepositDuration _depositDeadline
+        DealDuration _depositDeadline
     ) {
         if (_rentalDurationInHours == 0) {
             revert RentalAgreement__DurationCannotBeZero();
@@ -185,6 +194,9 @@ contract RentalAgreement is ERC721Holder, ERC1155Holder {
         ) {
             revert RentalAgreement__InvalidNftStandardForRentalType();
         }
+        if (uint256(_depositDeadline) >= uint256(DealDuration._MAX)) {
+            revert RentalAgreement__InvalidDealDuration();
+        }
         i_lender = _lender;
         i_nftContract = _nftContract;
         i_tokenId = _tokenId;
@@ -193,7 +205,7 @@ contract RentalAgreement is ERC721Holder, ERC1155Holder {
         i_rentalDurationInHours = _rentalDurationInHours;
         i_rentalType = _rentalType;
         i_nftStandard = _nftStandard;
-        i_NFTDepositDuration = _depositDeadline;
+        i_DealDuration = _depositDeadline;
         s_rentalState = State.LISTED;
     }
 
@@ -254,9 +266,9 @@ contract RentalAgreement is ERC721Holder, ERC1155Holder {
             revert RentalAgreement__InvalidNftStandardForRentalType();
         }
 
-        s_rentalEndTime = block.timestamp + TimeConverter.hoursToSeconds(i_rentalDurationInHours);
-
         s_rentalState = State.ACTIVE_RENTAL;
+        s_rentalEndTime = block.timestamp + TimeConverter.hoursToSeconds(i_rentalDurationInHours);
+        s_returnDeadline = s_rentalEndTime + _getDurationInSeconds(i_DealDuration);
 
         if (i_nftStandard == NftStandard.ERC721) {
             IERC721(i_nftContract).safeTransferFrom(address(this), s_renter, i_tokenId);
@@ -268,21 +280,61 @@ contract RentalAgreement is ERC721Holder, ERC1155Holder {
         emit RentalStarted(s_rentalEndTime);
     }
 
+    /**
+     * @notice Renter calls this to return the NFT to the lender.
+     * @dev Only available for collateral-based rentals.
+     * @dev Before calling this, the renter MUST approve this contract to transfer the NFT.
+     * For ERC721, call `approve(address(this), tokenId)` on the NFT contract.
+     * For ERC1155, call `setApprovalForAll(address(this), true)` on the NFT contract.
+     */
+    function returnNFTToLender()
+        external
+        onlyRenter
+        onlyRentalType(RentalType.COLLATERAL)
+        inState(State.ACTIVE_RENTAL)
+    {
+
+        if (block.timestamp > s_returnDeadline) {
+            s_rentalState = State.DEFAULTED;
+            _distributePayoutForDefaultedRental();
+            emit RentalDefaulted();
+            return;
+        }
+
+        s_rentalState = State.COMPLETED;
+
+        if (i_nftStandard == NftStandard.ERC721) {
+            IERC721(i_nftContract).safeTransferFrom(s_renter, i_lender, i_tokenId);
+        } else if (i_nftStandard == NftStandard.ERC1155) {
+            IERC1155(i_nftContract).safeTransferFrom(s_renter, i_lender, i_tokenId, 1, "");
+        }
+
+        _distributePayouts();
+
+        emit NftReturnedByRenter(s_renter, i_lender, i_tokenId);
+        emit RentalCompleted();
+    }
+
     // --- LENDER-FACING FUNCTIONS --- //
 
     /**
      * @notice (Collateral Only) Lender calls this to claim collateral if renter defaults.
      */
-    function claimCollateral() 
-        external 
-        onlyLender 
+    function claimCollateral()
+        external
+        onlyLender
         onlyRentalType(RentalType.COLLATERAL)
         inState(State.ACTIVE_RENTAL)
     {
-        // 3. Check that block.timestamp > rentalEndTime.
-        // 4. Change state to DEFAULTED.
-        // 5. Call internal _distributePayouts() function.
-        // 6. Emit CollateralClaimed and RentalDefaulted.
+        if (block.timestamp < s_returnDeadline) {
+            revert RentalAgreement__RentalNotEnded();
+        }
+
+        s_rentalState = State.DEFAULTED;
+
+        _distributePayoutForDefaultedRental();
+        emit CollateralClaimed(i_lender, i_collateral);
+        emit RentalDefaulted();
     }
 
     // --- CANCELLATION FUNCTIONS --- //
@@ -305,21 +357,67 @@ contract RentalAgreement is ERC721Holder, ERC1155Holder {
 
         s_renter = msg.sender;
 
-        if (i_NFTDepositDuration == NFTDepositDuration.ONE_DAY) {
-            s_lenderDepositDeadline = block.timestamp + 1 days;
-        } else if (
-            i_NFTDepositDuration == NFTDepositDuration.THREE_DAYS
-        ) {
-            s_lenderDepositDeadline = block.timestamp + 3 days;
-        } else {
-            s_lenderDepositDeadline = block.timestamp + 1 weeks;
-        }
+        s_lenderDepositDeadline = block.timestamp + _getDurationInSeconds(i_DealDuration);
 
         s_rentalState = State.PENDING;
 
         emit RentalInitiated(s_renter);
     }
 
+    /**
+     * @dev Internal function to handle the distribution of all funds.
+     */
+    function _distributePayoutForDefaultedRental() private {
+        // Logic to calculate platform fee from rentalFee.
+        // Based on the final state (COMPLETED, DEFAULTED, etc.), transfer:
+        // - rental fee (minus platform fee) to lender.
+        // - platform fee to platform owner/treasury.
+        // - collateral back to renter (if COMPLETED) or to lender (if DEFAULTED).
+        // Emit PayoutsDistributed.
+    }
+
+    /**
+     * @dev Internal function to handle the distribution of all funds.
+     */
+    function _distributePayouts() private {
+        // Logic to calculate platform fee from rentalFee.
+        // Based on the final state (COMPLETED, DEFAULTED, etc.), transfer:
+        // - rental fee (minus platform fee) to lender.
+        // - platform fee to platform owner/treasury.
+        // - collateral back to renter (if COMPLETED) or to lender (if DEFAULTED).
+        // Emit PayoutsDistributed.
+    }
+
+    /*//////////////////////////////////////////////////////////////
+                        PURE FUNCTIONS
+    //////////////////////////////////////////////////////////////*/
+    /**
+     * @dev Converts DealDuration enum to a time value in seconds.
+     * @param _duration The DealDuration enum member.
+     * @return The duration in seconds.
+     */
+    function _getDurationInSeconds(DealDuration _duration)
+        private
+        pure
+        returns (uint256)
+    {
+        if (_duration == DealDuration.SIX_HOURS) {
+            return 6 hours;
+        }
+        if (_duration == DealDuration.TWELVE_HOURS) {
+            return 12 hours;
+        }
+        if (_duration == DealDuration.ONE_DAY) {
+            return 1 days;
+        }
+        if (_duration == DealDuration.THREE_DAYS) {
+            return 3 days;
+        }
+        if (_duration == DealDuration.ONE_WEEK) {
+            return 1 weeks;
+        }
+        revert RentalAgreement__InvalidDealDuration();
+    }
     /*//////////////////////////////////////////////////////////////
                         GETTER FUNCTIONS
     //////////////////////////////////////////////////////////////*/

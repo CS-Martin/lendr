@@ -94,7 +94,7 @@ contract LendrRentalSystem {
      * @param _rentalDurationInHours The total duration of the rental in hours.
      * @param _rentalType The type of rental. See {RentalAgreement.RentalType}.
      * @param _nftStandard The NFT standard of the token. See {RentalAgreement.NftStandard}.
-     * @param _depositDeadline The deadline for the lender to deposit the NFT. See {RentalAgreement.NFTDepositDuration}.
+     * @param _depositDeadline The deadline for the lender to deposit the NFT. See {RentalAgreement.DealDuration}.
      * @return The address of the newly created rental agreement contract.
      */
     function createRentalAgreement(
@@ -106,7 +106,7 @@ contract LendrRentalSystem {
         uint256 _rentalDurationInHours,
         RentalAgreement.RentalType _rentalType,
         RentalAgreement.NftStandard _nftStandard,
-        RentalAgreement.NFTDepositDuration _depositDeadline
+        RentalAgreement.DealDuration _depositDeadline
     ) external returns (address) {
         if (msg.sender != _lender) {
             revert LendrRentalSystem__NotLender();
@@ -132,7 +132,7 @@ contract LendrRentalSystem {
         if (uint8(_nftStandard) >= uint8(RentalAgreement.NftStandard._MAX)) {
             revert LendrRentalSystem__InvalidNftStandard();
         }
-        if (uint8(_depositDeadline) >= uint8(RentalAgreement.NFTDepositDuration._MAX)) {
+        if (uint8(_depositDeadline) >= uint8(RentalAgreement.DealDuration._MAX)) {
             revert LendrRentalSystem__InvalidDepositDeadline();
         }
 
