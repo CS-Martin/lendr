@@ -75,6 +75,12 @@ contract LendrRentalSystem {
                         EXTERNAL FUNCTIONS
     //////////////////////////////////////////////////////////////*/
     /**
+     * @notice Allows the contract to receive Ether.
+     * @dev This is necessary for rental agreements to forward fees to this contract.
+     */
+    receive() external payable {}
+
+    /**
      * @notice Sets the platform fee in basis points.
      * @dev 500 bps = 5%
      * @param newFeeBps The new fee in basis points.
@@ -82,6 +88,15 @@ contract LendrRentalSystem {
     function setFeeBps(uint256 newFeeBps) external onlyDeployer {
         s_feeBps = newFeeBps;
         emit FeeUpdated(newFeeBps);
+    }
+
+    /**
+     * @notice Withdraws the fees from the contract.
+     * @dev This function is only callable by the deployer.
+     */
+    function withdraw() external onlyDeployer {
+        (bool success, ) = payable(i_deployer).call{value: address(this).balance}("");
+        require(success, "Failed to withdraw fees");
     }
 
     /**
@@ -132,9 +147,6 @@ contract LendrRentalSystem {
         if (uint8(_nftStandard) >= uint8(RentalAgreement.NftStandard._MAX)) {
             revert LendrRentalSystem__InvalidNftStandard();
         }
-        if (uint8(_dealDuration) >= uint8(RentalAgreement.DealDuration._MAX)) {
-            revert LendrRentalSystem__InvalidDealDuration();
-        }
 
         s_totalRentals++;
         uint256 rentalId = s_totalRentals;
@@ -149,8 +161,7 @@ contract LendrRentalSystem {
             _rentalType,
             _nftStandard,
             _dealDuration,
-            i_deployer,
-            s_feeBps
+            address(this)
         );
         
         s_rentalAgreementById[rentalId] = address(rentalAgreement);
