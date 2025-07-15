@@ -351,9 +351,7 @@ contract RentalAgreement is ERC721Holder, ERC1155Holder {
         }
 
         s_renter = msg.sender;
-
         s_lenderDepositDeadline = block.timestamp + getCustomDuration(i_DealDuration);
-
         s_rentalState = State.READY_TO_RELEASE;
 
         emit RentalInitiated(s_renter);
