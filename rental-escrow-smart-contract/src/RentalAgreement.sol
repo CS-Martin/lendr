@@ -109,7 +109,7 @@ contract RentalAgreement is ERC721Holder, ERC1155Holder {
     uint256 public immutable i_rentalDurationInHours;
     RentalType public immutable i_rentalType;
     NftStandard public immutable i_nftStandard;
-    DealDuration public immutable i_DealDuration;
+    DealDuration public immutable i_dealDuration;
     address public s_renter;
     State public s_rentalState;
     uint256 public s_rentalEndTime;
@@ -204,7 +204,7 @@ contract RentalAgreement is ERC721Holder, ERC1155Holder {
         i_rentalDurationInHours = _rentalDurationInHours;
         i_rentalType = _rentalType;
         i_nftStandard = _nftStandard;
-        i_DealDuration = _depositDeadline;
+        i_dealDuration = _depositDeadline;
         s_rentalState = State.LISTED;
     }
 
@@ -267,7 +267,7 @@ contract RentalAgreement is ERC721Holder, ERC1155Holder {
 
         s_rentalState = State.ACTIVE_RENTAL;
         s_rentalEndTime = block.timestamp + TimeConverter.hoursToSeconds(i_rentalDurationInHours);
-        s_returnDeadline = s_rentalEndTime + getCustomDuration(i_DealDuration);
+        s_returnDeadline = s_rentalEndTime + getCustomDuration(i_dealDuration);
 
         if (i_nftStandard == NftStandard.ERC721) {
             IERC721(i_nftContract).safeTransferFrom(address(this), s_renter, i_tokenId);
@@ -351,7 +351,7 @@ contract RentalAgreement is ERC721Holder, ERC1155Holder {
         }
 
         s_renter = msg.sender;
-        s_lenderDepositDeadline = block.timestamp + getCustomDuration(i_DealDuration);
+        s_lenderDepositDeadline = block.timestamp + getCustomDuration(i_dealDuration);
         s_rentalState = State.READY_TO_RELEASE;
 
         emit RentalInitiated(s_renter);
