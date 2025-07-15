@@ -396,13 +396,12 @@ contract RentalAgreement is
         s_rentalState = State.CANCELLED;
         emit RentalCancelled("Lender failed to deposit NFT before deadline.");
 
-            uint256 refundAmount = getTotalRentalFeeWithCollateral();
-            if (refundAmount > 0) {
-                (bool success, ) = payable(s_renter).call{value: refundAmount}("");
-                if (!success) revert RentalAgreement__PaymentFailed();
-            }
-            return;
+        uint256 refundAmount = getTotalRentalFeeWithCollateral();
+        if (refundAmount > 0) {
+            (bool success, ) = payable(s_renter).call{value: refundAmount}("");
+            if (!success) revert RentalAgreement__PaymentFailed();
         }
+        return;
     }
 
     /*//////////////////////////////////////////////////////////////
