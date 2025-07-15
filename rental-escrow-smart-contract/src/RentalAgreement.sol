@@ -114,7 +114,6 @@ contract RentalAgreement is ERC721Holder, ERC1155Holder {
     RentalType public immutable i_rentalType;
     NftStandard public immutable i_nftStandard;
     DealDuration public immutable i_dealDuration;
-    address public immutable i_platformAddress;
     LendrRentalSystem public immutable i_factoryContract;
     address public s_renter;
     State public s_rentalState;
@@ -185,8 +184,7 @@ contract RentalAgreement is ERC721Holder, ERC1155Holder {
         uint256 _rentalDurationInHours,
         RentalType _rentalType,
         NftStandard _nftStandard,
-        DealDuration _dealDuration,
-        address _platformAddress
+        DealDuration _dealDuration
     ) {
         if (_rentalDurationInHours == 0) {
             revert RentalAgreement__DurationCannotBeZero();
@@ -212,7 +210,6 @@ contract RentalAgreement is ERC721Holder, ERC1155Holder {
         i_rentalType = _rentalType;
         i_nftStandard = _nftStandard;
         i_dealDuration = _dealDuration;
-        i_platformAddress = _platformAddress;
         i_factoryContract = LendrRentalSystem(payable(msg.sender));
         s_rentalState = State.LISTED;
     }
@@ -402,11 +399,16 @@ contract RentalAgreement is ERC721Holder, ERC1155Holder {
             if (!success) revert RentalAgreement__PaymentFailed();
         }
         if (platformFee > 0) {
-            (bool success, ) = payable(i_platformAddress).call{value: platformFee}("");
+            (bool success, ) = payable(address(i_factoryContract)).call{value: platformFee}("");
             if (!success) revert RentalAgreement__PaymentFailed();
         }
 
-        emit PayoutsDistributed(i_lender, i_platformAddress, lenderPayout, platformFee);
+        emit PayoutsDistributed(
+            i_lender,
+            address(i_factoryContract),
+            lenderPayout,
+            platformFee
+        );
     }
 
     /*//////////////////////////////////////////////////////////////

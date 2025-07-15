@@ -160,8 +160,7 @@ contract LendrRentalSystem {
             _rentalDurationInHours,
             _rentalType,
             _nftStandard,
-            _dealDuration,
-            address(this)
+            _dealDuration
         );
         
         s_rentalAgreementById[rentalId] = address(rentalAgreement);
