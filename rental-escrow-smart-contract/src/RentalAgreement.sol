@@ -292,10 +292,8 @@ contract RentalAgreement is ERC721Holder, ERC1155Holder {
         onlyRentalType(RentalType.COLLATERAL)
         inState(State.ACTIVE_RENTAL)
     {
-
         if (block.timestamp > s_returnDeadline) {
             s_rentalState = State.DEFAULTED;
-            _distributePayoutForDefaultedRental();
             emit RentalDefaulted();
             return;
         }
@@ -307,8 +305,6 @@ contract RentalAgreement is ERC721Holder, ERC1155Holder {
         } else if (i_nftStandard == NftStandard.ERC1155) {
             IERC1155(i_nftContract).safeTransferFrom(s_renter, i_lender, i_tokenId, 1, "");
         }
-
-        _distributePayouts();
 
         emit NftReturnedByRenter(s_renter, i_lender, i_tokenId);
         emit RentalCompleted();
