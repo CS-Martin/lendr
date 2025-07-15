@@ -7,6 +7,7 @@ import {ERC721Holder} from '@openzeppelin/contracts/token/ERC721/utils/ERC721Hol
 import {ERC1155Holder} from '@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol';
 import {TimeConverter} from './utils/TimeConverter.sol';
 import {FeeCalculator} from './utils/ComputePercentage.sol';
+import {LendrRentalSystem} from './LendrRentalSystem.sol';
 
 interface IERC4907 {
     function setUser(uint256 tokenId, address user, uint64 expires) external;
@@ -113,7 +114,7 @@ contract RentalAgreement is ERC721Holder, ERC1155Holder {
     NftStandard public immutable i_nftStandard;
     DealDuration public immutable i_dealDuration;
     address public immutable i_platformAddress;
-    uint256 public immutable i_platformFeeBps;
+    LendrRentalSystem public immutable i_factoryContract;
     address public s_renter;
     State public s_rentalState;
     uint256 public s_rentalEndTime;
@@ -184,8 +185,7 @@ contract RentalAgreement is ERC721Holder, ERC1155Holder {
         RentalType _rentalType,
         NftStandard _nftStandard,
         DealDuration _dealDuration,
-        address _platformAddress,
-        uint256 _platformFeeBps
+        address _platformAddress
     ) {
         if (_rentalDurationInHours == 0) {
             revert RentalAgreement__DurationCannotBeZero();
@@ -212,7 +212,7 @@ contract RentalAgreement is ERC721Holder, ERC1155Holder {
         i_nftStandard = _nftStandard;
         i_dealDuration = _dealDuration;
         i_platformAddress = _platformAddress;
-        i_platformFeeBps = _platformFeeBps;
+        i_factoryContract = LendrRentalSystem(msg.sender);
         s_rentalState = State.LISTED;
     }
 
@@ -381,7 +381,7 @@ contract RentalAgreement is ERC721Holder, ERC1155Holder {
      */
     function _distributePayouts() private {
         uint256 totalRentalFee = getTotalHourlyFee();
-        uint256 platformFee = FeeCalculator.calculateFee(totalRentalFee, i_platformFeeBps);
+        uint256 platformFee = FeeCalculator.calculateFee(totalRentalFee, i_factoryContract.s_feeBps());
         uint256 lenderPayout = totalRentalFee - platformFee;
 
         if (s_rentalState == State.COMPLETED) {
