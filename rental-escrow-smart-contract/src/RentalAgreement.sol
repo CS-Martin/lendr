@@ -343,16 +343,21 @@ contract RentalAgreement is
         if (block.timestamp > s_lenderDepositDeadline) {
             revert RentalAgreement__DeadlinePassed();
         }
-        if (i_rentalType == RentalType.COLLATERAL) {
-            if (i_nftStandard == NftStandard.ERC721) {
-                IERC721(i_nftContract).safeTransferFrom(i_lender, address(this), i_tokenId);
-            } else if (i_nftStandard == NftStandard.ERC1155) {
-                IERC1155(i_nftContract).safeTransferFrom(i_lender, address(this), i_tokenId, 1, "");
-            } else {
-                revert RentalAgreement__InvalidNftStandardForRentalType();
-            }
-            emit NftDepositedByLender(i_nftContract, i_tokenId);
-        } 
+        if (i_rentalType != RentalType.COLLATERAL) {
+            revert RentalAgreement__WrongRentalType(
+                RentalType.COLLATERAL,
+                i_rentalType
+            );
+        }
+
+        if (i_nftStandard == NftStandard.ERC721) {
+            IERC721(i_nftContract).safeTransferFrom(i_lender, address(this), i_tokenId);
+        } else if (i_nftStandard == NftStandard.ERC1155) {
+            IERC1155(i_nftContract).safeTransferFrom(i_lender, address(this), i_tokenId, 1, "");
+        } else {
+            revert RentalAgreement__InvalidNftStandardForRentalType();
+        }
+        emit NftDepositedByLender(i_nftContract, i_tokenId);
     }
 
     /**
@@ -364,7 +369,6 @@ contract RentalAgreement is
         onlyRentalType(RentalType.COLLATERAL)
         nonReentrant
     {
-
         if (s_rentalState != State.ACTIVE_RENTAL && s_rentalState != State.DEFAULTED) {
             revert RentalAgreement__InvalidStateForDefault();
         }
@@ -401,7 +405,6 @@ contract RentalAgreement is
             (bool success, ) = payable(s_renter).call{value: refundAmount}("");
             if (!success) revert RentalAgreement__PaymentFailed();
         }
-        return;
     }
 
     /*//////////////////////////////////////////////////////////////
