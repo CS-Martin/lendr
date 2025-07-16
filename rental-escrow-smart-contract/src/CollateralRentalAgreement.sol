@@ -15,12 +15,12 @@ interface IERC4907 {
 }
 
 /**
- * @title RentalAgreement
- * @dev Manages the escrow and state for a single NFT rental.
- * This contract handles two rental models: collateral-based and delegation-based.
- * Supports both ERC721, ERC1155, and ERC4907 NFTs.
+ * @title CollateralRentalAgreement
+ * @dev Manages the escrow and state for a single collateral-based NFT rental.
+ * This contract handles collateral-based rentals.
+ * Supports both ERC721 and ERC1155 NFTs.
  */
-contract RentalAgreement is
+contract CollateralRentalAgreement is
     ERC721Holder,
     ERC1155Holder,
     ReentrancyGuard
@@ -30,17 +30,12 @@ contract RentalAgreement is
     //////////////////////////////////////////////////////////////*/
     error RentalAgreement__InvalidState(State expected, State actual);
     error RentalAgreement__InvalidPayment();
-    error RentalAgreement__WrongRentalType(
-        RentalType expected,
-        RentalType actual
-    );
     error RentalAgreement__RenterMustNotBeLender();
     error RentalAgreement__DurationCannotBeZero();
     error RentalAgreement__CollateralCannotBeZeroForCollateralType();
-    error RentalAgreement__InvalidRentalType();
     error RentalAgreement__InvalidUser(address expected, address actual);
     error RentalAgreement__NftNotInEscrow();
-    error RentalAgreement__InvalidNftStandardForRentalType();
+    error RentalAgreement__CollateralRentalDoesNotSupportERC4907();
     error RentalAgreement__RentalNotEnded();
     error RentalAgreement__InvalidDealDuration();
     error RentalAgreement__InvalidStateForDefault();
@@ -81,16 +76,9 @@ contract RentalAgreement is
         LISTED, // Waiting for a renter
         READY_TO_RELEASE, // NFT will be sent to escrow, then renter can claim it
         ACTIVE_RENTAL, // Renter possesses the NFT
-        ACTIVE_DELEGATION, // Renter has usage rights
         COMPLETED, // Rental finished successfully
         DEFAULTED, // Renter failed to return the NFT on time
         CANCELLED // Rental was voided
-    }
-
-    enum RentalType {
-        COLLATERAL,
-        DELEGATION,
-        _MAX
     }
 
     enum NftStandard {
@@ -118,7 +106,6 @@ contract RentalAgreement is
     uint256 public immutable i_hourlyRentalFee;
     uint256 public immutable i_collateral;
     uint256 public immutable i_rentalDurationInHours;
-    RentalType public immutable i_rentalType;
     NftStandard public immutable i_nftStandard;
     DealDuration public immutable i_dealDuration;
     LendrRentalSystem public immutable i_factoryContract;
@@ -134,13 +121,6 @@ contract RentalAgreement is
     modifier renterNotLender() {
         if (msg.sender == i_lender) {
             revert RentalAgreement__RenterMustNotBeLender();
-        }
-        _;
-    }
-
-    modifier onlyRentalType(RentalType _expectedType) {
-        if (i_rentalType != _expectedType) {
-            revert RentalAgreement__WrongRentalType(_expectedType, i_rentalType);
         }
         _;
     }
@@ -178,7 +158,6 @@ contract RentalAgreement is
      * @param _hourlyRentalFee The rental fee per hour, in wei.
      * @param _collateral The collateral amount in wei.
      * @param _rentalDurationInHours The duration of the rental in hours.
-     * @param _rentalType The type of rental (COLLATERAL or DELEGATION).
      * @param _nftStandard The NFT standard (ERC721, ERC1155, or ERC4907).
      * @param _dealDuration The duration for the lender to deposit the NFT.
      */
@@ -189,21 +168,17 @@ contract RentalAgreement is
         uint256 _hourlyRentalFee,
         uint256 _collateral,
         uint256 _rentalDurationInHours,
-        RentalType _rentalType,
         NftStandard _nftStandard,
         DealDuration _dealDuration
     ) {
         if (_rentalDurationInHours == 0) {
             revert RentalAgreement__DurationCannotBeZero();
         }
-        if (_rentalType == RentalType.COLLATERAL && _collateral == 0) {
+        if (_collateral == 0) {
             revert RentalAgreement__CollateralCannotBeZeroForCollateralType();
         }
-        if (
-            _nftStandard == NftStandard.ERC4907 &&
-            _rentalType == RentalType.COLLATERAL
-        ) {
-            revert RentalAgreement__InvalidNftStandardForRentalType();
+        if (_nftStandard == NftStandard.ERC4907) {
+            revert RentalAgreement__CollateralRentalDoesNotSupportERC4907();
         }
         if (uint256(_dealDuration) >= uint256(DealDuration._MAX)) {
             revert RentalAgreement__InvalidDealDuration();
@@ -214,7 +189,6 @@ contract RentalAgreement is
         i_hourlyRentalFee = _hourlyRentalFee;
         i_collateral = _collateral;
         i_rentalDurationInHours = _rentalDurationInHours;
-        i_rentalType = _rentalType;
         i_nftStandard = _nftStandard;
         i_dealDuration = _dealDuration;
         i_factoryContract = LendrRentalSystem(payable(msg.sender));
@@ -231,27 +205,8 @@ contract RentalAgreement is
      * @notice Renter calls this to initiate a collateral-based rental.
      * @dev Renter must send `totalRentalFee` + `collateral`.
      */
-    function initiateCollateralRental()
-        external
-        payable
-        renterNotLender
-        onlyRentalType(RentalType.COLLATERAL)
-    {
+    function initiateRental() external payable renterNotLender {
         uint256 requiredPayment = getTotalRentalFeeWithCollateral();
-        _initiateRental(requiredPayment);
-    }
-
-    /**
-     * @notice Renter calls this to initiate a delegation-based rental.
-     * @dev Renter must send `totalRentalFee`.
-     */
-    function initiateDelegationRental()
-        external
-        payable
-        renterNotLender
-        onlyRentalType(RentalType.DELEGATION)
-    {
-        uint256 requiredPayment = getTotalHourlyFee();
         _initiateRental(requiredPayment);
     }
 
@@ -263,7 +218,6 @@ contract RentalAgreement is
     function releaseNFTToRenter()
         external
         onlyRenter
-        onlyRentalType(RentalType.COLLATERAL)
         inState(State.READY_TO_RELEASE)
     {
         if (i_nftStandard == NftStandard.ERC721) {
@@ -271,21 +225,35 @@ contract RentalAgreement is
                 revert RentalAgreement__NftNotInEscrow();
             }
         } else if (i_nftStandard == NftStandard.ERC1155) {
-            if (IERC1155(i_nftContract).balanceOf(address(this), i_tokenId) != 1) {
+            if (
+                IERC1155(i_nftContract).balanceOf(address(this), i_tokenId) != 1
+            ) {
                 revert RentalAgreement__NftNotInEscrow();
             }
         } else {
-            revert RentalAgreement__InvalidNftStandardForRentalType();
+            revert RentalAgreement__CollateralRentalDoesNotSupportERC4907();
         }
 
         s_rentalState = State.ACTIVE_RENTAL;
-        s_rentalEndTime = block.timestamp + TimeConverter.hoursToSeconds(i_rentalDurationInHours);
+        s_rentalEndTime =
+            block.timestamp +
+            TimeConverter.hoursToSeconds(i_rentalDurationInHours);
         s_returnDeadline = s_rentalEndTime + getCustomDuration(i_dealDuration);
 
         if (i_nftStandard == NftStandard.ERC721) {
-            IERC721(i_nftContract).safeTransferFrom(address(this), s_renter, i_tokenId);
+            IERC721(i_nftContract).safeTransferFrom(
+                address(this),
+                s_renter,
+                i_tokenId
+            );
         } else if (i_nftStandard == NftStandard.ERC1155) {
-            IERC1155(i_nftContract).safeTransferFrom(address(this), s_renter, i_tokenId, 1, "");
+            IERC1155(i_nftContract).safeTransferFrom(
+                address(this),
+                s_renter,
+                i_tokenId,
+                1,
+                ""
+            );
         }
 
         emit NftReleasedToRenter();
@@ -302,7 +270,6 @@ contract RentalAgreement is
     function returnNFTToLender()
         external
         onlyRenter
-        onlyRentalType(RentalType.COLLATERAL)
         inState(State.ACTIVE_RENTAL)
         nonReentrant
     {
@@ -343,19 +310,23 @@ contract RentalAgreement is
         if (block.timestamp > s_lenderDepositDeadline) {
             revert RentalAgreement__DeadlinePassed();
         }
-        if (i_rentalType != RentalType.COLLATERAL) {
-            revert RentalAgreement__WrongRentalType(
-                RentalType.COLLATERAL,
-                i_rentalType
-            );
-        }
 
         if (i_nftStandard == NftStandard.ERC721) {
-            IERC721(i_nftContract).safeTransferFrom(i_lender, address(this), i_tokenId);
+            IERC721(i_nftContract).safeTransferFrom(
+                i_lender,
+                address(this),
+                i_tokenId
+            );
         } else if (i_nftStandard == NftStandard.ERC1155) {
-            IERC1155(i_nftContract).safeTransferFrom(i_lender, address(this), i_tokenId, 1, "");
+            IERC1155(i_nftContract).safeTransferFrom(
+                i_lender,
+                address(this),
+                i_tokenId,
+                1,
+                ""
+            );
         } else {
-            revert RentalAgreement__InvalidNftStandardForRentalType();
+            revert RentalAgreement__CollateralRentalDoesNotSupportERC4907();
         }
         emit NftDepositedByLender(i_nftContract, i_tokenId);
     }
@@ -363,13 +334,11 @@ contract RentalAgreement is
     /**
      * @notice Lender calls this to claim collateral if renter defaults.
      */
-    function claimCollateral()
-        external
-        onlyLender
-        onlyRentalType(RentalType.COLLATERAL)
-        nonReentrant
-    {
-        if (s_rentalState != State.ACTIVE_RENTAL && s_rentalState != State.DEFAULTED) {
+    function claimCollateral() external onlyLender nonReentrant {
+        if (
+            s_rentalState != State.ACTIVE_RENTAL &&
+            s_rentalState != State.DEFAULTED
+        ) {
             revert RentalAgreement__InvalidStateForDefault();
         }
 
@@ -448,8 +417,7 @@ contract RentalAgreement is
             }
         } else if (s_rentalState == State.DEFAULTED) {
             if (i_collateral > 0) {
-                (bool success, ) = payable(i_lender).call{value: i_collateral}("");
-                if (!success) revert RentalAgreement__PaymentFailed();
+                lenderPayout += i_collateral;
             }
         }
 
