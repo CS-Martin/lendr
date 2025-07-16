@@ -49,6 +49,10 @@ contract DelegationRentalAgreement is ERC721Holder, ERC1155Holder {
     error RentalAgreement__DurationCannotBeZero();
     error RentalAgreement__InvalidUser(address expected, address actual);
     error RentalAgreement__InvalidDealDuration();
+    error RentalAgreement__PaymentFailed();
+    error RentalAgreement__DelegationDeadlineNotPassed();
+    error RentalAgreement__BreachReportingNotSupported();
+    error RentalAgreement__NoBreachDetected();
 
     /*//////////////////////////////////////////////////////////////
                                 EVENTS
@@ -60,7 +64,7 @@ contract DelegationRentalAgreement is ERC721Holder, ERC1155Holder {
     );
     event RentalStarted(uint256 endTime);
     event RentalCompleted();
-    event RentalCancelled(string reason);
+    event RentalCancelled();
     event PayoutsDistributed(
         address indexed lender,
         address indexed platform,
@@ -158,9 +162,6 @@ contract DelegationRentalAgreement is ERC721Holder, ERC1155Holder {
         if (_rentalDurationInHours == 0) {
             revert RentalAgreement__DurationCannotBeZero();
         }
-        if (_rentalDurationInHours == 0) {
-            revert RentalAgreement__DurationCannotBeZero();
-        }
         if (uint256(_dealDuration) >= uint256(DealDuration._MAX)) {
             revert RentalAgreement__InvalidDealDuration();
         }
@@ -188,13 +189,62 @@ contract DelegationRentalAgreement is ERC721Holder, ERC1155Holder {
         external 
         payable 
         renterNotLender 
-        onlyRenter 
     {
         uint256 requiredPayment = getTotalHourlyFee();
         _initiateRental(requiredPayment);
     }
 
-    function reportBreach() external onlyRenter {}
+    /**
+     * @notice Renter calls this to cancel the rental if the lender fails to delegate in time.
+     * @dev Can only be called after the lender's delegation deadline has passed.
+     * The renter will receive a full refund of the amount they paid.
+     */
+    function cancelDelegationRental()
+        external
+        onlyRenter
+        inState(State.PENDING)
+    {
+        if (block.timestamp <= s_lenderDelegationDeadline) {
+            revert RentalAgreement__DelegationDeadlineNotPassed();
+        }
+
+        uint256 refundAmount = getTotalHourlyFee();
+
+        s_rentalState = State.CANCELLED;
+        emit RentalCancelled();
+
+        (bool success, ) = payable(s_renter).call{value: refundAmount}('');
+        if (!success) {
+            revert RentalAgreement__PaymentFailed();
+        }
+    }
+
+    /**
+     * @notice Renter calls this to cancel the rental if the lender breaches the agreement.
+     * @dev Can only be called during an active delegation.
+     * The renter will receive a full refund of the amount they paid.
+     */
+    function reportBreach()
+        external
+        onlyRenter
+        inState(State.ACTIVE_DELEGATION)
+    {
+        if (i_nftStandard != NftStandard.ERC4907) {
+            revert RentalAgreement__BreachReportingNotSupported();
+        }
+        if (IERC4907(i_nftContract).userOf(i_tokenId) == s_renter) {
+            revert RentalAgreement__NoBreachDetected();
+        }
+
+        uint256 refundAmount = getTotalHourlyFee();
+        s_rentalState = State.CANCELLED;
+        emit RentalCancelled();
+
+        (bool success, ) = payable(s_renter).call{value: refundAmount}('');
+        if (!success) {
+            revert RentalAgreement__PaymentFailed();
+        }
+    }
 
     /////////////// --- LENDER-FACING FUNCTIONS --- ////////////////
 
@@ -203,15 +253,17 @@ contract DelegationRentalAgreement is ERC721Holder, ERC1155Holder {
      * @dev This function's implementation will depend on the NFT standard.
      * For ERC4907, it would call `setUser`. For others, it might be an on-chain approval.
      */
-    function activateDelegation() external onlyLender {
-        if (s_rentalState != State.PENDING) {
-            revert RentalAgreement__InvalidState(State.PENDING, s_rentalState);
-        }
-
-        uint64 delegationExpiry = uint64(block.timestamp + TimeConverter.hoursToSeconds(i_rentalDurationInHours));
+    function activateDelegation() external onlyLender inState(State.PENDING) {
+        uint64 delegationExpiry = uint64(
+            block.timestamp + TimeConverter.hoursToSeconds(i_rentalDurationInHours)
+        );
 
         if (i_nftStandard == NftStandard.ERC4907) {
-            IERC4907(i_nftContract).setUser(i_tokenId, s_renter, delegationExpiry);
+            IERC4907(i_nftContract).setUser(
+                i_tokenId,
+                s_renter,
+                delegationExpiry
+            );
         }
 
         s_rentalState = State.ACTIVE_DELEGATION;
