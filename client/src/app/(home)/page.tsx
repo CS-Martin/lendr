@@ -7,6 +7,7 @@ import { GridBackground } from '@/components/shared/grid-background';
 import { StepsToRentAndList } from './_components/steps-to-rent-and-list';
 import FlashScreen from '@/components/shared/flash-screen';
 import { HeroSection } from './_components/hero-section';
+import { TopUsersCarousel } from './_components/top-users';
 
 export default function Home() {
     const [showFlashScreen, setShowFlashScreen] = useState(true);
@@ -35,6 +36,7 @@ export default function Home() {
                     <HomeFloatingElements />
                     <HeroSection />
                     <StepsToRentAndList />
+                    <TopUsersCarousel />
                 </div>
             </div>
         </main>
