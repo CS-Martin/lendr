@@ -53,7 +53,7 @@ lendr/
 
 - **Backend**: NestJS, Prisma, PostgreSQL
 - **Frontend**: React, Next.js, TypeScript, RainbowKit
-- **Smart Contracts**: Solidity, Hardhat
+- **Smart Contracts**: Solidity, Foundry
 - **Authentication**: SIWE, NextAuth.js
 - **Database**: PostgreSQL
 - **Orchestration**: Docker Compose
