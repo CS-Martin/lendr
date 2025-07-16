@@ -25,6 +25,7 @@ contract LendrRentalSystem {
     error LendrRentalSystem__RentalDurationMustBeGreaterThanZero();
     error LendrRentalSystem__NotLender();
     error LendrRentalSystem__CollateralMustBeGreaterThanZero();
+    error LendrRentalSystem__WithdrawFailed();
 
     /*//////////////////////////////////////////////////////////////
                             STATE VARIABLES
@@ -53,6 +54,7 @@ contract LendrRentalSystem {
         uint256 tokenId
     );
     event FeeUpdated(uint256 newFeePercent);
+    event Withdrawn(address indexed recipient, uint256 amount);
 
     /*//////////////////////////////////////////////////////////////
                               MODIFIERS
@@ -82,6 +84,19 @@ contract LendrRentalSystem {
     /*//////////////////////////////////////////////////////////////
                         EXTERNAL FUNCTIONS
     //////////////////////////////////////////////////////////////*/
+    /**
+     * @notice Allows the contract to receive Ether.
+     * @dev This is necessary for rental agreements to forward fees to this contract.
+     */
+    receive() external payable {}
+
+    function withdraw() external onlyDeployer {
+        uint256 amount = address(this).balance;
+        (bool success, ) = payable(address(this)).call{value: amount}("");
+        if (!success) revert LendrRentalSystem__WithdrawFailed();
+        emit Withdrawn(i_deployer, amount);
+    }
+
     /**
      * @notice Sets the platform fee in basis points.
      * @dev 500 bps = 5%
