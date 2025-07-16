@@ -199,7 +199,7 @@ contract CollateralRentalAgreement is
                         EXTERNAL FUNCTIONS
     //////////////////////////////////////////////////////////////*/
 
-    // --- RENTER-FACING FUNCTIONS --- //
+    /////////////// --- RENTER-FACING FUNCTIONS --- ////////////////
 
     /**
      * @notice Renter calls this to initiate a collateral-based rental.
@@ -235,9 +235,7 @@ contract CollateralRentalAgreement is
         }
 
         s_rentalState = State.ACTIVE_RENTAL;
-        s_rentalEndTime =
-            block.timestamp +
-            TimeConverter.hoursToSeconds(i_rentalDurationInHours);
+        s_rentalEndTime = block.timestamp + TimeConverter.hoursToSeconds(i_rentalDurationInHours);
         s_returnDeadline = s_rentalEndTime + getCustomDuration(i_dealDuration);
 
         if (i_nftStandard == NftStandard.ERC721) {
@@ -293,7 +291,8 @@ contract CollateralRentalAgreement is
         emit RentalCompleted();
     }
 
-    // --- LENDER-FACING FUNCTIONS --- //
+    /////////////// --- LENDER-FACING FUNCTIONS --- ////////////////
+    
     /**
      * @notice Lender deposits the NFT to escrow start the rental process.
      * @dev For collateral rentals, this makes the NFT available for the renter to claim.
