@@ -14,8 +14,8 @@ export const Card3D = ({ children, className = "" }: Card3DInterface) => {
         const rect = e.currentTarget.getBoundingClientRect()
         const centerX = rect.left + rect.width / 2
         const centerY = rect.top + rect.height / 2
-        const rotateXValue = (e.clientY - centerY) / 10
-        const rotateYValue = (centerX - e.clientX) / 10
+        const rotateXValue = (e.clientY - centerY) / 30
+        const rotateYValue = (centerX - e.clientX) / 30
 
         setRotateX(rotateXValue)
         setRotateY(rotateYValue)

@@ -2,14 +2,14 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { HolographicText } from './holographic-text';
+import { HolographicText } from '../../../components/shared/holographic-text';
 import LendrButton from '@/components/shared/lendr-btn';
 import { ArrowRight, Cpu, Database, Globe } from 'lucide-react';
-import { Card3D } from './card-3d';
-import { FloatingElement } from './floating-element';
+import { Card3D } from '../../../components/shared/card-3d';
+import { FloatingElement } from '../../../components/shared/floating-element';
 
 export function HeroSection() {
-   return (
+    return (
         <section className='container mx-auto px-4 py-20 relative mt-20'>
             <motion.div className='text-center max-w-6xl mx-auto relative z-10'>
                 <motion.div
@@ -72,14 +72,14 @@ export function HeroSection() {
                         size='lg'
                         className='p-3 md:p-6.5 w-full'
                         icon={<ArrowRight className='ml-2 w-5 h-5' />}>
-                        Rent now!
+                        Explore Now!
                     </LendrButton>
 
                     <LendrButton
                         size='lg'
                         className='p-3 md:p-6.5 w-full bg-white text-black border-none'
                         variant='outline'>
-                        Explore Marketplace
+                        Rent your first NFT
                     </LendrButton>
                 </motion.div>
 

@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Azeret_Mono } from "next/font/google";
 import "./globals.css";
-import NavBar from "@/components/shared/navbar";
 import dynamic from "next/dynamic";
 import '@rainbow-me/rainbowkit/styles.css';
 
@@ -34,10 +33,8 @@ export default function RootLayout({
         <html lang="en">
             <body className={`${geistSans.variable} ${azeretMono.variable} font-sans`}>
                 <WagmiProvider>
-                    <NavBar />
                     {children}
                 </WagmiProvider>
-                \
             </body>
         </html>
     );

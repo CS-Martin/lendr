@@ -113,7 +113,6 @@ export const TopUsersCarousel = () => {
     const [currentSlide, setCurrentSlide] = useState(0)
     const [isHovered, setIsHovered] = useState(false);
 
-
     const itemsPerView = 5
     const maxSlide = Math.max(0, topLenders.length - itemsPerView)
 
@@ -143,12 +142,12 @@ export const TopUsersCarousel = () => {
             className="mt-32"
         >
             <div className="text-center mb-16">
-                <h2 className="text-5xl font-bold text-white mb-6">
+                <h2 className="text-3xl md:text-5xl font-bold text-white mb-6">
                     <span className="bg-gradient-to-r from-lendr-400 to-cyan-400 bg-clip-text text-transparent">
                         All Time Top Users
                     </span>{" "}
                 </h2>
-                <p className="text-slate-400 text-xl max-w-3xl mx-auto">
+                <p className="text-slate-400 text-[16px] md:text-lg md:max-w-3xl mx-auto">
                     Discover our most successful lenders based on completed transactions, reputation scores, and total earnings
                     in the Lendr ecosystem.
                 </p>
@@ -231,14 +230,14 @@ export const TopUsersCarousel = () => {
                                             {/* Rank number */}
                                             <motion.div
                                                 className={`absolute top-0 right-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold shadow-lg
-        ${lender.rank === 1
+                                                    ${lender.rank === 1
                                                         ? " text-slate-950 bg-lendr-"
                                                         : lender.rank === 2
                                                             ? "text-slate-950"
                                                             : lender.rank === 3
                                                                 ? "text-slate-950"
                                                                 : "bg-gradient-to-r from-lendr-400 to-cyan-400 text-slate-950"}
-    `}
+                                                    `}
                                                 animate={{
                                                     boxShadow: [
                                                         "0 0 10px rgba(220, 243, 71, 0.3)",

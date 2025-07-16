@@ -2,14 +2,16 @@
 
 import { motion } from 'framer-motion';
 import { useState } from 'react';
-import { FloatingElement } from './_components/floating-element';
+import { FloatingElement } from '../../components/shared/floating-element';
 import { GridBackground } from '@/components/shared/grid-background';
 import { StepsToRentAndList } from './_components/steps-to-rent-and-list';
 import FlashScreen from '@/components/shared/flash-screen';
 import { HeroSection } from './_components/hero-section';
 import { TopUsersCarousel } from './_components/top-users';
+import { FeaturedRentalPosts } from './_components/featured-rental-posts';
+import { FooterCTACard } from './_components/footer-cta-card';
 
-export default function Home() {
+export default function HomePage() {
     const [showFlashScreen, setShowFlashScreen] = useState(true);
 
     return (
@@ -37,6 +39,8 @@ export default function Home() {
                     <HeroSection />
                     <StepsToRentAndList />
                     <TopUsersCarousel />
+                    <FeaturedRentalPosts />
+                    <FooterCTACard />
                 </div>
             </div>
         </main>
