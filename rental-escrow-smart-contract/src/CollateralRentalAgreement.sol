@@ -292,7 +292,7 @@ contract CollateralRentalAgreement is
     }
 
     /////////////// --- LENDER-FACING FUNCTIONS --- ////////////////
-    
+
     /**
      * @notice Lender deposits the NFT to escrow start the rental process.
      * @dev For collateral rentals, this makes the NFT available for the renter to claim.
@@ -354,7 +354,11 @@ contract CollateralRentalAgreement is
         emit CollateralClaimed(i_lender, i_collateral);
     }
 
-    // --- CANCELLATION FUNCTIONS --- //
+    /////////////// --- CANCELLATION FUNCTIONS --- ////////////////
+
+    /**
+     * @notice Renter calls this to reclaim funds if the lender does not deposit the NFT before the deadline.
+     */
     function reclaimFundsOnLenderTimeout()
         external
         onlyRenter
