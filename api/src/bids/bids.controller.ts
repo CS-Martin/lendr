@@ -9,12 +9,11 @@ import {
     Query,
 } from '@nestjs/common';
 import { BidsService } from './bids.service';
-import { CreateBidDto } from './dto/create-bid.dto';
-import { UpdateBidDto } from './dto/update-bid.dto';
-import { ApiOperation, ApiQuery, ApiResponse } from '@nestjs/swagger';
-import { ConfigService } from '@nestjs/config';
+import { CreateBidDto, UpdateBidDto } from './dto';
+import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 
-@Controller(`${new ConfigService().get('API_VERSION')}/bids`)
+@ApiTags('Bids')
+@Controller({ path: 'bid', version: '1' })
 export class BidsController {
     constructor(private readonly bidsService: BidsService) { }
 

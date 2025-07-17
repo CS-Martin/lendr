@@ -28,7 +28,9 @@ export class NftDbService {
     return nft;
   }
 
-  async find(filters?: Partial<Pick<NFT, 'userAddress' | 'title' | 'category' | 'collectionName'>>): Promise<NFT[]> {
+  async find(
+    filters?: Partial<Pick<NFT, 'userAddress' | 'title' | 'category' | 'collectionName'>>
+  ): Promise<NFT[]> {
     const where: Prisma.NFTWhereInput = {};
 
     if (filters?.userAddress) {

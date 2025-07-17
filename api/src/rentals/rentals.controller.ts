@@ -8,12 +8,11 @@ import {
     Delete,
 } from '@nestjs/common';
 import { RentalsService } from './rentals.service';
-import { CreateRentalDto } from './dto/create-rental.dto';
-import { UpdateRentalDto } from './dto/update-rental.dto';
-import { ConfigService } from '@nestjs/config';
-import { ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { CreateRentalDto, UpdateRentalDto } from './dto';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
-@Controller(`${new ConfigService().get('API_VERSION')}/rentals`)
+@ApiTags('Rentals')
+@Controller({ path: 'rental', version: '1' })
 export class RentalsController {
     constructor(private readonly rentalsService: RentalsService) { }
 
