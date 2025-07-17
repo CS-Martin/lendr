@@ -118,6 +118,7 @@ contract DelegationRentalAgreement is ERC721Holder, ERC1155Holder {
     uint256 public s_rentalEndTime;
     uint256 public s_lenderDelegationDeadline;
     LendrRentalSystem public immutable i_factoryContract;
+    uint256 public immutable i_platformFeeBps;
 
     /*//////////////////////////////////////////////////////////////
                              MODIFIERS
@@ -184,6 +185,7 @@ contract DelegationRentalAgreement is ERC721Holder, ERC1155Holder {
         i_nftStandard = _nftStandard;
         i_DealDuration = _dealDuration;
         s_rentalState = State.LISTED;
+        i_platformFeeBps = i_factoryContract.s_feeBps();
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -293,7 +295,7 @@ contract DelegationRentalAgreement is ERC721Holder, ERC1155Holder {
         uint256 totalFee = getTotalHourlyFee();
         uint256 platformFee = FeeCalculator.calculateFee(
             totalFee,
-            i_factoryContract.s_feeBps()
+            i_platformFeeBps
         );
         uint256 lenderPayout = totalFee - platformFee;
 
