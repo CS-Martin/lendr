@@ -35,13 +35,14 @@ contract CollateralRentalAgreement is
     error RentalAgreement__CollateralCannotBeZeroForCollateralType();
     error RentalAgreement__InvalidUser(address expected, address actual);
     error RentalAgreement__NftNotInEscrow();
-    error RentalAgreement__CollateralRentalDoesNotSupportERC4907();
+    error RentalAgreement__CollateralRentalDoesNotSupportNFTType();
     error RentalAgreement__RentalNotEnded();
     error RentalAgreement__InvalidDealDuration();
     error RentalAgreement__InvalidStateForDefault();
     error RentalAgreement__PaymentFailed();
     error RentalAgreement__DeadlinePassed();
     error RentalAgreement__LenderStillHasTime();
+    error RentalAgreement__RenterStillHasTime();
 
     /*//////////////////////////////////////////////////////////////
                                 EVENTS
@@ -84,17 +85,7 @@ contract CollateralRentalAgreement is
     enum NftStandard {
         ERC721,
         ERC1155,
-        ERC4907,
-        _MAX
-    }
-
-    enum DealDuration {
-        SIX_HOURS,
-        TWELVE_HOURS,
-        ONE_DAY,
-        THREE_DAYS,
-        ONE_WEEK,
-        _MAX
+        ERC4907
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -114,6 +105,7 @@ contract CollateralRentalAgreement is
     uint256 public s_rentalEndTime;
     uint256 public s_lenderDepositDeadline;
     uint256 public s_returnDeadline;
+    uint256 public s_renterClaimDeadline;
 
     /*//////////////////////////////////////////////////////////////
                              MODIFIERS
@@ -178,9 +170,9 @@ contract CollateralRentalAgreement is
             revert RentalAgreement__CollateralCannotBeZeroForCollateralType();
         }
         if (_nftStandard == NftStandard.ERC4907) {
-            revert RentalAgreement__CollateralRentalDoesNotSupportERC4907();
+            revert RentalAgreement__CollateralRentalDoesNotSupportNFTType();
         }
-        if (uint256(_dealDuration) >= uint256(DealDuration._MAX)) {
+        if (uint256(_dealDuration) >= DealDuration._MAX) {
             revert RentalAgreement__InvalidDealDuration();
         }
         i_lender = _lender;
@@ -220,6 +212,10 @@ contract CollateralRentalAgreement is
         onlyRenter
         inState(State.READY_TO_RELEASE)
     {
+        if (s_renterClaimDeadline != 0 && block.timestamp > s_renterClaimDeadline) {
+            revert RentalAgreement__DeadlinePassed();
+        }
+
         if (i_nftStandard == NftStandard.ERC721) {
             if (IERC721(i_nftContract).ownerOf(i_tokenId) != address(this)) {
                 revert RentalAgreement__NftNotInEscrow();
@@ -231,7 +227,7 @@ contract CollateralRentalAgreement is
                 revert RentalAgreement__NftNotInEscrow();
             }
         } else {
-            revert RentalAgreement__CollateralRentalDoesNotSupportERC4907();
+            revert RentalAgreement__CollateralRentalDoesNotSupportNFTType();
         }
 
         s_rentalState = State.ACTIVE_RENTAL;
@@ -239,19 +235,9 @@ contract CollateralRentalAgreement is
         s_returnDeadline = s_rentalEndTime + getCustomDuration(i_dealDuration);
 
         if (i_nftStandard == NftStandard.ERC721) {
-            IERC721(i_nftContract).safeTransferFrom(
-                address(this),
-                s_renter,
-                i_tokenId
-            );
+            IERC721(i_nftContract).safeTransferFrom(address(this), s_renter, i_tokenId);
         } else if (i_nftStandard == NftStandard.ERC1155) {
-            IERC1155(i_nftContract).safeTransferFrom(
-                address(this),
-                s_renter,
-                i_tokenId,
-                1,
-                ""
-            );
+            IERC1155(i_nftContract).safeTransferFrom(address(this), s_renter, i_tokenId, 1, "");
         }
 
         emit NftReleasedToRenter();
@@ -291,6 +277,36 @@ contract CollateralRentalAgreement is
         emit RentalCompleted();
     }
 
+    /**
+     * @notice Renter calls this to cancel the rental if they failed to claim the NFT in time.
+     * @dev This refunds the renter and returns the NFT to the lender.
+     */
+    function cancelRentalAfterClaimTimeout()
+        external
+        onlyRenter
+        inState(State.READY_TO_RELEASE)
+        nonReentrant
+    {
+        if (s_renterClaimDeadline == 0) {
+            revert RentalAgreement__NftNotInEscrow();
+        }
+        if (block.timestamp <= s_renterClaimDeadline) {
+            revert RentalAgreement__RenterStillHasTime();
+        }
+
+        s_rentalState = State.CANCELLED;
+
+        _transferNftFromEscrow(i_lender);
+
+        uint256 refundAmount = getTotalRentalFeeWithCollateral();
+        if (refundAmount > 0) {
+            (bool success, ) = payable(s_renter).call{value: refundAmount}("");
+            if (!success) revert RentalAgreement__PaymentFailed();
+        }
+
+        emit RentalCancelled("Renter failed to claim NFT before deadline.");
+    }
+
     /////////////// --- LENDER-FACING FUNCTIONS --- ////////////////
 
     /**
@@ -310,30 +326,51 @@ contract CollateralRentalAgreement is
             revert RentalAgreement__DeadlinePassed();
         }
 
+        s_renterClaimDeadline = block.timestamp + getCustomDuration(i_dealDuration);
+
         if (i_nftStandard == NftStandard.ERC721) {
-            IERC721(i_nftContract).safeTransferFrom(
-                i_lender,
-                address(this),
-                i_tokenId
-            );
+            IERC721(i_nftContract).safeTransferFrom(i_lender, address(this), i_tokenId);
         } else if (i_nftStandard == NftStandard.ERC1155) {
-            IERC1155(i_nftContract).safeTransferFrom(
-                i_lender,
-                address(this),
-                i_tokenId,
-                1,
-                ""
-            );
+            IERC1155(i_nftContract).safeTransferFrom(i_lender, address(this), i_tokenId, 1, "");
         } else {
-            revert RentalAgreement__CollateralRentalDoesNotSupportERC4907();
+            revert RentalAgreement__CollateralRentalDoesNotSupportNFTType();
         }
         emit NftDepositedByLender(i_nftContract, i_tokenId);
     }
 
     /**
+     * @notice Lender calls this to claim the NFT if the renter is unable to claim it on or before the deadline.
+     * @dev Only available for collateral rentals.
+     */
+    function claimNFTWhenRenterUnableToClaim()
+        external
+        onlyLender
+        inState(State.READY_TO_RELEASE)
+        nonReentrant
+    {
+        if (s_renterClaimDeadline == 0) {
+            revert RentalAgreement__NftNotInEscrow();
+        }
+        if (block.timestamp <= s_renterClaimDeadline) {
+            revert RentalAgreement__RenterStillHasTime();
+        }
+
+        s_rentalState = State.CANCELLED;
+        _transferNftFromEscrow(i_lender);
+
+        uint256 refundAmount = getTotalRentalFeeWithCollateral();
+        if (refundAmount > 0) {
+            (bool success, ) = payable(s_renter).call{value: refundAmount}("");
+            if (!success) revert RentalAgreement__PaymentFailed();
+        }
+
+        emit RentalCancelled("Renter failed to claim NFT before deadline.");
+    }
+
+    /**
      * @notice Lender calls this to claim collateral if renter defaults.
      */
-    function claimCollateral() external onlyLender nonReentrant {
+    function claimCollateralWhenDefaulted() external onlyLender nonReentrant {
         if (
             s_rentalState != State.ACTIVE_RENTAL &&
             s_rentalState != State.DEFAULTED
@@ -365,11 +402,14 @@ contract CollateralRentalAgreement is
         inState(State.READY_TO_RELEASE)
         nonReentrant
     {
-        if (block.timestamp <= s_lenderDepositDeadline) {
+        bool lenderTimedOut = s_renterClaimDeadline == 0 && block.timestamp > s_lenderDepositDeadline;
+
+        if (!lenderTimedOut) {
             revert RentalAgreement__LenderStillHasTime();
         }
 
         s_rentalState = State.CANCELLED;
+
         emit RentalCancelled("Lender failed to deposit NFT before deadline.");
 
         uint256 refundAmount = getTotalRentalFeeWithCollateral();
@@ -382,6 +422,20 @@ contract CollateralRentalAgreement is
     /*//////////////////////////////////////////////////////////////
                         INTERNAL FUNCTIONS
     //////////////////////////////////////////////////////////////*/
+
+    /**
+     * @dev Internal helper to transfer the NFT from escrow to a specified recipient.
+     * @param _to The address to receive the NFT.
+     */
+    function _transferNftFromEscrow(address _to) private {
+        if (i_nftStandard == NftStandard.ERC721) {
+            IERC721(i_nftContract).safeTransferFrom(address(this), _to, i_tokenId);
+        } else if (i_nftStandard == NftStandard.ERC1155) {
+            IERC1155(i_nftContract).safeTransferFrom(address(this), _to, i_tokenId, 1, "");
+        } else {
+            revert RentalAgreement__CollateralRentalDoesNotSupportNFTType();
+        }
+    }
 
     /**
      * @dev Internal function to handle the core logic of initiating a rental.
