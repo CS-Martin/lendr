@@ -7,6 +7,7 @@ import { NFT } from '@prisma/client';
 import { ResponseDto } from 'lib/shared/dto/response.dto';
 import { UsersDbService } from 'users/users.db.service';
 import { NftServiceAbstractClass } from './nft.service.abstract.class';
+import { FilterNftDto } from './dto';
 
 @Injectable()
 export class NftService implements NftServiceAbstractClass {
@@ -77,9 +78,7 @@ export class NftService implements NftServiceAbstractClass {
     }
   }
 
-  async find(
-    filter?: Partial<Pick<NFT, 'userAddress' | 'title' | 'category' | 'collectionName'>>
-  ): Promise<ResponseDto<NftDto[]>> {
+  async find(filter: FilterNftDto): Promise<ResponseDto<NftDto[]>> {
     this.logger.log('Fetching NFTs', JSON.stringify(filter));
 
     try {
