@@ -22,6 +22,7 @@ contract DelegationRegistry is IERC721Receiver, IERC1155Receiver {
     error DelegationRegistry__ActiveDelegation();
     error DelegationRegistry__WithdrawalFailed();
     error DelegationRegistry__InvalidNftContract();
+    error DelegationRegistry__InvalidAmount();
 
     /*//////////////////////////////////////////////////////////////
                                 EVENTS
@@ -46,6 +47,8 @@ contract DelegationRegistry is IERC721Receiver, IERC1155Receiver {
         address indexed nftContract,
         uint256 indexed tokenId
     );
+    event AuthorizationSet(address indexed newAuthorizedAddress);
+    event AuthorizationRemoved(address indexed removedAuthorizedAddress);
 
     /*//////////////////////////////////////////////////////////////
                             TYPE DECLARATIONS
@@ -55,18 +58,25 @@ contract DelegationRegistry is IERC721Receiver, IERC1155Receiver {
         uint64 expires;
     }
 
+    enum NftStandard {
+        ERC721,
+        ERC1155
+    }
+
     /*//////////////////////////////////////////////////////////////
                             STATE VARIABLES
     //////////////////////////////////////////////////////////////*/
     mapping(address => mapping(uint256 => Delegation)) private _delegations;
     mapping(address => mapping(uint256 => address)) public originalOwnerOf;
-    address public immutable i_authorizedFactory;
+    address public immutable i_factory;
+    mapping(address => bool) public isAuthorized;
+    mapping(address => NftStandard) public nftStandard;
 
     /*//////////////////////////////////////////////////////////////
                                 MODIFIERS
     //////////////////////////////////////////////////////////////*/
     modifier onlyAuthorized() {
-        if (msg.sender != i_authorizedFactory) {
+        if (!isAuthorized[msg.sender]) {
             revert DelegationRegistry__NotAuthorized();
         }
         _;
@@ -75,8 +85,9 @@ contract DelegationRegistry is IERC721Receiver, IERC1155Receiver {
     /*//////////////////////////////////////////////////////////////
                                 CONSTRUCTOR
     //////////////////////////////////////////////////////////////*/
-    constructor(address authorizedFactory) {
-        i_authorizedFactory = authorizedFactory;
+    constructor(address factory) {
+        i_factory = factory;
+        isAuthorized[factory] = true;
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -84,8 +95,34 @@ contract DelegationRegistry is IERC721Receiver, IERC1155Receiver {
     //////////////////////////////////////////////////////////////*/
 
     /**
+     * @notice Authorizes a contract to set and revoke delegations.
+     * @dev Can only be called by the factory contract that deployed this registry.
+     * @param newAuthorizedAddress The address to authorize.
+     */
+    function addAuthorized(address newAuthorizedAddress) external {
+        if (msg.sender != i_factory) {
+            revert DelegationRegistry__NotAuthorized();
+        }
+        isAuthorized[newAuthorizedAddress] = true;
+        emit AuthorizationSet(newAuthorizedAddress);
+    }
+
+    /**
+     * @notice Removes authorization from a contract.
+     * @dev Can only be called by the factory contract that deployed this registry.
+     * @param addressToRemove The address to de-authorize.
+     */
+    function removeAuthorized(address addressToRemove) external {
+        if (msg.sender != i_factory) {
+            revert DelegationRegistry__NotAuthorized();
+        }
+        isAuthorized[addressToRemove] = false;
+        emit AuthorizationRemoved(addressToRemove);
+    }
+
+    /**
      * @notice Sets or updates the delegation for a given NFT.
-     * @dev Can only be called by the authorized factory contract.
+     * @dev Can only be called by an authorized contract.
      * @param nftContract The address of the NFT contract.
      * @param tokenId The ID of the token.
      * @param user The address of the user to delegate to.
@@ -103,7 +140,7 @@ contract DelegationRegistry is IERC721Receiver, IERC1155Receiver {
 
     /**
      * @notice Revokes the delegation for a given NFT.
-     * @dev Can only be called by the authorized factory contract.
+     * @dev Can only be called by an authorized contract.
      * @param nftContract The address of the NFT contract.
      * @param tokenId The ID of the token.
      */
@@ -132,13 +169,23 @@ contract DelegationRegistry is IERC721Receiver, IERC1155Receiver {
         delete originalOwnerOf[nftContract][tokenId];
         emit NftWithdrawn(nftContract, tokenId, originalOwner);
 
-        // This is a simplified check. A production implementation might need to distinguish standards.
-        try IERC721(nftContract).safeTransferFrom(address(this), originalOwner, tokenId) {}
-        catch {
-            try IERC1155(nftContract).safeTransferFrom(address(this), originalOwner, tokenId, 1, "") {}
-            catch {
+        NftStandard standard = nftStandard[nftContract];
+        if (standard == NftStandard.ERC721) {
+            IERC721(nftContract).safeTransferFrom(
+                address(this),
+                originalOwner,
+                tokenId
+            );
+        } else if (standard == NftStandard.ERC1155) {
+            IERC1155(nftContract).safeTransferFrom(
+                address(this),
+                originalOwner,
+                tokenId,
+                1,
+                ""
+            );
+        } else {
                 revert DelegationRegistry__WithdrawalFailed();
-            }
         }
     }
 
@@ -189,6 +236,7 @@ contract DelegationRegistry is IERC721Receiver, IERC1155Receiver {
         uint256 tokenId,
         bytes calldata
     ) external override returns (bytes4) {
+        nftStandard[msg.sender] = NftStandard.ERC721;
         originalOwnerOf[msg.sender][tokenId] = from;
         emit NftDeposited(msg.sender, tokenId, from);
         return this.onERC721Received.selector;
@@ -201,9 +249,13 @@ contract DelegationRegistry is IERC721Receiver, IERC1155Receiver {
         address,
         address from,
         uint256 id,
-        uint256,
+        uint256 amount,
         bytes calldata
     ) external override returns (bytes4) {
+        if (amount != 1) {
+            revert DelegationRegistry__InvalidAmount();
+        }
+        nftStandard[msg.sender] = NftStandard.ERC1155;
         originalOwnerOf[msg.sender][id] = from;
         emit NftDeposited(msg.sender, id, from);
         return this.onERC1155Received.selector;
