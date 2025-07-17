@@ -6,6 +6,7 @@ import {IERC1155Receiver} from '@openzeppelin/contracts/token/ERC1155/IERC1155Re
 import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
 import {IERC1155} from '@openzeppelin/contracts/token/ERC1155/IERC1155.sol';
 import {IERC165} from '@openzeppelin/contracts/utils/introspection/IERC165.sol';
+import {ReentrancyGuard} from '@openzeppelin/contracts/utils/ReentrancyGuard.sol';
 
 /**
  * @title DelegationRegistry
@@ -13,7 +14,7 @@ import {IERC165} from '@openzeppelin/contracts/utils/introspection/IERC165.sol';
  * This contract acts as a centralized escrow and registry for ERC721 and ERC1155 NFTs,
  * allowing rental agreements to manage usage rights without taking direct custody.
  */
-contract DelegationRegistry is IERC721Receiver, IERC1155Receiver {
+contract DelegationRegistry is IERC721Receiver, IERC1155Receiver, ReentrancyGuard {
     /*//////////////////////////////////////////////////////////////
                                 ERRORS
     //////////////////////////////////////////////////////////////*/
@@ -157,7 +158,7 @@ contract DelegationRegistry is IERC721Receiver, IERC1155Receiver {
      * @param nftContract The address of the NFT contract.
      * @param tokenId The ID of the token.
      */
-    function withdrawNft(address nftContract, uint256 tokenId) external {
+    function withdrawNft(address nftContract, uint256 tokenId) external nonReentrant {
         address originalOwner = originalOwnerOf[nftContract][tokenId];
         if (msg.sender != originalOwner) {
             revert DelegationRegistry__NotOriginalOwner();
