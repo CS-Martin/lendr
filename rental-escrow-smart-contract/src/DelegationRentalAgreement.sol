@@ -64,6 +64,7 @@ contract DelegationRentalAgreement is ERC721Holder, ERC1155Holder, ReentrancyGua
     error RentalAgreement__RentalNotOver();
     error RentalAgreement__InvalidNftStandard();
     error RentalAgreement__RentalIsOver();
+    error RentalAgreement__NftNotDeposited();
 
     /*//////////////////////////////////////////////////////////////
                                 EVENTS
