@@ -88,6 +88,15 @@ contract CollateralRentalAgreement is
         ERC4907
     }
 
+    enum DealDuration {
+        SIX_HOURS,
+        TWELVE_HOURS,
+        ONE_DAY,
+        THREE_DAYS,
+        ONE_WEEK,
+        _MAX
+    }
+
     /*//////////////////////////////////////////////////////////////
                             STATE VARIABLES
     //////////////////////////////////////////////////////////////*/
