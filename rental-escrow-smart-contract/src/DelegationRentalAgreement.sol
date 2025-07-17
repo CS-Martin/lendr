@@ -36,12 +36,6 @@ interface IERC4907 {
     /// @param tokenId The NFT to get the user expires for
     /// @return The user expires for this NFT
     function userExpires(uint256 tokenId) external view returns(uint256);
-
-    /// @notice Get the owner of an NFT
-    /// @dev The zero address indicates that there is no owner
-    /// @param tokenId The NFT to get the owner for
-    /// @return The owner of this NFT
-    function ownerOf(uint256 tokenId) external view returns(address);
 }
 
 /**
