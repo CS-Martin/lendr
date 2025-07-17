@@ -241,10 +241,13 @@ contract CollateralRentalAgreement is
 
     /**
      * @notice Renter calls this to return the NFT to the lender.
-     * @dev Only available for collateral-based rentals.
      * @dev Before calling this, the renter MUST approve this contract to transfer the NFT.
      * For ERC721, call `approve(address(this), tokenId)` on the NFT contract.
      * For ERC1155, call `setApprovalForAll(address(this), true)` on the NFT contract.
+     * @dev If this function is called after the return deadline, the rental is marked
+     * as defaulted. The renter will not receive their collateral back. The lender can
+     * then claim the collateral. The NFT is not transferred back to the lender if
+     * the deadline is missed.
      */
     function returnNFTToLender()
         external

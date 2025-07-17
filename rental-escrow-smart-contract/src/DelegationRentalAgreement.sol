@@ -8,7 +8,7 @@ import {ERC1155Holder} from '@openzeppelin/contracts/token/ERC1155/utils/ERC1155
 import {TimeConverter} from './utils/TimeConverter.sol';
 import {LendrRentalSystem} from './LendrRentalSystem.sol';
 import {FeeCalculator} from './utils/ComputePercentage.sol';
-import {DelegationRegistryERC1155ERC721} from './DelegationRegistryERC1155ERC721.sol';
+import {DelegationRegistry} from './DelegationRegistryERC1155ERC721.sol';
 import {ReentrancyGuard} from '@openzeppelin/contracts/utils/ReentrancyGuard.sol';
 import {RentalEnums} from './libraries/RentalEnums.sol';
 
@@ -49,7 +49,7 @@ interface IERC4907 {
  * @dev Manages the escrow and state for a single NFT DELEGATION rental.
  * This contract handles delegation-based rentals for ERC721, ERC1155, and ERC4907 NFTs.
  */
-contract DelegationRentalAgreement is ERC721Holder, ERC1155Holder, ReentrancyGuard {
+contract DelegationRentalAgreement is ReentrancyGuard {
     /*//////////////////////////////////////////////////////////////
                                 ERRORS
     //////////////////////////////////////////////////////////////*/
@@ -313,18 +313,18 @@ contract DelegationRentalAgreement is ERC721Holder, ERC1155Holder, ReentrancyGua
         uint256 platformFee = FeeCalculator.calculateFee(totalFee, i_platformFeeBps);
         uint256 lenderPayout = totalFee - platformFee;
 
+        if (i_nftStandard == RentalEnums.NftStandard.ERC4907) {
+            IERC4907(i_nftContract).setUser(i_tokenId, address(0), 0);
+        } else {
+            i_delegationRegistry.revokeDelegation(i_nftContract, i_tokenId);
+        }
+
         emit PayoutsDistributed(
             i_lender,
             address(i_factoryContract),
             lenderPayout,
             platformFee
         );
-
-        if (i_nftStandard == RentalEnums.NftStandard.ERC4907) {
-            IERC4907(i_nftContract).setUser(i_tokenId, address(0), 0);
-        } else {
-            i_delegationRegistry.revokeDelegation(i_nftContract, i_tokenId);
-        }
 
         if (lenderPayout > 0) {
             (bool success, ) = payable(i_lender).call{value: lenderPayout}("");

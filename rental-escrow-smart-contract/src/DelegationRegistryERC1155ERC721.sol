@@ -13,7 +13,7 @@ import {IERC165} from '@openzeppelin/contracts/utils/introspection/IERC165.sol';
  * This contract acts as a centralized escrow and registry for ERC721 and ERC1155 NFTs,
  * allowing rental agreements to manage usage rights without taking direct custody.
  */
-contract DelegationRegistryERC1155ERC721 is IERC721Receiver, IERC1155Receiver {
+contract DelegationRegistry is IERC721Receiver, IERC1155Receiver {
     /*//////////////////////////////////////////////////////////////
                                 ERRORS
     //////////////////////////////////////////////////////////////*/
