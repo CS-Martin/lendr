@@ -6,9 +6,10 @@ import { NftDto } from './dto/nft.dto';
 import { NFT } from '@prisma/client';
 import { ResponseDto } from 'lib/shared/dto/response.dto';
 import { UsersDbService } from 'users/users.db.service';
+import { NftServiceAbstractClass } from './nft.service.abstract.class';
 
 @Injectable()
-export class NftService {
+export class NftService implements NftServiceAbstractClass {
   private readonly logger = new Logger(NftService.name);
 
   constructor(
@@ -76,29 +77,60 @@ export class NftService {
     }
   }
 
-  async findAll(): Promise<ResponseDto<NftDto[]>> {
-    this.logger.log('Fetching NFTs');
+  async find(
+    filter?: Partial<Pick<NFT, 'userAddress' | 'title' | 'category' | 'collectionName'>>
+  ): Promise<ResponseDto<NftDto[]>> {
+    this.logger.log('Fetching NFTs', JSON.stringify(filter));
 
     try {
-      const nfts = await this.nftDbService.findAll();
-      const nftDtos = nfts?.map(nft => this.convertToNftDto(nft));
+      const nfts = await this.nftDbService.find(filter);
+      const nftDtos = nfts.map(nft => this.convertToNftDto(nft));
+
       return {
         statusCode: 200,
         data: nftDtos,
         message: 'NFTs fetched successfully',
-      }
+      };
     } catch (error) {
       this.logger.error('Failed to fetch NFTs', error);
       throw new BadRequestException('Failed to fetch NFTs');
     }
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} nft`;
+  async findOne(address: string): Promise<ResponseDto<NftDto>> {
+    this.logger.log(`Fetching NFT with address: ${address}`);
+
+    try {
+      const nft = await this.nftDbService.findOne(address);
+
+      const nftDto = this.convertToNftDto(nft);
+
+      return {
+        statusCode: 200,
+        data: nftDto,
+        message: 'NFT fetched successfully',
+      };
+    } catch (error) {
+      this.logger.error(`Failed to fetch NFT with address: ${address}`, error);
+      throw new BadRequestException('Failed to fetch NFT');
+    }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} nft`;
+  async remove(address: string): Promise<ResponseDto<null>> {
+    this.logger.log(`Removing NFT with address: ${address}`);
+
+    try {
+      await this.nftDbService.delete(address);
+
+      return {
+        statusCode: 200,
+        data: null,
+        message: 'NFT deleted successfully',
+      };
+    } catch (error) {
+      this.logger.error(`Failed to delete NFT with address: ${address}`, error);
+      throw new BadRequestException('Failed to delete NFT');
+    }
   }
 
   /**
@@ -111,15 +143,18 @@ export class NftService {
       throw new NotFoundException('NFT not found');
     }
 
-    const nftDto: NftDto= new NftDto();
+    const dto = new NftDto();
+    dto.address = nft.address;
+    dto.userAddress = nft.userAddress;
+    dto.title = nft.title;
+    dto.imageUrl = nft.imageUrl;
+    dto.description = nft.description ?? '';
+    dto.category = nft.category ?? '';
+    dto.floorPrice = nft.floorPrice ?? 0;
+    dto.collectionName = nft.collectionName ?? '';
+    dto.createdAt = nft.createdAt;
+    dto.updatedAt = nft.updatedAt;
 
-    nftDto.address = nft.address ?? '';
-    nftDto.name = nft.name ?? '';
-    nftDto.description = nft.description ?? '';
-    nftDto.imageUrl = nft.imageUrl ?? '';
-    nftDto.createdAt = nft.createdAt;
-    nftDto.updatedAt = nft.updatedAt ?? undefined;
-
-    return nftDto;
+    return dto;
   }
 }
