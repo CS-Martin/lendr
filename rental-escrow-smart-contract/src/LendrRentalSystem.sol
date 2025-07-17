@@ -3,6 +3,7 @@ pragma solidity ^0.8.20;
 
 import {CollateralRentalAgreement} from './CollateralRentalAgreement.sol';
 import {DelegationRentalAgreement} from './DelegationRentalAgreement.sol';
+import {DelegationRegistry} from './DelegationRegistry.sol';
 import {FeeCalculator} from './utils/ComputePercentage.sol';
 
 /**
@@ -35,6 +36,7 @@ contract LendrRentalSystem {
     mapping(uint256 => address) public s_collateralRentalAgreementById;
     mapping(uint256 => address) public s_delegationRentalAgreementById;
     uint256 public s_totalRentals;
+    DelegationRegistry public immutable i_delegationRegistry;
 
     /*//////////////////////////////////////////////////////////////
                                 EVENTS
@@ -79,6 +81,7 @@ contract LendrRentalSystem {
     constructor(uint256 initialPlatformFeePercentInBps) {
         i_deployer = msg.sender;
         s_feeBps = initialPlatformFeePercentInBps;
+        i_delegationRegistry = new DelegationRegistry(address(this));
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -92,7 +95,7 @@ contract LendrRentalSystem {
 
     function withdraw() external onlyDeployer {
         uint256 amount = address(this).balance;
-        (bool success, ) = payable(address(this)).call{value: amount}("");
+        (bool success, ) = payable(i_deployer).call{value: amount}("");
         if (!success) revert LendrRentalSystem__WithdrawFailed();
         emit Withdrawn(i_deployer, amount);
     }
@@ -213,7 +216,8 @@ contract LendrRentalSystem {
             _hourlyRentalFee,
             _rentalDurationInHours,
             _nftStandard,
-            _dealDuration
+            _dealDuration,
+            i_delegationRegistry
         );
         address agreementAddress = address(rentalAgreement);
 

@@ -8,6 +8,7 @@ import {ERC1155Holder} from '@openzeppelin/contracts/token/ERC1155/utils/ERC1155
 import {TimeConverter} from './utils/TimeConverter.sol';
 import {LendrRentalSystem} from './LendrRentalSystem.sol';
 import {FeeCalculator} from './utils/ComputePercentage.sol';
+import {DelegationRegistry} from './DelegationRegistry.sol';
 
 interface IERC4907 {
     // Logged when the user of an NFT is changed or expires is changed
@@ -118,6 +119,7 @@ contract DelegationRentalAgreement is ERC721Holder, ERC1155Holder {
     uint256 public s_rentalEndTime;
     uint256 public s_lenderDelegationDeadline;
     LendrRentalSystem public immutable i_factoryContract;
+    DelegationRegistry public immutable i_delegationRegistry;
     uint256 public immutable i_platformFeeBps;
 
     /*//////////////////////////////////////////////////////////////
@@ -168,7 +170,8 @@ contract DelegationRentalAgreement is ERC721Holder, ERC1155Holder {
         uint256 _hourlyRentalFee,
         uint256 _rentalDurationInHours,
         NftStandard _nftStandard,
-        DealDuration _dealDuration
+        DealDuration _dealDuration,
+        DelegationRegistry _delegationRegistry
     ) {
         if (_rentalDurationInHours == 0) {
             revert RentalAgreement__DurationCannotBeZero();
@@ -182,6 +185,7 @@ contract DelegationRentalAgreement is ERC721Holder, ERC1155Holder {
         i_hourlyRentalFee = _hourlyRentalFee;
         i_rentalDurationInHours = _rentalDurationInHours;
         i_factoryContract = LendrRentalSystem(payable(msg.sender));
+        i_delegationRegistry = _delegationRegistry;
         i_nftStandard = _nftStandard;
         i_DealDuration = _dealDuration;
         s_rentalState = State.LISTED;
@@ -240,11 +244,16 @@ contract DelegationRentalAgreement is ERC721Holder, ERC1155Holder {
     function reportBreach()
         external
         onlyRenter
-        onlyERC4907
         inState(State.ACTIVE_DELEGATION)
     {
-        if (IERC4907(i_nftContract).userOf(i_tokenId) == s_renter) {
-            revert RentalAgreement__NoBreachDetected();
+        if (i_nftStandard == NftStandard.ERC4907) {
+            if (IERC4907(i_nftContract).userOf(i_tokenId) == s_renter) {
+                revert RentalAgreement__NoBreachDetected();
+            }
+        } else {
+            if (i_delegationRegistry.userOf(i_nftContract, i_tokenId) == s_renter) {
+                revert RentalAgreement__NoBreachDetected();
+            }
         }
 
         uint256 refundAmount = getTotalHourlyFee();
@@ -264,13 +273,24 @@ contract DelegationRentalAgreement is ERC721Holder, ERC1155Holder {
      * @dev This function's implementation will depend on the NFT standard.
      * For ERC4907, it would call `setUser`. For others, it might be an on-chain approval.
      */
-    function activateDelegation() external onlyLender inState(State.PENDING) {
+    function activateDelegation() 
+        external 
+        onlyLender 
+        inState(State.PENDING) 
+    {
         uint64 delegationExpiry = uint64(
             block.timestamp + TimeConverter.hoursToSeconds(i_rentalDurationInHours)
         );
 
         if (i_nftStandard == NftStandard.ERC4907) {
             IERC4907(i_nftContract).setUser(
+                i_tokenId,
+                s_renter,
+                delegationExpiry
+            );
+        } else {
+            i_delegationRegistry.setDelegation(
+                i_nftContract,
                 i_tokenId,
                 s_renter,
                 delegationExpiry
@@ -309,6 +329,9 @@ contract DelegationRentalAgreement is ERC721Holder, ERC1155Holder {
 
         if (i_nftStandard == NftStandard.ERC4907) {
             IERC4907(i_nftContract).setUser(i_tokenId, address(0), 0);
+        } else {
+            i_delegationRegistry.revokeDelegation(i_nftContract, i_tokenId);
+            i_delegationRegistry.withdrawNft(i_nftContract, i_tokenId);
         }
 
         if (lenderPayout > 0) {
