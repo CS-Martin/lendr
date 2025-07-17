@@ -9,6 +9,7 @@ import {ReentrancyGuard} from '@openzeppelin/contracts/utils/ReentrancyGuard.sol
 import {TimeConverter} from './utils/TimeConverter.sol';
 import {FeeCalculator} from './utils/ComputePercentage.sol';
 import {LendrRentalSystem} from './LendrRentalSystem.sol';
+import {RentalEnums} from './libraries/RentalEnums.sol';
 
 interface IERC4907 {
     function setUser(uint256 tokenId, address user, uint64 expires) external;
@@ -82,21 +83,6 @@ contract CollateralRentalAgreement is
         CANCELLED // Rental was voided
     }
 
-    enum NftStandard {
-        ERC721,
-        ERC1155,
-        ERC4907
-    }
-
-    enum DealDuration {
-        SIX_HOURS,
-        TWELVE_HOURS,
-        ONE_DAY,
-        THREE_DAYS,
-        ONE_WEEK,
-        _MAX
-    }
-
     /*//////////////////////////////////////////////////////////////
                             STATE VARIABLES
     //////////////////////////////////////////////////////////////*/
@@ -106,8 +92,8 @@ contract CollateralRentalAgreement is
     uint256 public immutable i_hourlyRentalFee;
     uint256 public immutable i_collateral;
     uint256 public immutable i_rentalDurationInHours;
-    NftStandard public immutable i_nftStandard;
-    DealDuration public immutable i_dealDuration;
+    RentalEnums.NftStandard public immutable i_nftStandard;
+    RentalEnums.DealDuration public immutable i_dealDuration;
     LendrRentalSystem public immutable i_factoryContract;
     address public s_renter;
     State public s_rentalState;
@@ -169,8 +155,8 @@ contract CollateralRentalAgreement is
         uint256 _hourlyRentalFee,
         uint256 _collateral,
         uint256 _rentalDurationInHours,
-        NftStandard _nftStandard,
-        DealDuration _dealDuration
+        RentalEnums.NftStandard _nftStandard,
+        RentalEnums.DealDuration _dealDuration
     ) {
         if (_rentalDurationInHours == 0) {
             revert RentalAgreement__DurationCannotBeZero();
@@ -178,10 +164,10 @@ contract CollateralRentalAgreement is
         if (_collateral == 0) {
             revert RentalAgreement__CollateralCannotBeZeroForCollateralType();
         }
-        if (_nftStandard == NftStandard.ERC4907) {
+        if (_nftStandard == RentalEnums.NftStandard.ERC4907) {
             revert RentalAgreement__CollateralRentalDoesNotSupportNFTType();
         }
-        if (uint256(_dealDuration) >= DealDuration._MAX) {
+        if (uint256(_dealDuration) >= uint256(RentalEnums.DealDuration._MAX)) {
             revert RentalAgreement__InvalidDealDuration();
         }
         i_lender = _lender;
@@ -225,11 +211,11 @@ contract CollateralRentalAgreement is
             revert RentalAgreement__DeadlinePassed();
         }
 
-        if (i_nftStandard == NftStandard.ERC721) {
+        if (i_nftStandard == RentalEnums.NftStandard.ERC721) {
             if (IERC721(i_nftContract).ownerOf(i_tokenId) != address(this)) {
                 revert RentalAgreement__NftNotInEscrow();
             }
-        } else if (i_nftStandard == NftStandard.ERC1155) {
+        } else if (i_nftStandard == RentalEnums.NftStandard.ERC1155) {
             if (
                 IERC1155(i_nftContract).balanceOf(address(this), i_tokenId) != 1
             ) {
@@ -243,9 +229,9 @@ contract CollateralRentalAgreement is
         s_rentalEndTime = block.timestamp + TimeConverter.hoursToSeconds(i_rentalDurationInHours);
         s_returnDeadline = s_rentalEndTime + getCustomDuration(i_dealDuration);
 
-        if (i_nftStandard == NftStandard.ERC721) {
+        if (i_nftStandard == RentalEnums.NftStandard.ERC721) {
             IERC721(i_nftContract).safeTransferFrom(address(this), s_renter, i_tokenId);
-        } else if (i_nftStandard == NftStandard.ERC1155) {
+        } else if (i_nftStandard == RentalEnums.NftStandard.ERC1155) {
             IERC1155(i_nftContract).safeTransferFrom(address(this), s_renter, i_tokenId, 1, "");
         }
 
@@ -276,9 +262,9 @@ contract CollateralRentalAgreement is
 
         _distributePayouts();
 
-        if (i_nftStandard == NftStandard.ERC721) {
+        if (i_nftStandard == RentalEnums.NftStandard.ERC721) {
             IERC721(i_nftContract).safeTransferFrom(s_renter, i_lender, i_tokenId);
-        } else if (i_nftStandard == NftStandard.ERC1155) {
+        } else if (i_nftStandard == RentalEnums.NftStandard.ERC1155) {
             IERC1155(i_nftContract).safeTransferFrom(s_renter, i_lender, i_tokenId, 1, "");
         }
 
@@ -337,9 +323,9 @@ contract CollateralRentalAgreement is
 
         s_renterClaimDeadline = block.timestamp + getCustomDuration(i_dealDuration);
 
-        if (i_nftStandard == NftStandard.ERC721) {
+        if (i_nftStandard == RentalEnums.NftStandard.ERC721) {
             IERC721(i_nftContract).safeTransferFrom(i_lender, address(this), i_tokenId);
-        } else if (i_nftStandard == NftStandard.ERC1155) {
+        } else if (i_nftStandard == RentalEnums.NftStandard.ERC1155) {
             IERC1155(i_nftContract).safeTransferFrom(i_lender, address(this), i_tokenId, 1, "");
         } else {
             revert RentalAgreement__CollateralRentalDoesNotSupportNFTType();
@@ -437,9 +423,9 @@ contract CollateralRentalAgreement is
      * @param _to The address to receive the NFT.
      */
     function _transferNftFromEscrow(address _to) private {
-        if (i_nftStandard == NftStandard.ERC721) {
+        if (i_nftStandard == RentalEnums.NftStandard.ERC721) {
             IERC721(i_nftContract).safeTransferFrom(address(this), _to, i_tokenId);
-        } else if (i_nftStandard == NftStandard.ERC1155) {
+        } else if (i_nftStandard == RentalEnums.NftStandard.ERC1155) {
             IERC1155(i_nftContract).safeTransferFrom(address(this), _to, i_tokenId, 1, "");
         } else {
             revert RentalAgreement__CollateralRentalDoesNotSupportNFTType();
@@ -512,24 +498,24 @@ contract CollateralRentalAgreement is
      * @param _duration The DealDuration enum member.
      * @return The duration in seconds.
      */
-    function getCustomDuration(DealDuration _duration)
+    function getCustomDuration(RentalEnums.DealDuration _duration)
         private
         pure
         returns (uint256)
     {
-        if (_duration == DealDuration.SIX_HOURS) {
+        if (_duration == RentalEnums.DealDuration.SIX_HOURS) {
             return 6 hours;
         }
-        if (_duration == DealDuration.TWELVE_HOURS) {
+        if (_duration == RentalEnums.DealDuration.TWELVE_HOURS) {
             return 12 hours;
         }
-        if (_duration == DealDuration.ONE_DAY) {
+        if (_duration == RentalEnums.DealDuration.ONE_DAY) {
             return 1 days;
         }
-        if (_duration == DealDuration.THREE_DAYS) {
+        if (_duration == RentalEnums.DealDuration.THREE_DAYS) {
             return 3 days;
         }
-        if (_duration == DealDuration.ONE_WEEK) {
+        if (_duration == RentalEnums.DealDuration.ONE_WEEK) {
             return 1 weeks;
         }
         revert RentalAgreement__InvalidDealDuration();

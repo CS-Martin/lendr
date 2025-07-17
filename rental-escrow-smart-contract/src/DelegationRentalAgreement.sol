@@ -10,6 +10,7 @@ import {LendrRentalSystem} from './LendrRentalSystem.sol';
 import {FeeCalculator} from './utils/ComputePercentage.sol';
 import {DelegationRegistryERC1155ERC721} from './DelegationRegistryERC1155ERC721.sol';
 import {ReentrancyGuard} from '@openzeppelin/contracts/utils/ReentrancyGuard.sol';
+import {RentalEnums} from './libraries/RentalEnums.sol';
 
 interface IERC4907 {
     // Logged when the user of an NFT is changed or expires is changed
@@ -82,29 +83,13 @@ contract DelegationRentalAgreement is ERC721Holder, ERC1155Holder, ReentrancyGua
     /*//////////////////////////////////////////////////////////////
                             TYPE DECLARATIONS
     //////////////////////////////////////////////////////////////*/
-    // Enums duplicated for blueprint simplicity. Will be refactored into a shared library later.
+    // State enum is specific to this contract's lifecycle.
     enum State {
         LISTED,
         PENDING,
         ACTIVE_DELEGATION,
         COMPLETED,
         CANCELLED
-    }
-
-    enum NftStandard {
-        ERC721,
-        ERC1155,
-        ERC4907,
-        _MAX
-    }
-
-    enum DealDuration {
-        SIX_HOURS,
-        TWELVE_HOURS,
-        ONE_DAY,
-        THREE_DAYS,
-        ONE_WEEK,
-        _MAX
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -115,8 +100,8 @@ contract DelegationRentalAgreement is ERC721Holder, ERC1155Holder, ReentrancyGua
     uint256 public immutable i_tokenId;
     uint256 public immutable i_hourlyRentalFee;
     uint256 public immutable i_rentalDurationInHours;
-    NftStandard public immutable i_nftStandard;
-    DealDuration public immutable i_DealDuration;
+    RentalEnums.NftStandard public immutable i_nftStandard;
+    RentalEnums.DealDuration public immutable i_DealDuration;
     address public s_renter;
     State public s_rentalState;
     uint256 public s_rentalEndTime;
@@ -165,14 +150,14 @@ contract DelegationRentalAgreement is ERC721Holder, ERC1155Holder, ReentrancyGua
         uint256 _tokenId,
         uint256 _hourlyRentalFee,
         uint256 _rentalDurationInHours,
-        NftStandard _nftStandard,
-        DealDuration _dealDuration,
+        RentalEnums.NftStandard _nftStandard,
+        RentalEnums.DealDuration _dealDuration,
         DelegationRegistry _delegationRegistry
     ) {
         if (_rentalDurationInHours == 0) {
             revert RentalAgreement__DurationCannotBeZero();
         }
-        if (uint256(_dealDuration) >= uint256(DealDuration._MAX)) {
+        if (uint256(_dealDuration) >= uint256(RentalEnums.DealDuration._MAX)) {
             revert RentalAgreement__InvalidDealDuration();
         }
         i_lender = _lender;
@@ -243,7 +228,7 @@ contract DelegationRentalAgreement is ERC721Holder, ERC1155Holder, ReentrancyGua
         inState(State.ACTIVE_DELEGATION)
         nonReentrant
     {
-        if (i_nftStandard == NftStandard.ERC4907) {
+        if (i_nftStandard == RentalEnums.NftStandard.ERC4907) {
             if (IERC4907(i_nftContract).userOf(i_tokenId) == s_renter) {
                 revert RentalAgreement__NoBreachDetected();
             }
@@ -278,11 +263,11 @@ contract DelegationRentalAgreement is ERC721Holder, ERC1155Holder, ReentrancyGua
         onlyLender 
         inState(State.PENDING) 
     {
-        if (i_nftStandard == NftStandard.ERC4907) {
+        if (i_nftStandard == RentalEnums.NftStandard.ERC4907) {
             if (IERC721(i_nftContract).ownerOf(i_tokenId) != i_lender) {
                 revert RentalAgreement__InvalidUser(i_lender, IERC721(i_nftContract).ownerOf(i_tokenId));
             }
-        } else { 
+        } else { // For ERC721 and ERC1155 delegation
             if (i_delegationRegistry.originalOwnerOf(i_nftContract, i_tokenId) != i_lender) {
                 revert RentalAgreement__NftNotDeposited();
             }
@@ -292,7 +277,7 @@ contract DelegationRentalAgreement is ERC721Holder, ERC1155Holder, ReentrancyGua
             block.timestamp + TimeConverter.hoursToSeconds(i_rentalDurationInHours)
         );
 
-        if (i_nftStandard == NftStandard.ERC4907) {
+        if (i_nftStandard == RentalEnums.NftStandard.ERC4907) {
             IERC4907(i_nftContract).setUser(
                 i_tokenId,
                 s_renter,
@@ -335,7 +320,7 @@ contract DelegationRentalAgreement is ERC721Holder, ERC1155Holder, ReentrancyGua
             platformFee
         );
 
-        if (i_nftStandard == NftStandard.ERC4907) {
+        if (i_nftStandard == RentalEnums.NftStandard.ERC4907) {
             IERC4907(i_nftContract).setUser(i_tokenId, address(0), 0);
         } else {
             i_delegationRegistry.revokeDelegation(i_nftContract, i_tokenId);
@@ -382,24 +367,24 @@ contract DelegationRentalAgreement is ERC721Holder, ERC1155Holder, ReentrancyGua
      * @param _duration The DealDuration enum member.
      * @return The duration in seconds.
      */
-    function getCustomDuration(DealDuration _duration)
+    function getCustomDuration(RentalEnums.DealDuration _duration)
         private
         pure
         returns (uint256)
     {
-        if (_duration == DealDuration.SIX_HOURS) {
+        if (_duration == RentalEnums.DealDuration.SIX_HOURS) {
             return 6 hours;
         }
-        if (_duration == DealDuration.TWELVE_HOURS) {
+        if (_duration == RentalEnums.DealDuration.TWELVE_HOURS) {
             return 12 hours;
         }
-        if (_duration == DealDuration.ONE_DAY) {
+        if (_duration == RentalEnums.DealDuration.ONE_DAY) {
             return 1 days;
         }
-        if (_duration == DealDuration.THREE_DAYS) {
+        if (_duration == RentalEnums.DealDuration.THREE_DAYS) {
             return 3 days;
         }
-        if (_duration == DealDuration.ONE_WEEK) {
+        if (_duration == RentalEnums.DealDuration.ONE_WEEK) {
             return 1 weeks;
         }
         revert RentalAgreement__InvalidDealDuration();
