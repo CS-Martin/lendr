@@ -208,7 +208,10 @@ contract CollateralRentalAgreement is
         onlyRenter
         inState(State.READY_TO_RELEASE)
     {
-        if (s_renterClaimDeadline != 0 && block.timestamp > s_renterClaimDeadline) {
+        if (s_renterClaimDeadline == 0) {
+            revert RentalAgreement__NftNotInEscrow();
+        }
+        if (block.timestamp > s_renterClaimDeadline) {
             revert RentalAgreement__DeadlinePassed();
         }
 
@@ -230,11 +233,7 @@ contract CollateralRentalAgreement is
         s_rentalEndTime = block.timestamp + TimeConverter.hoursToSeconds(i_rentalDurationInHours);
         s_returnDeadline = s_rentalEndTime + getCustomDuration(i_dealDuration);
 
-        if (i_nftStandard == RentalEnums.NftStandard.ERC721) {
-            IERC721(i_nftContract).safeTransferFrom(address(this), s_renter, i_tokenId);
-        } else if (i_nftStandard == RentalEnums.NftStandard.ERC1155) {
-            IERC1155(i_nftContract).safeTransferFrom(address(this), s_renter, i_tokenId, 1, "");
-        }
+        _transferNftFromEscrow(s_renter);
 
         emit NftReleasedToRenter();
         emit RentalStarted(s_rentalEndTime);
