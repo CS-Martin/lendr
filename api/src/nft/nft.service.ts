@@ -76,7 +76,7 @@ export class NftService implements NftServiceAbstractClass {
     }
   }
 
-  async find(filter: FilterNftDto): Promise<ResponseDto<NftDto[]>> {
+  async find(filter?: FilterNftDto): Promise<ResponseDto<NftDto[]>> {
     this.logger.log('Fetching NFTs', JSON.stringify(filter));
 
     try {

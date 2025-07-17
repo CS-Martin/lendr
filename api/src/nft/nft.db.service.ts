@@ -27,7 +27,7 @@ export class NftDbService {
     return nft;
   }
 
-  async find(filters: FilterNftDto): Promise<NFT[]> {
+  async find(filters?: FilterNftDto): Promise<NFT[]> {
     const where: Prisma.NFTWhereInput = {};
 
     if (filters?.userAddress) {
