@@ -8,6 +8,9 @@ import {ERC1155Holder} from '@openzeppelin/contracts/token/ERC1155/utils/ERC1155
 import {TimeConverter} from './utils/TimeConverter.sol';
 import {LendrRentalSystem} from './LendrRentalSystem.sol';
 import {FeeCalculator} from './utils/ComputePercentage.sol';
+import {DelegationRegistry} from './DelegationRegistryERC1155ERC721.sol';
+import {ReentrancyGuard} from '@openzeppelin/contracts/utils/ReentrancyGuard.sol';
+import {RentalEnums} from './libraries/RentalEnums.sol';
 
 interface IERC4907 {
     // Logged when the user of an NFT is changed or expires is changed
@@ -40,7 +43,7 @@ interface IERC4907 {
  * @dev Manages the escrow and state for a single NFT DELEGATION rental.
  * This contract handles delegation-based rentals for ERC721, ERC1155, and ERC4907 NFTs.
  */
-contract DelegationRentalAgreement is ERC721Holder, ERC1155Holder {
+contract DelegationRentalAgreement is ReentrancyGuard {
     /*//////////////////////////////////////////////////////////////
                                 ERRORS
     //////////////////////////////////////////////////////////////*/
@@ -52,19 +55,16 @@ contract DelegationRentalAgreement is ERC721Holder, ERC1155Holder {
     error RentalAgreement__InvalidDealDuration();
     error RentalAgreement__PaymentFailed();
     error RentalAgreement__DelegationDeadlineNotPassed();
-    error RentalAgreement__BreachReportingNotSupported();
     error RentalAgreement__NoBreachDetected();
     error RentalAgreement__RentalNotOver();
     error RentalAgreement__InvalidNftStandard();
+    error RentalAgreement__RentalIsOver();
+    error RentalAgreement__NftNotDeposited();
 
     /*//////////////////////////////////////////////////////////////
                                 EVENTS
     //////////////////////////////////////////////////////////////*/
     event RentalInitiated(address indexed renter);
-    event NftDepositedByLender(
-        address indexed nftContract,
-        uint256 indexed tokenId
-    );
     event RentalStarted(uint256 endTime);
     event RentalCancelled();
     event PayoutsDistributed(
@@ -77,30 +77,13 @@ contract DelegationRentalAgreement is ERC721Holder, ERC1155Holder {
     /*//////////////////////////////////////////////////////////////
                             TYPE DECLARATIONS
     //////////////////////////////////////////////////////////////*/
-    // Enums duplicated for blueprint simplicity. Will be refactored into a shared library later.
+    // State enum is specific to this contract's lifecycle.
     enum State {
         LISTED,
         PENDING,
-        READY_TO_DELEGATE, // Awaiting delegation activation
         ACTIVE_DELEGATION,
         COMPLETED,
         CANCELLED
-    }
-
-    enum NftStandard {
-        ERC721,
-        ERC1155,
-        ERC4907,
-        _MAX
-    }
-
-    enum DealDuration {
-        SIX_HOURS,
-        TWELVE_HOURS,
-        ONE_DAY,
-        THREE_DAYS,
-        ONE_WEEK,
-        _MAX
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -111,13 +94,15 @@ contract DelegationRentalAgreement is ERC721Holder, ERC1155Holder {
     uint256 public immutable i_tokenId;
     uint256 public immutable i_hourlyRentalFee;
     uint256 public immutable i_rentalDurationInHours;
-    NftStandard public immutable i_nftStandard;
-    DealDuration public immutable i_DealDuration;
+    RentalEnums.NftStandard public immutable i_nftStandard;
+    RentalEnums.DealDuration public immutable i_DealDuration;
     address public s_renter;
     State public s_rentalState;
     uint256 public s_rentalEndTime;
     uint256 public s_lenderDelegationDeadline;
     LendrRentalSystem public immutable i_factoryContract;
+    DelegationRegistry public immutable i_delegationRegistry;
+    uint256 public immutable i_platformFeeBps;
 
     /*//////////////////////////////////////////////////////////////
                              MODIFIERS
@@ -150,13 +135,6 @@ contract DelegationRentalAgreement is ERC721Holder, ERC1155Holder {
         _;
     }
 
-    modifier onlyERC4907() {
-        if (i_nftStandard != NftStandard.ERC4907) {
-            revert RentalAgreement__InvalidNftStandard();
-        }
-        _;
-    }
-
     /*//////////////////////////////////////////////////////////////
                             CONSTRUCTOR
     //////////////////////////////////////////////////////////////*/
@@ -166,13 +144,14 @@ contract DelegationRentalAgreement is ERC721Holder, ERC1155Holder {
         uint256 _tokenId,
         uint256 _hourlyRentalFee,
         uint256 _rentalDurationInHours,
-        NftStandard _nftStandard,
-        DealDuration _dealDuration
+        RentalEnums.NftStandard _nftStandard,
+        RentalEnums.DealDuration _dealDuration,
+        DelegationRegistry _delegationRegistry
     ) {
         if (_rentalDurationInHours == 0) {
             revert RentalAgreement__DurationCannotBeZero();
         }
-        if (uint256(_dealDuration) >= uint256(DealDuration._MAX)) {
+        if (uint256(_dealDuration) >= uint256(RentalEnums.DealDuration._MAX)) {
             revert RentalAgreement__InvalidDealDuration();
         }
         i_lender = _lender;
@@ -181,9 +160,11 @@ contract DelegationRentalAgreement is ERC721Holder, ERC1155Holder {
         i_hourlyRentalFee = _hourlyRentalFee;
         i_rentalDurationInHours = _rentalDurationInHours;
         i_factoryContract = LendrRentalSystem(payable(msg.sender));
+        i_delegationRegistry = _delegationRegistry;
         i_nftStandard = _nftStandard;
         i_DealDuration = _dealDuration;
         s_rentalState = State.LISTED;
+        i_platformFeeBps = i_factoryContract.s_feeBps();
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -238,15 +219,24 @@ contract DelegationRentalAgreement is ERC721Holder, ERC1155Holder {
     function reportBreach()
         external
         onlyRenter
-        onlyERC4907
         inState(State.ACTIVE_DELEGATION)
+        nonReentrant
     {
-        if (IERC4907(i_nftContract).userOf(i_tokenId) == s_renter) {
-            revert RentalAgreement__NoBreachDetected();
+        if (i_nftStandard == RentalEnums.NftStandard.ERC4907) {
+            if (IERC4907(i_nftContract).userOf(i_tokenId) == s_renter) {
+                revert RentalAgreement__NoBreachDetected();
+            }
+        } else {
+            if (i_delegationRegistry.userOf(i_nftContract, i_tokenId) == s_renter) {
+                revert RentalAgreement__NoBreachDetected();
+            }
+        }
+        if (block.timestamp >= s_rentalEndTime) {
+            revert RentalAgreement__RentalIsOver();
         }
 
-        uint256 refundAmount = getTotalHourlyFee();
         s_rentalState = State.CANCELLED;
+        uint256 refundAmount = getTotalHourlyFee();
         emit RentalCancelled();
 
         (bool success, ) = payable(s_renter).call{value: refundAmount}('');
@@ -262,13 +252,34 @@ contract DelegationRentalAgreement is ERC721Holder, ERC1155Holder {
      * @dev This function's implementation will depend on the NFT standard.
      * For ERC4907, it would call `setUser`. For others, it might be an on-chain approval.
      */
-    function activateDelegation() external onlyLender inState(State.PENDING) {
+    function activateDelegation() 
+        external 
+        onlyLender 
+        inState(State.PENDING) 
+    {
+        if (i_nftStandard == RentalEnums.NftStandard.ERC4907) {
+            if (IERC721(i_nftContract).ownerOf(i_tokenId) != i_lender) {
+                revert RentalAgreement__InvalidUser(i_lender, IERC721(i_nftContract).ownerOf(i_tokenId));
+            }
+        } else { // For ERC721 and ERC1155 delegation
+            if (i_delegationRegistry.originalOwnerOf(i_nftContract, i_tokenId) != i_lender) {
+                revert RentalAgreement__NftNotDeposited();
+            }
+        }
+
         uint64 delegationExpiry = uint64(
             block.timestamp + TimeConverter.hoursToSeconds(i_rentalDurationInHours)
         );
 
-        if (i_nftStandard == NftStandard.ERC4907) {
+        if (i_nftStandard == RentalEnums.NftStandard.ERC4907) {
             IERC4907(i_nftContract).setUser(
+                i_tokenId,
+                s_renter,
+                delegationExpiry
+            );
+        } else {
+            i_delegationRegistry.setDelegation(
+                i_nftContract,
                 i_tokenId,
                 s_renter,
                 delegationExpiry
@@ -290,24 +301,24 @@ contract DelegationRentalAgreement is ERC721Holder, ERC1155Holder {
             revert RentalAgreement__RentalNotOver();
         }
 
+        s_rentalState = State.COMPLETED;
+
         uint256 totalFee = getTotalHourlyFee();
-        uint256 platformFee = FeeCalculator.calculateFee(
-            totalFee,
-            i_factoryContract.s_feeBps()
-        );
+        uint256 platformFee = FeeCalculator.calculateFee(totalFee, i_platformFeeBps);
         uint256 lenderPayout = totalFee - platformFee;
 
-        s_rentalState = State.COMPLETED;
+        if (i_nftStandard == RentalEnums.NftStandard.ERC4907) {
+            IERC4907(i_nftContract).setUser(i_tokenId, address(0), 0);
+        } else {
+            i_delegationRegistry.revokeDelegation(i_nftContract, i_tokenId);
+        }
+
         emit PayoutsDistributed(
             i_lender,
             address(i_factoryContract),
             lenderPayout,
             platformFee
         );
-
-        if (i_nftStandard == NftStandard.ERC4907) {
-            IERC4907(i_nftContract).setUser(i_tokenId, address(0), 0);
-        }
 
         if (lenderPayout > 0) {
             (bool success, ) = payable(i_lender).call{value: lenderPayout}("");
@@ -350,24 +361,24 @@ contract DelegationRentalAgreement is ERC721Holder, ERC1155Holder {
      * @param _duration The DealDuration enum member.
      * @return The duration in seconds.
      */
-    function getCustomDuration(DealDuration _duration)
+    function getCustomDuration(RentalEnums.DealDuration _duration)
         private
         pure
         returns (uint256)
     {
-        if (_duration == DealDuration.SIX_HOURS) {
+        if (_duration == RentalEnums.DealDuration.SIX_HOURS) {
             return 6 hours;
         }
-        if (_duration == DealDuration.TWELVE_HOURS) {
+        if (_duration == RentalEnums.DealDuration.TWELVE_HOURS) {
             return 12 hours;
         }
-        if (_duration == DealDuration.ONE_DAY) {
+        if (_duration == RentalEnums.DealDuration.ONE_DAY) {
             return 1 days;
         }
-        if (_duration == DealDuration.THREE_DAYS) {
+        if (_duration == RentalEnums.DealDuration.THREE_DAYS) {
             return 3 days;
         }
-        if (_duration == DealDuration.ONE_WEEK) {
+        if (_duration == RentalEnums.DealDuration.ONE_WEEK) {
             return 1 weeks;
         }
         revert RentalAgreement__InvalidDealDuration();

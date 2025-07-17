@@ -3,7 +3,9 @@ pragma solidity ^0.8.20;
 
 import {CollateralRentalAgreement} from './CollateralRentalAgreement.sol';
 import {DelegationRentalAgreement} from './DelegationRentalAgreement.sol';
+import {DelegationRegistry} from './DelegationRegistryERC1155ERC721.sol';
 import {FeeCalculator} from './utils/ComputePercentage.sol';
+import {RentalEnums} from './libraries/RentalEnums.sol';
 
 /**
  * @title Rental System
@@ -35,6 +37,7 @@ contract LendrRentalSystem {
     mapping(uint256 => address) public s_collateralRentalAgreementById;
     mapping(uint256 => address) public s_delegationRentalAgreementById;
     uint256 public s_totalRentals;
+    DelegationRegistry public immutable i_delegationRegistry;
 
     /*//////////////////////////////////////////////////////////////
                                 EVENTS
@@ -79,6 +82,8 @@ contract LendrRentalSystem {
     constructor(uint256 initialPlatformFeePercentInBps) {
         i_deployer = msg.sender;
         s_feeBps = initialPlatformFeePercentInBps;
+        // Deploy DelegationRegistry with this contract as the sole authorization manager
+        i_delegationRegistry = new DelegationRegistry(address(this));
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -92,7 +97,7 @@ contract LendrRentalSystem {
 
     function withdraw() external onlyDeployer {
         uint256 amount = address(this).balance;
-        (bool success, ) = payable(address(this)).call{value: amount}("");
+        (bool success, ) = payable(i_deployer).call{value: amount}("");
         if (!success) revert LendrRentalSystem__WithdrawFailed();
         emit Withdrawn(i_deployer, amount);
     }
@@ -115,8 +120,8 @@ contract LendrRentalSystem {
      * @param _hourlyRentalFee The rental fee per hour in wei.
      * @param _collateral The collateral amount in wei (for collateral-based rentals).
      * @param _rentalDurationInHours The total duration of the rental in hours.
-     * @param _nftStandard The NFT standard of the token. See {CollateralRentalAgreement.NftStandard}.
-     * @param _dealDuration The deadline for the lender to deposit the NFT. See {CollateralRentalAgreement.DealDuration}.
+     * @param _nftStandard The NFT standard of the token. See {RentalEnums.NftStandard}.
+     * @param _dealDuration The deadline for the lender to deposit the NFT. See {RentalEnums.DealDuration}.
      * @return The address of the newly created rental agreement contract.
      */
     function createCollateralRentalAgreement(
@@ -126,8 +131,8 @@ contract LendrRentalSystem {
         uint256 _hourlyRentalFee,
         uint256 _collateral,
         uint256 _rentalDurationInHours,
-        CollateralRentalAgreement.NftStandard _nftStandard,
-        CollateralRentalAgreement.DealDuration _dealDuration
+        RentalEnums.NftStandard _nftStandard,
+        RentalEnums.DealDuration _dealDuration
     ) external returns (address) {
         _validateRentalParameters(
             _lender,
@@ -135,9 +140,9 @@ contract LendrRentalSystem {
             _hourlyRentalFee,
             _rentalDurationInHours,
             uint8(_nftStandard),
-            uint8(CollateralRentalAgreement.NftStandard._MAX),
+            uint8(RentalEnums.NftStandard._MAX),
             uint8(_dealDuration),
-            uint8(CollateralRentalAgreement.DealDuration._MAX)
+            uint8(RentalEnums.DealDuration._MAX)
         );
 
         if (_collateral == 0) {
@@ -179,8 +184,8 @@ contract LendrRentalSystem {
      * @param _tokenId The ID of the NFT to be rented.
      * @param _hourlyRentalFee The rental fee per hour in wei.
      * @param _rentalDurationInHours The total duration of the rental in hours.
-     * @param _nftStandard The NFT standard of the token. See {DelegationRentalAgreement.NftStandard}.
-     * @param _dealDuration The deadline for the lender to deposit the NFT. See {DelegationRentalAgreement.DealDuration}.
+     * @param _nftStandard The NFT standard of the token. See {RentalEnums.NftStandard}.
+     * @param _dealDuration The deadline for the lender to deposit the NFT. See {RentalEnums.DealDuration}.
      * @return The address of the newly created delegation rental agreement contract.
      */
     function createDelegationRentalAgreement(
@@ -189,8 +194,8 @@ contract LendrRentalSystem {
         uint256 _tokenId,
         uint256 _hourlyRentalFee,
         uint256 _rentalDurationInHours,
-        DelegationRentalAgreement.NftStandard _nftStandard,
-        DelegationRentalAgreement.DealDuration _dealDuration
+        RentalEnums.NftStandard _nftStandard,
+        RentalEnums.DealDuration _dealDuration
     ) external returns (address) {
         _validateRentalParameters(
             _lender,
@@ -198,9 +203,9 @@ contract LendrRentalSystem {
             _hourlyRentalFee,
             _rentalDurationInHours,
             uint8(_nftStandard),
-            uint8(DelegationRentalAgreement.NftStandard._MAX),
+            uint8(RentalEnums.NftStandard._MAX),
             uint8(_dealDuration),
-            uint8(DelegationRentalAgreement.DealDuration._MAX)
+            uint8(RentalEnums.DealDuration._MAX)
         );
 
         s_totalRentals++;
@@ -213,9 +218,12 @@ contract LendrRentalSystem {
             _hourlyRentalFee,
             _rentalDurationInHours,
             _nftStandard,
-            _dealDuration
+            _dealDuration,
+            i_delegationRegistry
         );
         address agreementAddress = address(rentalAgreement);
+
+        i_delegationRegistry.addAuthorized(agreementAddress);
 
         s_delegationRentalAgreementById[rentalId] = agreementAddress;
 
