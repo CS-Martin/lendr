@@ -7,6 +7,7 @@ import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
 import {IERC1155} from '@openzeppelin/contracts/token/ERC1155/IERC1155.sol';
 import {IERC165} from '@openzeppelin/contracts/utils/introspection/IERC165.sol';
 import {ReentrancyGuard} from '@openzeppelin/contracts/utils/ReentrancyGuard.sol';
+import {RentalEnums} from './libraries/RentalEnums.sol';
 
 /**
  * @title DelegationRegistry
@@ -54,14 +55,10 @@ contract DelegationRegistry is IERC721Receiver, IERC1155Receiver, ReentrancyGuar
     /*//////////////////////////////////////////////////////////////
                             TYPE DECLARATIONS
     //////////////////////////////////////////////////////////////*/
+
     struct Delegation {
         address user;
         uint64 expires;
-    }
-
-    enum NftStandard {
-        ERC721,
-        ERC1155
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -71,7 +68,7 @@ contract DelegationRegistry is IERC721Receiver, IERC1155Receiver, ReentrancyGuar
     mapping(address => mapping(uint256 => address)) public originalOwnerOf;
     address public immutable i_factory;
     mapping(address => bool) public isAuthorized;
-    mapping(address => NftStandard) public nftStandard;
+    mapping(address => RentalEnums.NftStandard) public nftStandard;
 
     /*//////////////////////////////////////////////////////////////
                                 MODIFIERS
@@ -170,14 +167,14 @@ contract DelegationRegistry is IERC721Receiver, IERC1155Receiver, ReentrancyGuar
         delete originalOwnerOf[nftContract][tokenId];
         emit NftWithdrawn(nftContract, tokenId, originalOwner);
 
-        NftStandard standard = nftStandard[nftContract];
-        if (standard == NftStandard.ERC721) {
+        RentalEnums.NftStandard standard = nftStandard[nftContract];
+        if (standard == RentalEnums.NftStandard.ERC721) {
             IERC721(nftContract).safeTransferFrom(
                 address(this),
                 originalOwner,
                 tokenId
             );
-        } else if (standard == NftStandard.ERC1155) {
+        } else if (standard == RentalEnums.NftStandard.ERC1155) {
             IERC1155(nftContract).safeTransferFrom(
                 address(this),
                 originalOwner,
@@ -237,7 +234,7 @@ contract DelegationRegistry is IERC721Receiver, IERC1155Receiver, ReentrancyGuar
         uint256 tokenId,
         bytes calldata
     ) external override returns (bytes4) {
-        nftStandard[msg.sender] = NftStandard.ERC721;
+        nftStandard[msg.sender] = RentalEnums.NftStandard.ERC721;
         originalOwnerOf[msg.sender][tokenId] = from;
         emit NftDeposited(msg.sender, tokenId, from);
         return this.onERC721Received.selector;
@@ -256,7 +253,7 @@ contract DelegationRegistry is IERC721Receiver, IERC1155Receiver, ReentrancyGuar
         if (amount != 1) {
             revert DelegationRegistry__InvalidAmount();
         }
-        nftStandard[msg.sender] = NftStandard.ERC1155;
+        nftStandard[msg.sender] = RentalEnums.NftStandard.ERC1155;
         originalOwnerOf[msg.sender][id] = from;
         emit NftDeposited(msg.sender, id, from);
         return this.onERC1155Received.selector;
