@@ -8,7 +8,7 @@ import {ERC1155Holder} from '@openzeppelin/contracts/token/ERC1155/utils/ERC1155
 import {TimeConverter} from './utils/TimeConverter.sol';
 import {LendrRentalSystem} from './LendrRentalSystem.sol';
 import {FeeCalculator} from './utils/ComputePercentage.sol';
-import {DelegationRegistry} from './DelegationRegistry.sol';
+import {DelegationRegistryERC1155ERC721} from './DelegationRegistryERC1155ERC721.sol';
 import {ReentrancyGuard} from '@openzeppelin/contracts/utils/ReentrancyGuard.sol';
 
 interface IERC4907 {

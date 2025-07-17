@@ -3,7 +3,7 @@ pragma solidity ^0.8.20;
 
 import {CollateralRentalAgreement} from './CollateralRentalAgreement.sol';
 import {DelegationRentalAgreement} from './DelegationRentalAgreement.sol';
-import {DelegationRegistry} from './DelegationRegistry.sol';
+import {DelegationRegistryERC1155ERC721} from './DelegationRegistryERC1155ERC721.sol';
 import {FeeCalculator} from './utils/ComputePercentage.sol';
 
 /**
