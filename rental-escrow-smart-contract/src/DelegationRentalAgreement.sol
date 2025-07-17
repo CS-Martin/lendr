@@ -9,6 +9,7 @@ import {TimeConverter} from './utils/TimeConverter.sol';
 import {LendrRentalSystem} from './LendrRentalSystem.sol';
 import {FeeCalculator} from './utils/ComputePercentage.sol';
 import {DelegationRegistry} from './DelegationRegistry.sol';
+import {ReentrancyGuard} from '@openzeppelin/contracts/utils/ReentrancyGuard.sol';
 
 interface IERC4907 {
     // Logged when the user of an NFT is changed or expires is changed
@@ -34,6 +35,12 @@ interface IERC4907 {
     /// @param tokenId The NFT to get the user expires for
     /// @return The user expires for this NFT
     function userExpires(uint256 tokenId) external view returns(uint256);
+
+    /// @notice Get the owner of an NFT
+    /// @dev The zero address indicates that there is no owner
+    /// @param tokenId The NFT to get the owner for
+    /// @return The owner of this NFT
+    function ownerOf(uint256 tokenId) external view returns(address);
 }
 
 /**
@@ -41,7 +48,7 @@ interface IERC4907 {
  * @dev Manages the escrow and state for a single NFT DELEGATION rental.
  * This contract handles delegation-based rentals for ERC721, ERC1155, and ERC4907 NFTs.
  */
-contract DelegationRentalAgreement is ERC721Holder, ERC1155Holder {
+contract DelegationRentalAgreement is ERC721Holder, ERC1155Holder, ReentrancyGuard {
     /*//////////////////////////////////////////////////////////////
                                 ERRORS
     //////////////////////////////////////////////////////////////*/
@@ -53,19 +60,15 @@ contract DelegationRentalAgreement is ERC721Holder, ERC1155Holder {
     error RentalAgreement__InvalidDealDuration();
     error RentalAgreement__PaymentFailed();
     error RentalAgreement__DelegationDeadlineNotPassed();
-    error RentalAgreement__BreachReportingNotSupported();
     error RentalAgreement__NoBreachDetected();
     error RentalAgreement__RentalNotOver();
     error RentalAgreement__InvalidNftStandard();
+    error RentalAgreement__RentalIsOver();
 
     /*//////////////////////////////////////////////////////////////
                                 EVENTS
     //////////////////////////////////////////////////////////////*/
     event RentalInitiated(address indexed renter);
-    event NftDepositedByLender(
-        address indexed nftContract,
-        uint256 indexed tokenId
-    );
     event RentalStarted(uint256 endTime);
     event RentalCancelled();
     event PayoutsDistributed(
@@ -82,7 +85,6 @@ contract DelegationRentalAgreement is ERC721Holder, ERC1155Holder {
     enum State {
         LISTED,
         PENDING,
-        READY_TO_DELEGATE, // Awaiting delegation activation
         ACTIVE_DELEGATION,
         COMPLETED,
         CANCELLED
@@ -149,13 +151,6 @@ contract DelegationRentalAgreement is ERC721Holder, ERC1155Holder {
     modifier onlyLender() {
         if (msg.sender != i_lender) {
             revert RentalAgreement__InvalidUser(i_lender, msg.sender);
-        }
-        _;
-    }
-
-    modifier onlyERC4907() {
-        if (i_nftStandard != NftStandard.ERC4907) {
-            revert RentalAgreement__InvalidNftStandard();
         }
         _;
     }
@@ -245,6 +240,7 @@ contract DelegationRentalAgreement is ERC721Holder, ERC1155Holder {
         external
         onlyRenter
         inState(State.ACTIVE_DELEGATION)
+        nonReentrant
     {
         if (i_nftStandard == NftStandard.ERC4907) {
             if (IERC4907(i_nftContract).userOf(i_tokenId) == s_renter) {
@@ -255,9 +251,12 @@ contract DelegationRentalAgreement is ERC721Holder, ERC1155Holder {
                 revert RentalAgreement__NoBreachDetected();
             }
         }
+        if (block.timestamp >= s_rentalEndTime) {
+            revert RentalAgreement__RentalIsOver();
+        }
 
-        uint256 refundAmount = getTotalHourlyFee();
         s_rentalState = State.CANCELLED;
+        uint256 refundAmount = getTotalHourlyFee();
         emit RentalCancelled();
 
         (bool success, ) = payable(s_renter).call{value: refundAmount}('');
@@ -278,6 +277,16 @@ contract DelegationRentalAgreement is ERC721Holder, ERC1155Holder {
         onlyLender 
         inState(State.PENDING) 
     {
+        if (i_nftStandard != NftStandard.ERC4907) {
+            if (i_delegationRegistry.originalOwnerOf(i_nftContract, i_tokenId) != i_lender) {
+                revert RentalAgreement__NftNotDeposited();
+            }
+        }
+
+        if (IERC721(i_nftContract).ownerOf(i_tokenId) != i_lender) {
+            revert RentalAgreement__InvalidUser(i_lender, IERC721(i_nftContract).ownerOf(i_tokenId));
+        }
+
         uint64 delegationExpiry = uint64(
             block.timestamp + TimeConverter.hoursToSeconds(i_rentalDurationInHours)
         );
@@ -312,14 +321,12 @@ contract DelegationRentalAgreement is ERC721Holder, ERC1155Holder {
             revert RentalAgreement__RentalNotOver();
         }
 
+        s_rentalState = State.COMPLETED;
+
         uint256 totalFee = getTotalHourlyFee();
-        uint256 platformFee = FeeCalculator.calculateFee(
-            totalFee,
-            i_platformFeeBps
-        );
+        uint256 platformFee = FeeCalculator.calculateFee(totalFee, i_platformFeeBps);
         uint256 lenderPayout = totalFee - platformFee;
 
-        s_rentalState = State.COMPLETED;
         emit PayoutsDistributed(
             i_lender,
             address(i_factoryContract),
@@ -331,7 +338,6 @@ contract DelegationRentalAgreement is ERC721Holder, ERC1155Holder {
             IERC4907(i_nftContract).setUser(i_tokenId, address(0), 0);
         } else {
             i_delegationRegistry.revokeDelegation(i_nftContract, i_tokenId);
-            i_delegationRegistry.withdrawNft(i_nftContract, i_tokenId);
         }
 
         if (lenderPayout > 0) {
