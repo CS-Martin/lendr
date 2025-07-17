@@ -44,6 +44,7 @@ contract CollateralRentalAgreement is
     error RentalAgreement__DeadlinePassed();
     error RentalAgreement__LenderStillHasTime();
     error RentalAgreement__RenterStillHasTime();
+    error RentalAgreement__ReturnDeadlineMissed();
 
     /*//////////////////////////////////////////////////////////////
                                 EVENTS
@@ -258,7 +259,7 @@ contract CollateralRentalAgreement is
         if (block.timestamp > s_returnDeadline) {
             s_rentalState = State.DEFAULTED;
             emit RentalDefaulted();
-            return;
+            revert RentalAgreement__ReturnDeadlineMissed();
         }
 
         s_rentalState = State.COMPLETED;
