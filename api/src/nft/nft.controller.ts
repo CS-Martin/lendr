@@ -10,12 +10,10 @@ import {
 } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { NftService } from './nft.service';
-import { CreateNftDto } from './dto/create-nft.dto';
-import { UpdateNftDto } from './dto/update-nft.dto';
-import { ConfigService } from '@nestjs/config';
+import { CreateNftDto, UpdateNftDto, FilterNftDto } from './dto';
 
 @ApiTags('NFTs')
-@Controller(`${new ConfigService().get('API_VERSION')}/nft`)
+@Controller({ path: 'nft', version: '1' })
 export class NftController {
   constructor(private readonly nftService: NftService) {}
 
@@ -30,15 +28,7 @@ export class NftController {
   @Get()
   @ApiOperation({ summary: 'Get all NFTs with optional filters' })
   @ApiResponse({ status: 200, description: 'NFTs retrieved successfully' })
-  findAll(
-    @Query()
-    filters: {
-      userAddress?: string;
-      title?: string;
-      category?: string;
-      collectionName?: string;
-    },
-  ) {
+  findAll(@Query() filters: FilterNftDto) {
     return this.nftService.find(filters);
   }
 

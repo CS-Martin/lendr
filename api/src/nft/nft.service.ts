@@ -1,12 +1,11 @@
 import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { CreateNftDto } from './dto/create-nft.dto';
-import { UpdateNftDto } from './dto/update-nft.dto';
 import { NftDbService } from './nft.db.service';
 import { NftDto } from './dto/nft.dto';
 import { NFT } from '@prisma/client';
 import { ResponseDto } from 'lib/shared/dto/response.dto';
 import { UsersDbService } from 'users/users.db.service';
 import { NftServiceAbstractClass } from './nft.service.abstract.class';
+import { FilterNftDto, CreateNftDto, UpdateNftDto } from './dto';
 
 @Injectable()
 export class NftService implements NftServiceAbstractClass {
@@ -77,9 +76,7 @@ export class NftService implements NftServiceAbstractClass {
     }
   }
 
-  async find(
-    filter?: Partial<Pick<NFT, 'userAddress' | 'title' | 'category' | 'collectionName'>>
-  ): Promise<ResponseDto<NftDto[]>> {
+  async find(filter: FilterNftDto): Promise<ResponseDto<NftDto[]>> {
     this.logger.log('Fetching NFTs', JSON.stringify(filter));
 
     try {
