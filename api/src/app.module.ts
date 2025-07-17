@@ -7,9 +7,10 @@ import { RentalsModule } from './rentals/rentals.module';
 import { RentalPostsModule } from './rental-posts/rental-posts.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { BidsModule } from './bids/bids.module';
+import { TransactionHashModule } from './transaction-hash/transaction-hash.module';
 
 @Module({
-    imports: [UsersModule, NftModule, RentalsModule, RentalPostsModule, PrismaModule, BidsModule],
+    imports: [UsersModule, NftModule, RentalsModule, RentalPostsModule, PrismaModule, BidsModule, TransactionHashModule],
     controllers: [AppController],
     providers: [AppService],
 })
