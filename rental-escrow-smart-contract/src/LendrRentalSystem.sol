@@ -221,6 +221,8 @@ contract LendrRentalSystem {
         );
         address agreementAddress = address(rentalAgreement);
 
+        i_delegationRegistry.addAuthorized(agreementAddress);
+
         s_delegationRentalAgreementById[rentalId] = agreementAddress;
 
         emit DelegationRentalAgreementCreated(
