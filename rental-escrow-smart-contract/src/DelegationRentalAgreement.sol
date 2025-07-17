@@ -278,14 +278,14 @@ contract DelegationRentalAgreement is ERC721Holder, ERC1155Holder, ReentrancyGua
         onlyLender 
         inState(State.PENDING) 
     {
-        if (i_nftStandard != NftStandard.ERC4907) {
+        if (i_nftStandard == NftStandard.ERC4907) {
+            if (IERC721(i_nftContract).ownerOf(i_tokenId) != i_lender) {
+                revert RentalAgreement__InvalidUser(i_lender, IERC721(i_nftContract).ownerOf(i_tokenId));
+            }
+        } else { 
             if (i_delegationRegistry.originalOwnerOf(i_nftContract, i_tokenId) != i_lender) {
                 revert RentalAgreement__NftNotDeposited();
             }
-        }
-
-        if (IERC721(i_nftContract).ownerOf(i_tokenId) != i_lender) {
-            revert RentalAgreement__InvalidUser(i_lender, IERC721(i_nftContract).ownerOf(i_tokenId));
         }
 
         uint64 delegationExpiry = uint64(
