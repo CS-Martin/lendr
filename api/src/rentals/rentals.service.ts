@@ -4,13 +4,11 @@ import {
     Logger,
     NotFoundException,
 } from '@nestjs/common';
-import { CreateRentalDto } from './dto/create-rental.dto';
-import { UpdateRentalDto } from './dto/update-rental.dto';
 import { RentalsDbService } from './rentals.db.service';
 import { ResponseDto } from 'lib/shared/dto/response.dto';
-import { RentalDto } from './dto/rental.dto';
 import { Rental } from '@prisma/client';
 import { RentalsServiceAbstractClass } from './rentals.service.abstract.class';
+import { CreateRentalDto, UpdateRentalDto, RentalDto } from './dto';
 
 @Injectable()
 export class RentalsService implements RentalsServiceAbstractClass {

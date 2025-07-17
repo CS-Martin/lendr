@@ -1,5 +1,3 @@
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
 import { UsersDbService } from './users.db.service';
 import {
     BadRequestException,
@@ -9,8 +7,8 @@ import {
 } from '@nestjs/common';
 import { UsersServiceAbstractClass } from './users.service.abstract.class';
 import { ResponseDto } from 'lib/shared/dto/response.dto';
-import { UserDto } from './dto/user.dto';
 import { User } from '@prisma/client';
+import { CreateUserDto, UpdateUserDto, UserDto } from './dto';
 
 @Injectable()
 export class UsersService implements UsersServiceAbstractClass {

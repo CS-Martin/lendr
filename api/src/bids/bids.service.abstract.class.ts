@@ -1,7 +1,5 @@
 import { ResponseDto } from 'lib/shared/dto/response.dto';
-import { CreateBidDto } from './dto/create-bid.dto';
-import { BidDto } from './dto/bid.dto';
-import { UpdateBidDto } from './dto/update-bid.dto';
+import { CreateBidDto, UpdateBidDto, BidDto } from './dto';
 
 export abstract class BidsServiceAbstractClass {
     abstract create(createBidDto: CreateBidDto): Promise<ResponseDto<BidDto>>;

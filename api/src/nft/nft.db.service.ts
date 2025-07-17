@@ -2,8 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '@prisma/prisma.service';
 import { Prisma } from '@prisma/client';
 import { NFT } from '@prisma/client';
-import { CreateNftDto } from './dto/create-nft.dto';
-import { UpdateNftDto } from './dto/update-nft.dto';
+import { FilterNftDto, CreateNftDto, UpdateNftDto } from './dto';
 
 @Injectable()
 export class NftDbService {
@@ -28,9 +27,7 @@ export class NftDbService {
     return nft;
   }
 
-  async find(
-    filters?: Partial<Pick<NFT, 'userAddress' | 'title' | 'category' | 'collectionName'>>
-  ): Promise<NFT[]> {
+  async find(filters: FilterNftDto): Promise<NFT[]> {
     const where: Prisma.NFTWhereInput = {};
 
     if (filters?.userAddress) {
