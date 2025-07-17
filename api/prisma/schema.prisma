@@ -106,8 +106,8 @@ model Bid {
   rentalDuration    Int
   isAccepted        Boolean
   acceptedTimestamp DateTime?
-  createdAt         DateTime
-  updatedAt         DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
 
   post   RentalPost @relation(fields: [rentalPostId], references: [rentalPostId])
   bidder User       @relation("Bidder", fields: [bidderAddress], references: [address])
