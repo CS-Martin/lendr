@@ -37,7 +37,7 @@ contract CollateralRentalTest is Test {
     function setUp() public virtual {
         // Deploy LendrRentalSystem
         vm.startPrank(lender);
-        lendrRentalSystem = new LendrRentalSystem(100); // 1% fee
+        lendrRentalSystem = new LendrRentalSystem(500); // 1% fee
         vm.stopPrank();
 
         // Deploy and setup ERC721 mock
@@ -229,7 +229,7 @@ contract CollateralRentalTest is Test {
 
         // Check payouts
         uint256 totalRentalFee = collateralRentalAgreement.getTotalHourlyFee();
-        uint256 platformFee = (totalRentalFee * 100) / 10000;
+        uint256 platformFee = (totalRentalFee * 500) / 10000;
         uint256 lenderPayout = totalRentalFee - platformFee;
 
         assertEq(
@@ -273,7 +273,7 @@ contract CollateralRentalTest is Test {
 
         // Check payouts
         uint256 totalRentalFee = collateralRentalAgreement.getTotalHourlyFee();
-        uint256 platformFee = (totalRentalFee * 100) / 10000;
+        uint256 platformFee = (totalRentalFee * 500) / 10000;
         uint256 lenderPayout = totalRentalFee - platformFee + COLLATERAL_AMOUNT;
 
         assertEq(
@@ -585,6 +585,109 @@ contract CollateralRentalTest is Test {
     /*//////////////////////////////////////////////////////////////
                             EDGE CASE TESTS
     //////////////////////////////////////////////////////////////*/
+
+    function test_platform_fee_with_low_rental_rates() public {
+        // This test checks the platform fee calculation for small rental amounts
+        // to ensure the basis point calculation is correct and handles rounding as expected.
+
+        // Scenario 1: Hourly rate of 1 wei.
+        // Total rental fee = 1 wei/hr * 24 hrs = 24 wei
+        // Platform fee = (24 * 500) / 10000 = 1.2 wei, which rounds down to 1 wei.
+        _executeFeeTest(1, 2);
+
+        // Scenario 2: Hourly rate of 8 wei.
+        // Total rental fee = 8 wei/hr * 24 hrs = 192 wei
+        // Platform fee = (192 * 500) / 10000 = 9.6 wei, which rounds down to 9 wei.
+        _executeFeeTest(8, 3);
+
+        // Scenario 3: Hourly rate where platform fee would round down to 0.
+        // Total rental fee = 0.4 wei/hr * 24 hrs = 9.6 wei -> let's use 1 wei/hr * 1hr to make it simple.
+        // Let's use a duration of 1 hour for a simple case.
+        // Total rental fee = 1 wei/hr * 1 hr = 1 wei
+        // Platform fee = (1 * 500) / 10000 = 0.05 wei -> 0 wei
+        _executeFeeTestWithDuration(1, 1, 4);
+
+        // Scenario 4: A rate just high enough to generate a 1 wei fee.
+        // To get a 1 wei fee, (total fee * 500) / 10000 >= 1
+        // total fee * 500 >= 10000 -> total fee >= 20
+        // With a 1-hour duration, an hourly rate of 20 wei should result in a 1 wei fee.
+        // Platform fee = (20 * 500) / 10000 = 1 wei.
+        _executeFeeTestWithDuration(20, 1, 5);
+    }
+
+    function _executeFeeTest(uint256 hourlyFee, uint256 tokenId) internal {
+        _executeFeeTestWithDuration(hourlyFee, RENTAL_DURATION_IN_HOURS, tokenId);
+    }
+
+    function _executeFeeTestWithDuration(
+        uint256 hourlyFee,
+        uint256 duration,
+        uint256 tokenId
+    ) internal {
+        // Arrange
+        mockERC721.mint(lender, tokenId);
+        CollateralRentalAgreement newRental;
+        vm.startPrank(address(lendrRentalSystem));
+        newRental = new CollateralRentalAgreement(
+            lender,
+            address(mockERC721),
+            tokenId,
+            hourlyFee,
+            COLLATERAL_AMOUNT,
+            duration,
+            RentalEnums.NftStandard.ERC721,
+            RentalEnums.DealDuration.ONE_DAY
+        );
+        vm.stopPrank();
+
+        vm.startPrank(lender);
+        mockERC721.setApprovalForAll(address(newRental), true);
+        vm.stopPrank();
+
+        uint256 totalPayment = newRental.getTotalRentalFeeWithCollateral();
+        vm.deal(renter, totalPayment);
+
+        vm.startPrank(renter);
+        newRental.initiateRental{value: totalPayment}();
+        vm.stopPrank();
+
+        vm.startPrank(lender);
+        newRental.depositNFTByLender();
+        vm.stopPrank();
+
+        vm.startPrank(renter);
+        newRental.releaseNFTToRenter();
+        vm.stopPrank();
+
+        vm.startPrank(renter);
+        mockERC721.setApprovalForAll(address(newRental), true);
+        vm.stopPrank();
+
+        uint256 lenderInitialBalance = lender.balance;
+        uint256 factoryInitialBalance = address(lendrRentalSystem).balance;
+
+        // Act
+        vm.startPrank(renter);
+        newRental.returnNFTToLender();
+        vm.stopPrank();
+
+        // Assert
+        uint256 totalRentalFee = newRental.getTotalHourlyFee();
+        uint256 platformFeeBasisPoints = lendrRentalSystem.s_feeBps();
+        uint256 expectedPlatformFee = (totalRentalFee * platformFeeBasisPoints) / 10000;
+        uint256 expectedLenderPayout = totalRentalFee - expectedPlatformFee;
+
+        assertEq(
+            lender.balance,
+            lenderInitialBalance + expectedLenderPayout,
+            "Lender payout is incorrect"
+        );
+        assertEq(
+            address(lendrRentalSystem).balance,
+            factoryInitialBalance + expectedPlatformFee,
+            "Platform fee is incorrect"
+        );
+    }
 
     function test_constructor_reverts_if_duration_is_zero() public {
         vm.startPrank(address(lendrRentalSystem));
