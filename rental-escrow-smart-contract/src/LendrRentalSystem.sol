@@ -211,6 +211,11 @@ contract LendrRentalSystem {
         s_totalRentals++;
         uint256 rentalId = s_totalRentals;
 
+        DelegationRegistry registryToUse = (_nftStandard ==
+            RentalEnums.NftStandard.ERC4907)
+            ? DelegationRegistry(address(0))
+            : i_delegationRegistry;
+
         DelegationRentalAgreement rentalAgreement = new DelegationRentalAgreement(
             _lender,
             _nftContract,
@@ -219,11 +224,13 @@ contract LendrRentalSystem {
             _rentalDurationInHours,
             _nftStandard,
             _dealDuration,
-            i_delegationRegistry
+            registryToUse
         );
         address agreementAddress = address(rentalAgreement);
 
-        i_delegationRegistry.addAuthorized(agreementAddress);
+        if (address(registryToUse) != address(0)) {
+            i_delegationRegistry.addAuthorized(agreementAddress);
+        }
 
         s_delegationRentalAgreementById[rentalId] = agreementAddress;
 
