@@ -5,6 +5,8 @@
   "private": true,
   "scripts": {
     "dev": "turbo dev",
+    "dev:api": "turbo dev --filter=api",
+    "dev:client": "turbo dev --filter=client",
     "build": "turbo build",
     "start": "turbo start",
     "lint": "turbo lint",

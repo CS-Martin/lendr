@@ -60,22 +60,71 @@ lendr/
 
 ## Getting Started
 
-1. **Prerequisites**
-   ```bash
-   # Install dependencies
-   npm install
-   
-   # Copy environment file
-   cp .env.example .env
-   
-   # Update .env with your configuration
-   ```
+### 1. Prerequisites
+- [Node.js](https://nodejs.org/) (v18+ recommended)
+- [npm](https://www.npmjs.com/) (v7+ for workspaces support)
+- [Docker & Docker Compose](https://docs.docker.com/get-docker/) (for database and optional services)
 
-2. **Start Development Environment**
-   ```bash
-   # Start all services
-   docker-compose up -d
-   
+### 2. Install Dependencies (Monorepo)
+From the root of the repository:
+
+```bash
+npm install
+```
+This will install dependencies for all packages and apps (API, client, etc.) using npm workspaces.
+
+### 3. Environment Variables
+Copy the example environment file and update it with your configuration:
+
+```bash
+cp .env.example .env
+# Edit .env as needed
+```
+
+### 4. Running the Applications
+
+#### Run Everything (API & Client)
+From the root directory:
+```bash
+npm run dev
+```
+This starts both the API (NestJS) and client (Next.js) apps in parallel using Turborepo.
+
+#### Run Only the API
+```bash
+npm run dev:api
+```
+
+#### Run Only the Client
+```bash
+npm run dev:client
+```
+
+- By default, the API runs on [http://localhost:3000](http://localhost:3000)
+- The client runs on [http://localhost:8080](http://localhost:8080) (see `apps/client/package.json` for port)
+
+#### Run with Docker Compose (optional)
+If you want to start supporting services (e.g., PostgreSQL):
+```bash
+docker-compose up -d
+```
+
+### 5. Building the Applications
+```bash
+npm run build
+```
+This builds all apps/packages using Turborepo.
+
+### 6. Linting & Formatting
+```bash
+npm run lint   # Lint all apps/packages
+npm run format # Format all apps/packages
+```
+
+---
+
+For more details on project structure and advanced commands, see the rest of this README.
+
    # Access the application
    http://localhost:3000
    ```
