@@ -5,10 +5,11 @@ import { motion } from 'framer-motion';
 
 interface FilterHeaderProps {
     onToggleSidebar: () => void;
-    // isMobile: boolean
+    isMobile: boolean;
 }
 
-export function FilterHeader({ onToggleSidebar }: FilterHeaderProps) {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function FilterHeader({ onToggleSidebar, isMobile }: FilterHeaderProps) {
     return (
         <div className='flex items-center justify-between'>
             <motion.h2
