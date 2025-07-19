@@ -6,6 +6,8 @@
     },
     "scripts": {
         "dev": "turbo dev",
+        "dev:api": "turbo dev --filter api",
+        "dev:client": "turbo dev --filter client",
         "build": "turbo build",
         "start": "turbo start",
         "lint": "turbo lint",
@@ -15,5 +17,6 @@
     "packageManager": "pnpm@10.13.1",
     "dependencies": {
         "@prisma/client": "6.12.0"
-    }
+    },
+    "private": true
 }
