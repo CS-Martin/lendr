@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { IsDate, IsNumber, IsString } from 'class-validator';
 
 export class RentalDto {
     @ApiProperty({
@@ -6,6 +7,7 @@ export class RentalDto {
         example: '1',
         type: 'number',
     })
+    @IsNumber()
     rentalId!: number;
 
     @ApiProperty({
@@ -13,6 +15,7 @@ export class RentalDto {
         example: '0x1234567890123456789012345678901234567890',
         type: 'string',
     })
+    @IsString()
     renterAddress!: string;
 
     @ApiProperty({
@@ -20,6 +23,7 @@ export class RentalDto {
         example: '1',
         type: 'number',
     })
+    @IsNumber()
     rentalPostId!: number;
 
     @ApiProperty({
@@ -27,6 +31,7 @@ export class RentalDto {
         example: '1',
         type: 'number',
     })
+    @IsNumber()
     bidId?: number;
 
     @ApiProperty({
@@ -34,6 +39,7 @@ export class RentalDto {
         example: '69',
         type: 'number',
     })
+    @IsNumber()
     duration!: number;
 
     @ApiProperty({
@@ -41,6 +47,7 @@ export class RentalDto {
         example: '1',
         type: 'number',
     })
+    @IsNumber()
     amount!: number;
 
     @ApiProperty({
@@ -48,6 +55,7 @@ export class RentalDto {
         example: '2025-07-14T12:00:00Z',
         format: 'date-time',
     })
+    @IsDate()
     startDatetime!: Date;
 
     @ApiProperty({
@@ -55,5 +63,6 @@ export class RentalDto {
         example: '2025-07-21T12:00:00Z',
         format: 'date-time',
     })
+    @IsDate()
     endDatetime!: Date;
 }

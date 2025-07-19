@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { RentalListingStatus } from '@prisma/client';
+import { IsBoolean, IsDate, IsEnum, IsNumber, IsString } from 'class-validator';
 
 export class RentalPostDto {
     @ApiProperty({
@@ -8,6 +9,7 @@ export class RentalPostDto {
         required: true,
         type: Number,
     })
+    @IsNumber()
     rentalPostId: number;
 
     @ApiProperty({
@@ -16,6 +18,7 @@ export class RentalPostDto {
         required: true,
         type: String,
     })
+    @IsString()
     posterAddress!: string;
 
     @ApiProperty({
@@ -24,6 +27,7 @@ export class RentalPostDto {
         required: true,
         type: String,
     })
+    @IsString()
     name!: string;
 
     @ApiProperty({
@@ -32,6 +36,7 @@ export class RentalPostDto {
         required: true,
         type: String,
     })
+    @IsString()
     description!: string;
 
     @ApiProperty({
@@ -40,6 +45,7 @@ export class RentalPostDto {
         required: true,
         type: Number,
     })
+    @IsNumber()
     hourlyRate!: number;
 
     @ApiProperty({
@@ -48,6 +54,7 @@ export class RentalPostDto {
         required: true,
         type: Number,
     })
+    @IsNumber()
     collateral!: number;
 
     @ApiProperty({
@@ -56,6 +63,7 @@ export class RentalPostDto {
         required: true,
         type: Boolean,
     })
+    @IsBoolean()
     isBiddable!: boolean;
 
     @ApiProperty({
@@ -64,6 +72,7 @@ export class RentalPostDto {
         required: false,
         type: Date,
     })
+    @IsDate()
     biddingStarttime?: Date;
 
     @ApiProperty({
@@ -72,6 +81,7 @@ export class RentalPostDto {
         required: false,
         type: Date,
     })
+    @IsDate()
     biddingEndtime?: Date;
 
     @ApiProperty({
@@ -80,6 +90,7 @@ export class RentalPostDto {
         required: true,
         type: Boolean,
     })
+    @IsBoolean()
     isActive!: boolean;
 
     @ApiProperty({
@@ -90,6 +101,7 @@ export class RentalPostDto {
         enumName: 'RentalListingStatus',
         default: RentalListingStatus.AVAILABLE,
     })
+    @IsEnum(RentalListingStatus)
     statusCode!: RentalListingStatus;
 
     @ApiProperty({
@@ -98,6 +110,7 @@ export class RentalPostDto {
         required: true,
         type: Date,
     })
+    @IsDate()
     createdAt!: Date;
 
     @ApiProperty({
@@ -106,5 +119,6 @@ export class RentalPostDto {
         required: false,
         type: Date,
     })
+    @IsDate()
     updatedAt?: Date;
 }
