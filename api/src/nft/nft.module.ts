@@ -5,8 +5,8 @@ import { NftDbService } from './nft.db.service';
 import { UsersModule } from 'users/users.module';
 
 @Module({
-  imports: [UsersModule],
-  controllers: [NftController],
-  providers: [NftService, NftDbService],
+    imports: [UsersModule],
+    controllers: [NftController],
+    providers: [NftService, NftDbService],
 })
 export class NftModule {}

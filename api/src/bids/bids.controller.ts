@@ -15,7 +15,7 @@ import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 @ApiTags('Bids')
 @Controller({ path: 'bid', version: '1' })
 export class BidsController {
-    constructor(private readonly bidsService: BidsService) { }
+    constructor(private readonly bidsService: BidsService) {}
 
     @Post()
     @ApiOperation({ summary: 'Create a new bid' })

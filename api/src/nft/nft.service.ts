@@ -1,4 +1,9 @@
-import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import {
+    BadRequestException,
+    Injectable,
+    Logger,
+    NotFoundException,
+} from '@nestjs/common';
 import { NftDbService } from './nft.db.service';
 import { NftDto } from './dto/nft.dto';
 import { NFT } from '@prisma/client';
@@ -14,7 +19,7 @@ export class NftService implements NftServiceAbstractClass {
     constructor(
         private readonly nftDbService: NftDbService,
         private readonly userDbService: UsersDbService,
-    ) { }
+    ) {}
 
     async create(createNftDto: CreateNftDto): Promise<ResponseDto<NftDto>> {
         this.logger.log('Creating NFT', createNftDto);

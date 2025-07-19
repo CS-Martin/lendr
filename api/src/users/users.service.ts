@@ -19,6 +19,11 @@ export class UsersService implements UsersServiceAbstractClass {
     async create(createUserDto: CreateUserDto): Promise<ResponseDto<UserDto>> {
         this.logger.log('Creating user', createUserDto);
 
+
+
+
+
+
         try {
             const user = await this.usersDbService.create(createUserDto);
 

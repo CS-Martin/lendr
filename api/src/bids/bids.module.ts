@@ -7,4 +7,4 @@ import { BidsDbService } from './bids.db.service';
     controllers: [BidsController],
     providers: [BidsService, BidsDbService],
 })
-export class BidsModule { }
+export class BidsModule {}

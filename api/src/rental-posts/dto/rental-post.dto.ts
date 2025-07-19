@@ -88,7 +88,7 @@ export class RentalPostDto {
         required: true,
         enum: RentalListingStatus,
         enumName: 'RentalListingStatus',
-        default: RentalListingStatus.AVAILABLE
+        default: RentalListingStatus.AVAILABLE,
     })
     statusCode!: RentalListingStatus;
 

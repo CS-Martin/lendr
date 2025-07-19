@@ -5,7 +5,7 @@ import { CreateRentalPostDto, UpdateRentalPostDto } from './dto';
 
 @Injectable()
 export class RentalPostsDbService {
-    constructor(private readonly prisma: PrismaService) { }
+    constructor(private readonly prisma: PrismaService) {}
 
     async create(
         createRentalPostDto: CreateRentalPostDto,

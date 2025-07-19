@@ -5,4 +5,4 @@ export class CreateRentalPostDto extends OmitType(RentalPostDto, [
     'rentalPostId',
     'createdAt',
     'updatedAt',
-] as const) { }
+] as const) {}

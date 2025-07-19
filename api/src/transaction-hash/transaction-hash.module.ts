@@ -5,9 +5,9 @@ import { TransactionHashDbService } from './transaction-hash.db.service';
 import { RentalPostsModule } from 'rental-posts/rental-posts.module';
 
 @Module({
-  imports: [RentalPostsModule],
-  controllers: [TransactionHashController],
-  providers: [TransactionHashService, TransactionHashDbService],
-  exports: [TransactionHashService, TransactionHashDbService]
+    imports: [RentalPostsModule],
+    controllers: [TransactionHashController],
+    providers: [TransactionHashService, TransactionHashDbService],
+    exports: [TransactionHashService, TransactionHashDbService],
 })
 export class TransactionHashModule {}

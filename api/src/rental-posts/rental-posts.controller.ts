@@ -14,7 +14,7 @@ import { RentalPostsService } from './rental-posts.service';
 @ApiTags('Rental Posts')
 @Controller({ path: 'rental-post', version: '1' })
 export class RentalPostsController {
-    constructor(private readonly rentalPostsService: RentalPostsService) { }
+    constructor(private readonly rentalPostsService: RentalPostsService) {}
 
     @Post()
     @ApiOperation({ summary: 'Create a new rental post' })

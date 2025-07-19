@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-call */
 import { PrismaClient } from '@prisma/client';
 import {
     Injectable,
@@ -10,7 +9,8 @@ import {
 @Injectable()
 export class PrismaService
     extends PrismaClient
-    implements OnModuleInit, OnModuleDestroy {
+    implements OnModuleInit, OnModuleDestroy
+{
     private readonly logger = new Logger(PrismaService.name);
     private initialized = false;
 
