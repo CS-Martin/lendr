@@ -15,7 +15,7 @@ import { CreateRentalPostDto, UpdateRentalPostDto, RentalPostDto } from './dto';
 export class RentalPostsService implements RentalPostsServiceAbstractClass {
     private readonly logger = new Logger(RentalPostsService.name);
 
-    constructor(private readonly rentalPostsDbService: RentalPostsDbService) { }
+    constructor(private readonly rentalPostsDbService: RentalPostsDbService) {}
 
     async create(
         createRentalPostDto: CreateRentalPostDto,
@@ -23,9 +23,6 @@ export class RentalPostsService implements RentalPostsServiceAbstractClass {
         this.logger.log(
             `Creating rental post for address: ${createRentalPostDto.posterAddress}`,
         );
-
-
-
 
         try {
             const rentalPost =
