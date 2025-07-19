@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import { RentalPostCard } from "@/components/shared/rental-post/rental-post-card"
 
 interface NFTGridProps {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     posts: any[]
     viewMode: "grid" | "list"
     isInView: boolean

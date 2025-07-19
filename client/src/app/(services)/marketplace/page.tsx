@@ -1,8 +1,7 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useRef } from "react"
 import { motion, AnimatePresence, useInView } from "framer-motion"
-import { Checkbox } from "@/components/ui/checkbox"
 import { gsap } from "gsap"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
 import { NFTGrid } from "@/app/(services)/marketplace/_components/nft-grid"
@@ -250,12 +249,12 @@ const chainFilters = [
 export default function MarketplacePage() {
     const [searchTerm, setSearchTerm] = useState("")
     const [selectedFilters, setSelectedFilters] = useState<string[]>([])
-    const [isLoading, setIsLoading] = useState(true)
+    // const [isLoading, setIsLoading] = useState(true)
     const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
     const [sidebarOpen, setSidebarOpen] = useState(true)
     const sidebarRef = useRef<HTMLDivElement>(null)
     const gridRef = useRef<HTMLDivElement>(null)
-    const headerRef = useRef<HTMLDivElement>(null)
+    // const headerRef = useRef<HTMLDivElement>(null)
     const isInView = useInView(gridRef, { once: true, margin: "-100px" })
 
 

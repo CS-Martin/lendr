@@ -5,6 +5,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 
 interface FilterSectionProps {
     title: string
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     filters: any[]
     icon?: React.ReactNode
     selectedFilters: string[]

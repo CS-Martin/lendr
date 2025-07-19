@@ -5,10 +5,10 @@ import { motion } from "framer-motion"
 
 interface FilterHeaderProps {
     onToggleSidebar: () => void
-    isMobile: boolean
+    // isMobile: boolean
 }
 
-export function FilterHeader({ onToggleSidebar, isMobile }: FilterHeaderProps) {
+export function FilterHeader({ onToggleSidebar }: FilterHeaderProps) {
     return (
         <div className="flex items-center justify-between">
             <motion.h2
