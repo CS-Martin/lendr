@@ -12,29 +12,28 @@ const queryClient = new QueryClient();
 const config = getWagmiConfig();
 
 export function CustomWagmiProvider({
-  children,
+    children,
 }: {
-  children: React.ReactNode;
+    children: React.ReactNode;
 }) {
-  return (
-    <WagmiProvider config={config}>
-      <SessionProvider refetchInterval={0}>
-        <QueryClientProvider client={queryClient}>
-          <RainbowKitSiweNextAuthProvider>
-            <RainbowKitProvider
-              theme={lightTheme({
-                accentColor: '#7b3fe4',
-                accentColorForeground: 'white',
-                borderRadius: 'medium',
-                fontStack: 'system',
-                overlayBlur: 'small',
-              })}
-            >
-              {children}
-            </RainbowKitProvider>
-          </RainbowKitSiweNextAuthProvider>
-        </QueryClientProvider>
-      </SessionProvider>
-    </WagmiProvider>
-  );
+    return (
+        <WagmiProvider config={config}>
+            <SessionProvider refetchInterval={0}>
+                <QueryClientProvider client={queryClient}>
+                    <RainbowKitSiweNextAuthProvider>
+                        <RainbowKitProvider
+                            theme={lightTheme({
+                                accentColor: '#7b3fe4',
+                                accentColorForeground: 'white',
+                                borderRadius: 'medium',
+                                fontStack: 'system',
+                                overlayBlur: 'small',
+                            })}>
+                            {children}
+                        </RainbowKitProvider>
+                    </RainbowKitSiweNextAuthProvider>
+                </QueryClientProvider>
+            </SessionProvider>
+        </WagmiProvider>
+    );
 }

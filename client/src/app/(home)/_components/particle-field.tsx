@@ -8,14 +8,14 @@ export const ParticleField = () => {
         size: Math.random() * 4 + 1,
         duration: Math.random() * 20 + 10,
         delay: Math.random() * 5,
-    }))
+    }));
 
     return (
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className='absolute inset-0 overflow-hidden pointer-events-none'>
             {particles.map((particle) => (
                 <motion.div
                     key={particle.id}
-                    className="absolute bg-lendr-400/20 rounded-full blur-sm"
+                    className='absolute bg-lendr-400/20 rounded-full blur-sm'
                     style={{
                         left: `${particle.x}%`,
                         top: `${particle.y}%`,
@@ -31,10 +31,10 @@ export const ParticleField = () => {
                         duration: particle.duration,
                         repeat: Number.POSITIVE_INFINITY,
                         delay: particle.delay,
-                        ease: "easeInOut",
+                        ease: 'easeInOut',
                     }}
                 />
             ))}
         </div>
-    )
-}
+    );
+};

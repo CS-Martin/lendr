@@ -32,7 +32,9 @@ export default function NavBar() {
             <div
                 className={cn(
                     'flex items-center justify-between p-2.5 transition-all duration-500 w-full mx-auto',
-                    pathname === '/' ? 'max-w-7xl' : 'border-b border-slate-800/50',
+                    pathname === '/'
+                        ? 'max-w-7xl'
+                        : 'border-b border-slate-800/50',
                     isScrolled && pathname === '/'
                         ? 'rounded-2xl bg-slate bg-slate-950/80 border border-white/20'
                         : 'bg-slate-950',

@@ -1,6 +1,6 @@
 'use client';
 
-import { motion } from "framer-motion";
+import { motion } from 'framer-motion';
 
 interface FloatingElementInterface {
     children: React.ReactNode;
@@ -9,7 +9,12 @@ interface FloatingElementInterface {
     className?: string;
 }
 
-export const FloatingElement = ({ children, delay = 0, duration = 4, className = "" }: FloatingElementInterface) => {
+export const FloatingElement = ({
+    children,
+    delay = 0,
+    duration = 4,
+    className = '',
+}: FloatingElementInterface) => {
     return (
         <motion.div
             className={`absolute ${className}`}
@@ -22,14 +27,13 @@ export const FloatingElement = ({ children, delay = 0, duration = 4, className =
             transition={{
                 duration,
                 repeat: Number.POSITIVE_INFINITY,
-                ease: "easeInOut",
+                ease: 'easeInOut',
                 delay,
             }}
             style={{
-                transformStyle: "preserve-3d",
-            }}
-        >
+                transformStyle: 'preserve-3d',
+            }}>
             {children}
         </motion.div>
-    )
-}
+    );
+};

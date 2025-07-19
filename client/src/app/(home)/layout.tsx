@@ -10,9 +10,7 @@ export default function HomeLayout({ children }: HomeLayoutProps) {
     return (
         <div className='flex flex-col min-h-screen'>
             <NavBar />
-            <main>
-                {children}
-            </main>
+            <main>{children}</main>
             <Footer />
         </div>
     );
