@@ -27,15 +27,15 @@ export default function NavBar() {
             className={cn(
                 'fixed top-0 z-50 w-full px-2 md:px-0 flex flex-row items-center justify-between transition-all duration-500',
                 isScrolled ? 'h-23' : 'h-15 md:h-28',
-                pathname === '/' ? '' : '!h-20',
+                pathname === '/' ? '' : '!h-20 bg-slate-950',
             )}>
             <div
                 className={cn(
-                    'flex items-center justify-between p-2.5 transition-all duration-500 w-full mx-auto max-w-7xl',
-                    pathname === '/' ? 'max-w-7xl' : 'max-w-[90rem]',
-                    isScrolled
-                        ? 'rounded-2xl bg-slate bg-[#0f162b]/80 border border-white/20'
-                        : '',
+                    'flex items-center justify-between p-2.5 transition-all duration-500 w-full mx-auto',
+                    pathname === '/' ? 'max-w-7xl' : 'border-b border-slate-800/50',
+                    isScrolled && pathname === '/'
+                        ? 'rounded-2xl bg-slate bg-slate-950/80 border border-white/20'
+                        : 'bg-slate-950',
                 )}>
                 <Link href={'/'}>
                     <motion.div

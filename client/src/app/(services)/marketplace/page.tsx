@@ -1,19 +1,24 @@
-'use client';
+"use client"
 
-import { Card3D } from "@/components/shared/card-3d";
-import { GridBackground } from "@/components/shared/grid-background";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Slider } from "@/components/ui/slider";
-import { motion } from "framer-motion";
-import { Filter, Grid, List, Search, Star } from "lucide-react";
-import Image from "next/image";
-import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react"
+import { motion, AnimatePresence, useInView } from "framer-motion"
+import { Checkbox } from "@/components/ui/checkbox"
+import { gsap } from "gsap"
+import { ScrollTrigger } from "gsap/ScrollTrigger"
+import { NFTGrid } from "@/app/(services)/marketplace/_components/nft-grid"
+import { ViewModeToggle } from "@/app/(services)/marketplace/_components/view-mode-toggle"
+import { SearchBar } from "@/app/(services)/marketplace/_components/search-bar"
+import { ActiveFilters } from "@/app/(services)/marketplace/_components/ActiveFilters"
+import { FilterHeader } from "@/app/(services)/marketplace/_components/filter-header"
+import { FilterSection } from "@/app/(services)/marketplace/_components/filter-section"
+import { EmptyState } from "./_components/empty-state"
 
+// Register GSAP plugins
+if (typeof window !== "undefined") {
+    gsap.registerPlugin(ScrollTrigger)
+}
+
+// Updated to match Prisma schema with more diverse data
 const rentalPosts = [
     {
         rentalPostId: 1,
@@ -23,13 +28,12 @@ const rentalPosts = [
         hourlyRate: 0.002,
         collateral: 0.2,
         isBiddable: true,
-        biddingStarttime: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000), // 1 day ago
-        biddingEndtime: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000), // 2 days from now
+        biddingStarttime: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
+        biddingEndtime: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
         isActive: true,
         statusCode: "AVAILABLE",
         createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
         updatedAt: new Date(),
-        // Additional display data
         image: "/placeholder.svg?height=300&width=300",
         category: "Gaming",
         rating: 4.8,
@@ -52,7 +56,7 @@ const rentalPosts = [
         createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
         updatedAt: new Date(),
         image: "/placeholder.svg?height=300&width=300",
-        category: "Art",
+        category: "Digital Art",
         rating: 4.9,
         currentBids: 8,
         highestBid: 0.0075,
@@ -73,7 +77,7 @@ const rentalPosts = [
         createdAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000),
         updatedAt: new Date(),
         image: "/placeholder.svg?height=300&width=300",
-        category: "Domain",
+        category: "Crypto",
         rating: 4.7,
         currentBids: 0,
         highestBid: null,
@@ -115,7 +119,7 @@ const rentalPosts = [
         createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
         updatedAt: new Date(),
         image: "/placeholder.svg?height=300&width=300",
-        category: "Metaverse",
+        category: "Gaming",
         rating: 4.8,
         currentBids: 0,
         highestBid: null,
@@ -142,385 +146,285 @@ const rentalPosts = [
         highestBid: 0.00188,
         duration: "1-14 days",
     },
+    {
+        rentalPostId: 7,
+        posterAddress: "0x7777999977779999777799997777999977779999",
+        name: "Digital Photography #42",
+        description: "Award-winning digital photography NFT with exclusive rights",
+        hourlyRate: 0.0015,
+        collateral: 0.25,
+        isBiddable: true,
+        biddingStarttime: new Date(Date.now() - 8 * 60 * 60 * 1000),
+        biddingEndtime: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000),
+        isActive: true,
+        statusCode: "FEATURED",
+        createdAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000),
+        updatedAt: new Date(),
+        image: "/placeholder.svg?height=300&width=300",
+        category: "Photography",
+        rating: 4.7,
+        currentBids: 7,
+        highestBid: 0.0022,
+        duration: "1-21 days",
+    },
+    {
+        rentalPostId: 8,
+        posterAddress: "0x8888aaaa8888aaaa8888aaaa8888aaaa8888aaaa",
+        name: "Typography Art #256",
+        description: "Modern typography art piece with commercial licensing",
+        hourlyRate: 0.0009,
+        collateral: 0.12,
+        isBiddable: false,
+        biddingStarttime: null,
+        biddingEndtime: null,
+        isActive: true,
+        statusCode: "NEW",
+        createdAt: new Date(Date.now() - 6 * 60 * 60 * 1000),
+        updatedAt: new Date(),
+        image: "/placeholder.svg?height=300&width=300",
+        category: "Typo",
+        rating: 4.4,
+        currentBids: 0,
+        highestBid: null,
+        duration: "1-60 days",
+    },
+    {
+        rentalPostId: 9,
+        posterAddress: "0x9999bbbb9999bbbb9999bbbb9999bbbb9999bbbb",
+        name: "Metaverse Avatar #1024",
+        description: "Customizable metaverse avatar with rare traits and accessories",
+        hourlyRate: 0.0045,
+        collateral: 0.6,
+        isBiddable: true,
+        biddingStarttime: new Date(Date.now() - 3 * 60 * 60 * 1000),
+        biddingEndtime: new Date(Date.now() + 6 * 24 * 60 * 60 * 1000),
+        isActive: true,
+        statusCode: "AVAILABLE",
+        createdAt: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000),
+        updatedAt: new Date(),
+        image: "/placeholder.svg?height=300&width=300",
+        category: "Gaming",
+        rating: 4.9,
+        currentBids: 23,
+        highestBid: 0.0052,
+        duration: "1-14 days",
+    },
 ]
 
-const categories = ["All", "Gaming", "Art", "Domain", "Music", "Metaverse"]
+// Filter options matching the reference image
+const statusFilters = [
+    { id: "buy-now", label: "Buy now", count: 156 },
+    { id: "on-auction", label: "On auction", count: 87 },
+    { id: "new", label: "New", count: 23 },
+    { id: "featured", label: "Featured", count: 12 },
+]
+
+const collectionFilters = [
+    { id: "digital-art", label: "Digital Art", count: 234 },
+    { id: "gaming", label: "Gaming", count: 189 },
+    { id: "gaming-2", label: "Gaming", count: 156 },
+    { id: "music", label: "Music", count: 98 },
+    { id: "photography", label: "Photography", count: 76 },
+    { id: "typo", label: "Typo", count: 45 },
+    { id: "crypto", label: "Crypto", count: 123 },
+]
+
+const priceFilters = [
+    { id: "0-100", label: "$0 - $100", count: 45 },
+    { id: "100-200", label: "$100 - $200", count: 67 },
+    { id: "200-300", label: "$200 - $300", count: 89 },
+    { id: "300-400", label: "$300 - $400", count: 34 },
+    { id: "400-500", label: "$400 - $500", count: 23 },
+    { id: "500-600", label: "$500 - $600", count: 12 },
+    { id: "600-plus", label: "Over $600", count: 8 },
+]
+
+const chainFilters = [
+    { id: "bitcoin", label: "Bitcoin", count: 45 },
+    { id: "ethereum", label: "Ethereum", count: 234 },
+    { id: "cardano", label: "Cardano", count: 67 },
+    { id: "solana", label: "Solana", count: 89 },
+    { id: "litecoin", label: "Litecoin", count: 23 },
+]
 
 export default function MarketplacePage() {
     const [searchTerm, setSearchTerm] = useState("")
-    const [selectedCategory, setSelectedCategory] = useState("All")
-    const [priceRange, setPriceRange] = useState([0, 0.01])
+    const [selectedFilters, setSelectedFilters] = useState<string[]>([])
+    const [isLoading, setIsLoading] = useState(true)
     const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
-    const [showFilters, setShowFilters] = useState(false)
-    const [availableOnly, setAvailableOnly] = useState(false)
+    const [sidebarOpen, setSidebarOpen] = useState(true)
+    const sidebarRef = useRef<HTMLDivElement>(null)
+    const gridRef = useRef<HTMLDivElement>(null)
+    const headerRef = useRef<HTMLDivElement>(null)
+    const isInView = useInView(gridRef, { once: true, margin: "-100px" })
+
+
+    const toggleFilter = (filterId: string) => {
+        if (selectedFilters.includes(filterId)) {
+            setSelectedFilters(selectedFilters.filter((id) => id !== filterId))
+        } else {
+            setSelectedFilters([...selectedFilters, filterId])
+        }
+    }
+
+    const clearAllFilters = () => {
+        setSelectedFilters([])
+        setSearchTerm("")
+
+        // Animate clear action
+        gsap.to(".filter-badge", {
+            scale: 0,
+            duration: 0.2,
+            stagger: 0.02,
+            ease: "power2.in",
+            onComplete: () => {
+                setSelectedFilters([])
+            },
+        })
+    }
 
     const filteredRentalPosts = rentalPosts.filter((post) => {
         const matchesSearch =
             post.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
             post.category.toLowerCase().includes(searchTerm.toLowerCase())
-        const matchesCategory = selectedCategory === "All" || post.category === selectedCategory
-        const matchesPrice = post.hourlyRate >= priceRange[0] && post.hourlyRate <= priceRange[1]
-        const matchesAvailability = !availableOnly || post.statusCode === "AVAILABLE"
 
-        return matchesSearch && matchesCategory && matchesPrice && matchesAvailability
+        const matchesFilters =
+            selectedFilters.length === 0 ||
+            selectedFilters.some((filter) => {
+                if (filter === "buy-now") return !post.isBiddable
+                if (filter === "on-auction") return post.isBiddable
+                if (filter === "new") return post.statusCode === "NEW"
+                if (filter === "featured") return post.statusCode === "FEATURED"
+                if (filter === "digital-art") return post.category === "Digital Art"
+                if (filter === "gaming" || filter === "gaming-2") return post.category === "Gaming"
+                if (filter === "music") return post.category === "Music"
+                if (filter === "photography") return post.category === "Photography"
+                if (filter === "typo") return post.category === "Typo"
+                if (filter === "crypto") return post.category === "Crypto"
+                return false
+            })
+
+        return matchesSearch && matchesFilters
     })
 
     return (
         <div className="min-h-screen bg-slate-950 overflow-hidden">
+            <div className="flex mt-20">
+                {/* Left Sidebar - Filters */}
+                <AnimatePresence>
+                    {sidebarOpen && (
+                        <motion.div
+                            ref={sidebarRef}
+                            className="w-64 p-6 space-y-8 border-r border-slate-800/50 fixed md:relative h-full md:h-auto z-40 overflow-y-auto"
+                            initial={{ x: -300, opacity: 0 }}
+                            animate={{ x: 0, opacity: 1 }}
+                            exit={{ x: -300, opacity: 0 }}
+                            transition={{ duration: 0.5 }}
+                        >
+                            <FilterHeader
+                                onToggleSidebar={() => setSidebarOpen(false)}
+                                isMobile={true}
+                            />
 
-            <div className="relative px-4 md:px-0 mt-30">
-                <GridBackground />
+                            <ActiveFilters
+                                selectedFilters={selectedFilters}
+                                onClearAll={clearAllFilters}
+                                onRemoveFilter={toggleFilter}
+                            />
 
-                <div className="max-w-[90rem] mx-auto">
-                    {/* Header */}
-                    <div className="mb-8">
-                        <h1 className="text-4xl font-bold text-white mb-2">NFT Lending Marketplace</h1>
-                        <p className="text-slate-400">Discover and lend premium NFT assets</p>
-                    </div>
+                            {/* Filter Sections */}
+                            <FilterSection
+                                title="Status"
+                                filters={statusFilters}
+                                selectedFilters={selectedFilters}
+                                onToggleFilter={toggleFilter}
+                            />
+                            <FilterSection
+                                title="Collection"
+                                filters={collectionFilters}
+                                selectedFilters={selectedFilters}
+                                onToggleFilter={toggleFilter}
+                            />
+                            <FilterSection
+                                title="Filter by price"
+                                filters={priceFilters}
+                                selectedFilters={selectedFilters}
+                                onToggleFilter={toggleFilter}
+                            />
+                            <FilterSection
+                                title="Chains"
+                                filters={chainFilters}
+                                selectedFilters={selectedFilters}
+                                onToggleFilter={toggleFilter}
+                            />
+                        </motion.div>
+                    )}
+                </AnimatePresence>
 
-                    {/* Search and Filters */}
+                {/* Main Content */}
+                <div className="flex-1 p-6">
+                    {/* Search and Controls */}
                     <div className="mb-8 space-y-4">
-                        <div className="flex flex-col lg:flex-row gap-4">
-                            <div className="relative flex-1">
-                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5" />
-                                <Input
-                                    placeholder="Search NFTs, categories, or merchants..."
-                                    value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
-                                    className="pl-10 bg-slate-900/50 border-slate-700 text-white placeholder-slate-400"
-                                />
-                            </div>
-
-                            <div className="flex gap-2">
-                                <Button
-                                    variant="outline"
-                                    onClick={() => setShowFilters(!showFilters)}
-                                    className="border-slate-700 text-slate-300 hover:bg-slate-800"
-                                >
-                                    <Filter className="w-4 h-4 mr-2" />
-                                    Filters
-                                </Button>
-
-                                <div className="flex border border-slate-700 rounded-md">
-                                    <Button
-                                        variant={viewMode === "grid" ? "default" : "ghost"}
-                                        size="sm"
-                                        onClick={() => setViewMode("grid")}
-                                        className={viewMode === "grid" ? "bg-purple-600 text-white" : "text-slate-400 hover:text-white"}
-                                    >
-                                        <Grid className="w-4 h-4" />
-                                    </Button>
-                                    <Button
-                                        variant={viewMode === "list" ? "default" : "ghost"}
-                                        size="sm"
-                                        onClick={() => setViewMode("list")}
-                                        className={viewMode === "list" ? "bg-purple-600 text-white" : "text-slate-400 hover:text-white"}
-                                    >
-                                        <List className="w-4 h-4" />
-                                    </Button>
-                                </div>
-                            </div>
+                        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                            <SearchBar
+                                searchTerm={searchTerm}
+                                setSearchTerm={setSearchTerm}
+                            />
+                            <ViewModeToggle
+                                viewMode={viewMode}
+                                setViewMode={setViewMode}
+                            />
                         </div>
 
-                        {/* Filter Panel */}
-                        {showFilters && (
+                        {/* Results Count */}
+                        <motion.div
+                            className="text-slate-400 flex items-center justify-between"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ delay: 0.4 }}
+                        >
+                            <span>
+                                Showing {filteredRentalPosts.length} of {rentalPosts.length} NFTs
+                            </span>
                             <motion.div
-                                initial={{ opacity: 0, height: 0 }}
-                                animate={{ opacity: 1, height: "auto" }}
-                                exit={{ opacity: 0, height: 0 }}
-                                className="bg-slate-900/50 border border-slate-800 rounded-lg p-6"
+                                className="text-xs text-gray-500"
+                                animate={{ opacity: [0.5, 1, 0.5] }}
+                                transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
                             >
-                                <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                                    <div>
-                                        <label className="text-sm font-medium text-white mb-2 block">Category</label>
-                                        <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                                            <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
-                                                <SelectValue />
-                                            </SelectTrigger>
-                                            <SelectContent className="bg-slate-800 border-slate-700">
-                                                {categories.map((category) => (
-                                                    <SelectItem key={category} value={category} className="text-white">
-                                                        {category}
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-
-                                    <div>
-                                        <label className="text-sm font-medium text-white mb-2 block">
-                                            Price Range (ETH/hour): {priceRange[0]} - {priceRange[1]}
-                                        </label>
-                                        <Slider
-                                            value={priceRange}
-                                            onValueChange={setPriceRange}
-                                            max={0.01}
-                                            min={0}
-                                            step={0.0001}
-                                            className="mt-2"
-                                        />
-                                    </div>
-
-                                    <div>
-                                        <label className="text-sm font-medium text-white mb-2 block">Sort By</label>
-                                        <Select defaultValue="price-low">
-                                            <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
-                                                <SelectValue />
-                                            </SelectTrigger>
-                                            <SelectContent className="bg-slate-800 border-slate-700">
-                                                <SelectItem value="price-low" className="text-white">
-                                                    Price: Low to High
-                                                </SelectItem>
-                                                <SelectItem value="price-high" className="text-white">
-                                                    Price: High to Low
-                                                </SelectItem>
-                                                <SelectItem value="rating" className="text-white">
-                                                    Highest Rated
-                                                </SelectItem>
-                                                <SelectItem value="newest" className="text-white">
-                                                    Newest First
-                                                </SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-
-                                    <div className="flex items-center space-x-2">
-                                        <Checkbox id="available" checked={availableOnly} onCheckedChange={setAvailableOnly} />
-                                        <label htmlFor="available" className="text-sm text-white">
-                                            Available only
-                                        </label>
-                                    </div>
-                                </div>
+                                Live updates
                             </motion.div>
-                        )}
+                        </motion.div>
                     </div>
 
-                    {/* Results Count */}
-                    <div className="mb-6 text-slate-400">
-                        Showing {filteredRentalPosts.length} of {rentalPosts.length} NFTs
-                    </div>
+                    {/* NFT Grid */}
+                    <NFTGrid
+                        posts={filteredRentalPosts}
+                        viewMode={viewMode}
+                        isInView={isInView}
+                    />
 
-                    {/* NFT Grid/List */}
-                    <div className={viewMode === "grid" ? "grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 pb-30" : "space-y-4"}>
-                        {filteredRentalPosts.map((post, index) => (
-                            <motion.div
-                                key={post.rentalPostId}
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.5, delay: index * 0.1 }}
-                            >
-                                {viewMode === "grid" ? (
-                                    <Card3D className="group">
-                                        <motion.div
-                                            className="bg-gradient-to-br from-slate-900/90 to-slate-800/90 backdrop-blur-xl border border-slate-700/50 hover:border-lendr-400/50 rounded-3xl overflow-hidden shadow-2xl hover:shadow-lendr-400/30 transition-all duration-500"
-                                            whileHover={{
-                                                y: -15,
-                                                boxShadow: "0 25px 80px rgba(220, 243, 71, 0.25)",
-                                            }}
-                                        >
-                                            <div className="relative overflow-hidden">
-                                                <motion.div whileHover={{ scale: 1.1 }} transition={{ duration: 0.5 }}>
-                                                    <Image
-                                                        src={post.image || "/placeholder.svg"}
-                                                        alt={post.name}
-                                                        width={400}
-                                                        height={300}
-                                                        className="w-full h-64 object-cover"
-                                                    />
-                                                </motion.div>
-
-                                                {/* Holographic overlay */}
-                                                <motion.div
-                                                    className="absolute inset-0 bg-gradient-to-br from-lendr-400/20 via-transparent to-cyan-400/20 opacity-0 group-hover:opacity-100"
-                                                    transition={{ duration: 0.3 }}
-                                                />
-
-                                                <Badge
-                                                    className={`absolute top-4 right-4 ${post.isActive ? "bg-green-500" : "bg-red-500"} shadow-lg`}
-                                                >
-                                                    {post.isActive ? "Available" : "Locked"}
-                                                </Badge>
-                                                <Badge className="absolute top-4 left-4 bg-lendr-400 text-slate-950 font-semibold shadow-lg">
-                                                    {post.category}
-                                                </Badge>
-
-                                                {/* Animated yield indicator */}
-                                                <motion.div
-                                                    className="absolute bottom-4 right-4 bg-gradient-to-r from-green-400 to-lendr-400 text-slate-950 px-3 py-1 rounded-full text-sm font-bold shadow-lg"
-                                                    animate={{
-                                                        scale: [1, 1.1, 1],
-                                                        boxShadow: [
-                                                            "0 0 10px rgba(34, 197, 94, 0.5)",
-                                                            "0 0 20px rgba(34, 197, 94, 0.8)",
-                                                            "0 0 10px rgba(34, 197, 94, 0.5)",
-                                                        ],
-                                                    }}
-                                                    transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
-                                                >
-                                                    +12.5% APY
-                                                </motion.div>
-                                            </div>
-
-                                            <div className="p-6">
-                                                <h3 className="text-xl font-bold text-white mb-2 group-hover:text-lendr-400 transition-colors duration-300">
-                                                    {post.name}
-                                                </h3>
-
-                                                <div className="grid grid-cols-2 gap-4 mb-4">
-                                                    <div>
-                                                        <div className="text-sm text-slate-400">Hourly Rate</div>
-                                                        <motion.div
-                                                            className="text-lg font-bold text-lendr-400"
-                                                            animate={{
-                                                                textShadow: [
-                                                                    "0 0 5px rgba(220, 243, 71, 0.5)",
-                                                                    "0 0 10px rgba(220, 243, 71, 0.8)",
-                                                                    "0 0 5px rgba(220, 243, 71, 0.5)",
-                                                                ],
-                                                            }}
-                                                            transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
-                                                        >
-                                                            {post.hourlyRate} ETH
-                                                        </motion.div>
-                                                    </div>
-                                                    <div>
-                                                        <div className="text-sm text-slate-400">Collateral</div>
-                                                        <div className="text-lg font-bold text-cyan-400">{post.collateral} ETH</div>
-                                                    </div>
-                                                </div>
-
-                                                <div className="flex items-center justify-between mb-6">
-                                                    <div className="flex items-center space-x-1">
-                                                        <Star className="w-4 h-4 text-yellow-400 fill-current" />
-                                                        <span className="text-sm text-slate-300">{post.rating}</span>
-                                                    </div>
-                                                    <div className="text-sm text-slate-400 font-mono">{post.posterAddress}</div>
-                                                </div>
-
-                                                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                                                    <Button
-                                                        className="w-full bg-gradient-to-r from-lendr-400 to-lendr-500 hover:from-lendr-500 hover:to-lendr-600 text-slate-950 border-0 font-bold shadow-lg shadow-lendr-400/30 hover:shadow-lendr-400/50 transition-all duration-300"
-                                                        disabled={!post.isActive}
-                                                    >
-                                                        {post.isActive ? "Enter Pool" : "Pool Locked"}
-                                                    </Button>
-                                                </motion.div>
-                                            </div>
-                                        </motion.div>
-                                    </Card3D>
-                                ) : (
-                                    <>
-                                        div
-                                    </>
-                                    // <Card className="bg-slate-900/50 border-slate-800 hover:border-purple-500/50 transition-all duration-300">
-                                    //     <CardContent className="p-6">
-                                    //         <div className="flex items-center space-x-6">
-                                    //             <div className="relative">
-                                    //                 <Image
-                                    //                     src={post.image || "/placeholder.svg"}
-                                    //                     alt={post.name}
-                                    //                     width={120}
-                                    //                     height={120}
-                                    //                     className="w-24 h-24 object-cover rounded-lg"
-                                    //                 />
-                                    //                 <Badge
-                                    //                     className={`absolute -top-2 -right-2 ${post.statusCode === "AVAILABLE" ? "bg-green-500" : "bg-red-500"}`}
-                                    //                 >
-                                    //                     {post.statusCode === "AVAILABLE" ? "Available" : "Rented"}
-                                    //                 </Badge>
-                                    //                 {post.isBiddable && (
-                                    //                     <Badge className="absolute -bottom-2 -right-2 bg-orange-500 text-xs">Bidding</Badge>
-                                    //                 )}
-                                    //             </div>
-
-                                    //             <div className="flex-1">
-                                    //                 <div className="flex items-center space-x-2 mb-2">
-                                    //                     <h3 className="text-lg font-semibold text-white">{post.name}</h3>
-                                    //                     <Badge className="bg-purple-500">{post.category}</Badge>
-                                    //                 </div>
-                                    //                 <p className="text-sm text-slate-400 mb-3">{post.description}</p>
-
-                                    //                 <div className="flex items-center space-x-6 text-sm">
-                                    //                     <div className="flex items-center space-x-1">
-                                    //                         <Star className="w-4 h-4 text-yellow-400 fill-current" />
-                                    //                         <span className="text-slate-300">{post.rating}</span>
-                                    //                     </div>
-                                    //                     <div className="flex items-center space-x-1 text-slate-400">
-                                    //                         <Clock className="w-4 h-4" />
-                                    //                         <span>{post.duration}</span>
-                                    //                     </div>
-                                    //                     {post.isBiddable && (
-                                    //                         <div className="flex items-center space-x-1 text-orange-400">
-                                    //                             <Users className="w-4 h-4" />
-                                    //                             <span>{post.currentBids} bids</span>
-                                    //                         </div>
-                                    //                     )}
-                                    //                     <div className="flex items-center space-x-1 text-slate-400">
-                                    //                         <Shield className="w-4 h-4" />
-                                    //                         <span>{post.collateral} ETH collateral</span>
-                                    //                     </div>
-                                    //                 </div>
-                                    //             </div>
-
-                                    //             <div className="text-right">
-                                    //                 {post.isBiddable ? (
-                                    //                     <div>
-                                    //                         <div className="text-sm text-slate-400 mb-1">Highest Bid</div>
-                                    //                         <div className="text-2xl font-bold text-green-400 mb-1">{post.highestBid} ETH/hr</div>
-                                    //                         <div className="text-xs text-orange-400 mb-4">
-                                    //                             {Math.ceil((post.biddingEndtime?.getTime() - Date.now()) / (1000 * 60 * 60 * 24))} days
-                                    //                             left
-                                    //                         </div>
-                                    //                     </div>
-                                    //                 ) : (
-                                    //                     <div>
-                                    //                         <div className="text-2xl font-bold text-purple-400 mb-1">{post.hourlyRate} ETH</div>
-                                    //                         <div className="text-sm text-slate-400 mb-4">per hour</div>
-                                    //                     </div>
-                                    //                 )}
-                                    //                 <Link href={`/nft/${post.rentalPostId}`}>
-                                    //                     <Button
-                                    //                         className={`border-0 ${post.isBiddable
-                                    //                             ? "bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700"
-                                    //                             : "bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-700 hover:to-cyan-700"
-                                    //                             } text-white`}
-                                    //                         disabled={post.statusCode !== "AVAILABLE"}
-                                    //                     >
-                                    //                         {post.statusCode === "AVAILABLE"
-                                    //                             ? post.isBiddable
-                                    //                                 ? "Place Bid"
-                                    //                                 : "Lend Now"
-                                    //                             : "Currently Rented"}
-                                    //                     </Button>
-                                    //                 </Link>
-                                    //             </div>
-                                    //         </div>
-                                    //     </CardContent>
-                                    // </Card>
-                                )}
-                            </motion.div>
-                        ))}
-                    </div>
-
+                    {/* Empty State */}
                     {filteredRentalPosts.length === 0 && (
-                        <div className="text-center py-12">
-                            <div className="text-slate-400 text-lg mb-4">No NFTs found matching your criteria</div>
-                            <Button
-                                onClick={() => {
-                                    setSearchTerm("")
-                                    setSelectedCategory("All")
-                                    setPriceRange([0, 0.01])
-                                    setAvailableOnly(false)
-                                }}
-                                variant="outline"
-                                className="border-slate-700 text-slate-300 hover:bg-slate-800"
-                            >
-                                Clear Filters
-                            </Button>
-                        </div>
+                        <EmptyState
+                            onClearFilters={clearAllFilters}
+                        />
                     )}
                 </div>
             </div>
+
+            {/* Mobile Overlay */}
+            <AnimatePresence>
+                {sidebarOpen && (
+                    <motion.div
+                        className="fixed inset-0 bg-black/50 z-30 md:hidden"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        onClick={() => setSidebarOpen(false)}
+                    />
+                )}
+            </AnimatePresence>
         </div>
     )
+
 }
