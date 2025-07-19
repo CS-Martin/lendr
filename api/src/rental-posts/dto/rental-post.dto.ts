@@ -1,6 +1,14 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { RentalListingStatus } from '@prisma/client';
-import { IsBoolean, IsDate, IsEnum, IsNumber, IsString } from 'class-validator';
+import { Type } from 'class-transformer';
+import {
+    IsBoolean,
+    IsDate,
+    IsEnum,
+    IsNumber,
+    IsOptional,
+    IsString,
+} from 'class-validator';
 
 export class RentalPostDto {
     @ApiProperty({
@@ -40,6 +48,16 @@ export class RentalPostDto {
     description!: string;
 
     @ApiProperty({
+        description: 'The rental post category',
+        example: 'Digital Art',
+        required: false,
+        type: String,
+    })
+    @IsString()
+    @IsOptional()
+    category?: string;
+
+    @ApiProperty({
         description: 'The rental post hourly rate',
         example: 10,
         required: true,
@@ -73,6 +91,8 @@ export class RentalPostDto {
         type: Date,
     })
     @IsDate()
+    @Type(() => Date)
+    @IsOptional()
     biddingStarttime?: Date;
 
     @ApiProperty({
@@ -82,6 +102,8 @@ export class RentalPostDto {
         type: Date,
     })
     @IsDate()
+    @Type(() => Date)
+    @IsOptional()
     biddingEndtime?: Date;
 
     @ApiProperty({
@@ -111,6 +133,7 @@ export class RentalPostDto {
         type: Date,
     })
     @IsDate()
+    @Type(() => Date)
     createdAt!: Date;
 
     @ApiProperty({
@@ -120,5 +143,7 @@ export class RentalPostDto {
         type: Date,
     })
     @IsDate()
+    @Type(() => Date)
+    @IsOptional()
     updatedAt?: Date;
 }

@@ -183,6 +183,8 @@ export class RentalPostsService implements RentalPostsServiceAbstractClass {
         rentalPostDto.posterAddress = rentalPost.posterAddress;
         rentalPostDto.name = rentalPost.name;
         rentalPostDto.description = rentalPost.description ?? '';
+
+        rentalPostDto.category = rentalPost.category ?? undefined;
         rentalPostDto.hourlyRate = rentalPost.hourlyRate;
         rentalPostDto.collateral = rentalPost.collateral;
         rentalPostDto.isBiddable = rentalPost.isBiddable;

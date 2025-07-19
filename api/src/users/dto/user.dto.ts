@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsDate, IsString } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsDate, IsOptional, IsString } from 'class-validator';
 
 export class UserDto {
     @ApiProperty({
@@ -7,13 +8,14 @@ export class UserDto {
         example: 0x12345678910,
     })
     @IsString()
-    address!: string;
+    address: string;
 
     @ApiProperty({
         description: 'Username of the user',
         example: 'kaiju123',
     })
     @IsString()
+    @IsOptional()
     username?: string;
 
     @ApiProperty({
@@ -21,6 +23,7 @@ export class UserDto {
         example: 'https://example.com/avatar.png',
     })
     @IsString()
+    @IsOptional()
     avatarUrl?: string;
 
     @ApiProperty({
@@ -28,6 +31,7 @@ export class UserDto {
         example: 'I am a kaiju',
     })
     @IsString()
+    @IsOptional()
     bio?: string;
 
     @ApiProperty({
@@ -35,6 +39,7 @@ export class UserDto {
         example: '2025-07-12T10:49:03.000Z',
     })
     @IsDate()
+    @Type(() => Date)
     createdAt!: Date;
 
     @ApiProperty({
@@ -42,5 +47,7 @@ export class UserDto {
         example: '2025-07-12T10:49:03.000Z',
     })
     @IsDate()
+    @Type(() => Date)
+    @IsOptional()
     updatedAt?: Date;
 }
