@@ -15,7 +15,7 @@ import { CreateRentalPostDto, UpdateRentalPostDto, RentalPostDto } from './dto';
 export class RentalPostsService implements RentalPostsServiceAbstractClass {
     private readonly logger = new Logger(RentalPostsService.name);
 
-    constructor(private readonly rentalPostsDbService: RentalPostsDbService) { }
+    constructor(private readonly rentalPostsDbService: RentalPostsDbService) {}
 
     async create(
         createRentalPostDto: CreateRentalPostDto,
@@ -183,7 +183,7 @@ export class RentalPostsService implements RentalPostsServiceAbstractClass {
         rentalPostDto.posterAddress = rentalPost.posterAddress;
         rentalPostDto.name = rentalPost.name;
         rentalPostDto.description = rentalPost.description ?? '';
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
         rentalPostDto.category = rentalPost.category ?? undefined;
         rentalPostDto.hourlyRate = rentalPost.hourlyRate;
         rentalPostDto.collateral = rentalPost.collateral;
