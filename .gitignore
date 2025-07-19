@@ -2,3 +2,6 @@
 
 # Foundry dependencies
 rental-escrow-smart-contract/lib/
+
+# nodemodules
+node_modules
