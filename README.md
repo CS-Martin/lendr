@@ -2,7 +2,7 @@
 
 [![GitHub](https://img.shields.io/github/license/CS-Martin/lendr)](LICENSE)
 [![Docker](https://img.shields.io/docker/pulls/csmartin/lendr)](https://hub.docker.com/r/csmartin/lendr)
-![CodeRabbit Pull Request Reviews](https://img.shields.io/coderabbit/prs/github/CS-Martin/lendr?utm_source=oss&utm_medium=github&utm_campaign=CS-Martin%2Flendr&labelColor=171717&color=FF570A&link=https%3A%2F%2Fcoderabbit.ai&label=CodeRabbit+Reviews)
+![CodeRabbit Pull Request Reviews](https://img.shields.io/coderabbit/prs/github/CS-Martin/lendr?utm_source=oss&utm_medium=github&utm_campaign=CS-Martin%2Flendr&labelColor=171717&color=FF570A&label=CodeRabbit+Reviews)
 
 Lendr is a decentralized platform that allows users to rent NFTs securely using collateralized smart agreements, with an integrated reputation system, support for bidding, and a seamless Web3 login experience via Sign-In With Ethereum (SIWE).
 
@@ -60,25 +60,60 @@ lendr/
 
 ## Getting Started
 
-1. **Prerequisites**
+### Prerequisites
+- Node.js (latest LTS version recommended)
+- pnpm (v10.13.1 or later)
+- Git
+
+### Installation
+
+1. **Clone the repository**
    ```bash
-   # Install dependencies
-   npm install
-   
-   # Copy environment file
-   cp .env.example .env
-   
-   # Update .env with your configuration
+   git clone https://github.com/CS-Martin/lendr.git
+   cd lendr
    ```
 
-2. **Start Development Environment**
+2. **Install dependencies**
    ```bash
-   # Start all services
-   docker-compose up -d
-   
-   # Access the application
-   http://localhost:3000
+   pnpm install
    ```
+
+3. **Set up environment variables**
+   - Copy `.env.example` to `.env` in the root directory
+   - Update the environment variables with your configuration
+
+4. **Generate Prisma client**
+   ```bash
+   npx prisma generate
+   ```
+
+### Running the Application
+
+#### Start both API and Client (recommended for development)
+```bash
+pnpm run dev
+```
+
+#### Start applications individually
+- **Run API server only**
+  ```bash
+  pnpm run dev:api
+  ```
+
+- **Run Client application only**
+  ```bash
+  pnpm run dev:client
+  ```
+
+#### Build for production
+```bash
+pnpm run build
+pnpm start
+```
+
+### Development URLs
+- **Client**: http://localhost:3000
+- **API**: http://localhost:4000
 
 ## Development
 
