@@ -12,6 +12,10 @@
         "lint": {
             "dependsOn": ["^lint"],
             "outputs": [".next/**", "!.next/cache/**"]
+        },
+        "format": {
+            "dependsOn": ["^format"],
+            "outputs": [".next/**", "!.next/cache/**"]
         }
     }
 }
