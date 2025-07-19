@@ -1,37 +1,19 @@
 echo '🚀 Running pre-push checks...'
 
-# Get list of staged files
-CHANGED_FILES=$(git diff --cached --name-only)
-
-echo '🔍 Staged files:'
-echo "$CHANGED_FILES"
-
-# Check if /api has changes
-HAS_API_CHANGES=$(echo "$CHANGED_FILES" | grep '^api/')
-
-# Check if /client has changes
-HAS_CLIENT_CHANGES=$(echo "$CHANGED_FILES" | grep '^client/')
-
-# Exit on first error
 set -e
 
-# Run checks for API if needed
-if [ -n "$HAS_API_CHANGES" ]; then
-  echo '📦 Changes detected in /api. Running API checks...'
-  cd api
-  npm run lint
-  npm run test
-  npm run build
-  cd ..
-fi
+echo '🧹 Linting and testing /api...'
+cd api
+npm run lint
+npm run test
+npm run build
+cd ..
 
-# Run checks for client if needed
-if [ -n "$HAS_CLIENT_CHANGES" ]; then
-  echo '📦 Changes detected in /client. Running client checks...'
-  cd client
-  npm run lint
-  npm run build
-  cd ..
-fi
+echo '🧹 Linting and building /client...'
+cd client
+npm run lint
+npm run build
+cd ..
 
 echo '✅ Pre-push checks passed!'
+exit 0
