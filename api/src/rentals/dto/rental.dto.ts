@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsDate, IsNumber, IsString } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsDate, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class RentalDto {
     @ApiProperty({
@@ -32,6 +33,7 @@ export class RentalDto {
         type: 'number',
     })
     @IsNumber()
+    @IsOptional()
     bidId?: number;
 
     @ApiProperty({
@@ -56,6 +58,7 @@ export class RentalDto {
         format: 'date-time',
     })
     @IsDate()
+    @Type(() => Date)
     startDatetime!: Date;
 
     @ApiProperty({
@@ -64,5 +67,6 @@ export class RentalDto {
         format: 'date-time',
     })
     @IsDate()
+    @Type(() => Date)
     endDatetime!: Date;
 }
