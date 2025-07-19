@@ -24,8 +24,6 @@ export class RentalPostsService implements RentalPostsServiceAbstractClass {
             `Creating rental post for address: ${createRentalPostDto.posterAddress}`,
         );
 
-        console.log(createRentalPostDto);
-
         try {
             const rentalPost =
                 await this.rentalPostsDbService.create(createRentalPostDto);

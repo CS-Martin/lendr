@@ -1,0 +1,18 @@
+echo '🚀 Running pre-push checks...'
+
+set -e
+
+echo '🧹 Linting and testing /api...'
+cd api
+npm run lint
+npm run build
+cd ..
+
+echo '🧹 Linting and building /client...'
+cd client
+npm run lint
+npm run build
+cd ..
+
+echo '✅ Pre-push checks passed!'
+exit 0
