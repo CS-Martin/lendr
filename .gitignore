@@ -1,4 +1,7 @@
 .env
 
+# Turborepo
+.turbo
+
 # Foundry dependencies
 rental-escrow-smart-contract/lib/
