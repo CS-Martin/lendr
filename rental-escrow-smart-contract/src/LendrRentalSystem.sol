@@ -1,8 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import {RentalAgreement} from './RentalAgreement.sol';
+import {CollateralRentalAgreement} from './CollateralRentalAgreement.sol';
+import {DelegationRentalAgreement} from './DelegationRentalAgreement.sol';
+import {DelegationRegistry} from './DelegationRegistryERC1155ERC721.sol';
 import {FeeCalculator} from './utils/ComputePercentage.sol';
+import {RentalEnums} from './libraries/RentalEnums.sol';
 
 /**
  * @title Rental System
@@ -19,9 +22,8 @@ contract LendrRentalSystem {
     error LendrRentalSystem__NotDeployer(address sender);
     error LendrRentalSystem__ZeroAddress();
     error LendrRentalSystem__FeeMustBeGreaterThanZero();
-    error LendrRentalSystem__InvalidRentalType();
     error LendrRentalSystem__InvalidNftStandard();
-    error LendrRentalSystem__InvalidDealDuration();
+    error LendrRentalSystem__InvalidDepositDeadline();
     error LendrRentalSystem__RentalDurationMustBeGreaterThanZero();
     error LendrRentalSystem__NotLender();
     error LendrRentalSystem__CollateralMustBeGreaterThanZero();
@@ -32,13 +34,22 @@ contract LendrRentalSystem {
     //////////////////////////////////////////////////////////////*/
     address public immutable i_deployer;
     uint256 public s_feeBps; // base fee in basis points. 500 basis points = 5%.
-    mapping(uint256 => address) public s_rentalAgreementById;
+    mapping(uint256 => address) public s_collateralRentalAgreementById;
+    mapping(uint256 => address) public s_delegationRentalAgreementById;
     uint256 public s_totalRentals;
+    DelegationRegistry public immutable i_delegationRegistry;
 
     /*//////////////////////////////////////////////////////////////
                                 EVENTS
     //////////////////////////////////////////////////////////////*/
-    event RentalAgreementCreated(
+    event CollateralRentalAgreementCreated(
+        uint256 indexed rentalId,
+        address indexed agreementAddress,
+        address indexed lender,
+        address nftContract,
+        uint256 tokenId
+    );
+    event DelegationRentalAgreementCreated(
         uint256 indexed rentalId,
         address indexed agreementAddress,
         address indexed lender,
@@ -71,6 +82,8 @@ contract LendrRentalSystem {
     constructor(uint256 initialPlatformFeePercentInBps) {
         i_deployer = msg.sender;
         s_feeBps = initialPlatformFeePercentInBps;
+        // Deploy DelegationRegistry with this contract as the sole authorization manager
+        i_delegationRegistry = new DelegationRegistry(address(this));
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -81,6 +94,13 @@ contract LendrRentalSystem {
      * @dev This is necessary for rental agreements to forward fees to this contract.
      */
     receive() external payable {}
+
+    function withdraw() external onlyDeployer {
+        uint256 amount = address(this).balance;
+        (bool success, ) = payable(i_deployer).call{value: amount}("");
+        if (!success) revert LendrRentalSystem__WithdrawFailed();
+        emit Withdrawn(i_deployer, amount);
+    }
 
     /**
      * @notice Sets the platform fee in basis points.
@@ -93,17 +113,6 @@ contract LendrRentalSystem {
     }
 
     /**
-     * @notice Withdraws the fees from the contract.
-     * @dev This function is only callable by the deployer.
-     */
-    function withdraw() external onlyDeployer {
-        uint256 amount = address(this).balance;
-        (bool success, ) = payable(i_deployer).call{value: amount}("");
-        if (!success) revert LendrRentalSystem__WithdrawFailed();
-        emit Withdrawn(i_deployer, amount);
-    }
-
-    /**
      * @notice Creates a new rental agreement contract.
      * @param _lender The address of the NFT owner (lender).
      * @param _nftContract The contract address of the NFT to be rented.
@@ -111,22 +120,145 @@ contract LendrRentalSystem {
      * @param _hourlyRentalFee The rental fee per hour in wei.
      * @param _collateral The collateral amount in wei (for collateral-based rentals).
      * @param _rentalDurationInHours The total duration of the rental in hours.
-     * @param _rentalType The type of rental. See {RentalAgreement.RentalType}.
-     * @param _nftStandard The NFT standard of the token. See {RentalAgreement.NftStandard}.
-     * @param _dealDuration The deadline for the lender to deposit the NFT. See {RentalAgreement.DealDuration}.
+     * @param _nftStandard The NFT standard of the token. See {RentalEnums.NftStandard}.
+     * @param _dealDuration The deadline for the lender to deposit the NFT. See {RentalEnums.DealDuration}.
      * @return The address of the newly created rental agreement contract.
      */
-    function createRentalAgreement(
+    function createCollateralRentalAgreement(
         address _lender,
         address _nftContract,
         uint256 _tokenId,
         uint256 _hourlyRentalFee,
         uint256 _collateral,
         uint256 _rentalDurationInHours,
-        RentalAgreement.RentalType _rentalType,
-        RentalAgreement.NftStandard _nftStandard,
-        RentalAgreement.DealDuration _dealDuration
+        RentalEnums.NftStandard _nftStandard,
+        RentalEnums.DealDuration _dealDuration
     ) external returns (address) {
+        _validateRentalParameters(
+            _lender,
+            _nftContract,
+            _hourlyRentalFee,
+            _rentalDurationInHours,
+            uint8(_nftStandard),
+            uint8(RentalEnums.NftStandard._MAX),
+            uint8(_dealDuration),
+            uint8(RentalEnums.DealDuration._MAX)
+        );
+
+        if (_collateral == 0) {
+            revert LendrRentalSystem__CollateralMustBeGreaterThanZero();
+        }
+
+        s_totalRentals++;
+        uint256 rentalId = s_totalRentals;
+
+        CollateralRentalAgreement rentalAgreement = new CollateralRentalAgreement(
+            _lender,
+            _nftContract,
+            _tokenId,
+            _hourlyRentalFee,
+            _collateral,
+            _rentalDurationInHours,
+            _nftStandard,
+            _dealDuration
+        );
+        address agreementAddress = address(rentalAgreement);
+
+        s_collateralRentalAgreementById[rentalId] = agreementAddress;
+
+        emit CollateralRentalAgreementCreated(
+            rentalId,
+            agreementAddress,
+            _lender,
+            _nftContract,
+            _tokenId
+        );
+
+        return agreementAddress;
+    }
+
+    /**
+     * @notice Creates a new delegation rental agreement contract.
+     * @param _lender The address of the NFT owner (lender).
+     * @param _nftContract The contract address of the NFT to be rented.
+     * @param _tokenId The ID of the NFT to be rented.
+     * @param _hourlyRentalFee The rental fee per hour in wei.
+     * @param _rentalDurationInHours The total duration of the rental in hours.
+     * @param _nftStandard The NFT standard of the token. See {RentalEnums.NftStandard}.
+     * @param _dealDuration The deadline for the lender to deposit the NFT. See {RentalEnums.DealDuration}.
+     * @return The address of the newly created delegation rental agreement contract.
+     */
+    function createDelegationRentalAgreement(
+        address _lender,
+        address _nftContract,
+        uint256 _tokenId,
+        uint256 _hourlyRentalFee,
+        uint256 _rentalDurationInHours,
+        RentalEnums.NftStandard _nftStandard,
+        RentalEnums.DealDuration _dealDuration
+    ) external returns (address) {
+        _validateRentalParameters(
+            _lender,
+            _nftContract,
+            _hourlyRentalFee,
+            _rentalDurationInHours,
+            uint8(_nftStandard),
+            uint8(RentalEnums.NftStandard._MAX),
+            uint8(_dealDuration),
+            uint8(RentalEnums.DealDuration._MAX)
+        );
+
+        s_totalRentals++;
+        uint256 rentalId = s_totalRentals;
+
+        DelegationRegistry registryToUse = (_nftStandard ==
+            RentalEnums.NftStandard.ERC4907)
+            ? DelegationRegistry(address(0))
+            : i_delegationRegistry;
+
+        DelegationRentalAgreement rentalAgreement = new DelegationRentalAgreement(
+            _lender,
+            _nftContract,
+            _tokenId,
+            _hourlyRentalFee,
+            _rentalDurationInHours,
+            _nftStandard,
+            _dealDuration,
+            registryToUse
+        );
+        address agreementAddress = address(rentalAgreement);
+
+        if (address(registryToUse) != address(0)) {
+            i_delegationRegistry.addAuthorized(agreementAddress);
+        }
+
+        s_delegationRentalAgreementById[rentalId] = agreementAddress;
+
+        emit DelegationRentalAgreementCreated(
+            rentalId,
+            agreementAddress,
+            _lender,
+            _nftContract,
+            _tokenId
+        );
+
+        return agreementAddress;
+    }
+
+    /*//////////////////////////////////////////////////////////////
+                        INTERNAL FUNCTIONS
+    //////////////////////////////////////////////////////////////*/
+
+    function _validateRentalParameters(
+        address _lender,
+        address _nftContract,
+        uint256 _hourlyRentalFee,
+        uint256 _rentalDurationInHours,
+        uint8 _nftStandard,
+        uint8 _nftStandardMax,
+        uint8 _dealDuration,
+        uint8 _dealDurationMax
+    ) internal view {
         if (msg.sender != _lender) {
             revert LendrRentalSystem__NotLender();
         }
@@ -139,47 +271,14 @@ contract LendrRentalSystem {
         if (_hourlyRentalFee == 0) {
             revert LendrRentalSystem__FeeMustBeGreaterThanZero();
         }
-        if (_rentalType == RentalAgreement.RentalType.COLLATERAL && _collateral == 0) {
-            revert LendrRentalSystem__CollateralMustBeGreaterThanZero();
-        }
         if (_rentalDurationInHours == 0) {
             revert LendrRentalSystem__RentalDurationMustBeGreaterThanZero();
         }
-        if (uint8(_rentalType) >= uint8(RentalAgreement.RentalType._MAX)) {
-            revert LendrRentalSystem__InvalidRentalType();
-        }
-        if (uint8(_nftStandard) >= uint8(RentalAgreement.NftStandard._MAX)) {
+        if (_nftStandard >= _nftStandardMax) {
             revert LendrRentalSystem__InvalidNftStandard();
         }
-        if (uint8(_dealDuration) >= uint8(RentalAgreement.DealDuration._MAX)) {
-            revert LendrRentalSystem__InvalidDealDuration();
+        if (_dealDuration >= _dealDurationMax) {
+            revert LendrRentalSystem__InvalidDepositDeadline();
         }
-
-        s_totalRentals++;
-        uint256 rentalId = s_totalRentals;
-
-        RentalAgreement rentalAgreement = new RentalAgreement(
-            _lender,
-            _nftContract,
-            _tokenId,
-            _hourlyRentalFee,
-            _collateral,
-            _rentalDurationInHours,
-            _rentalType,
-            _nftStandard,
-            _dealDuration
-        );
-        
-        s_rentalAgreementById[rentalId] = address(rentalAgreement);
-
-        emit RentalAgreementCreated(
-            rentalId,
-            address(rentalAgreement),
-            _lender,
-            _nftContract,
-            _tokenId
-        );
-
-        return address(rentalAgreement);
     }
 }

@@ -1,8 +1,6 @@
 import { ResponseDto } from 'lib/shared/dto/response.dto';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UserDto } from './dto/user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from '@prisma/client';
+import { CreateUserDto, UpdateUserDto, UserDto } from './dto';
 
 export abstract class UsersServiceAbstractClass {
     abstract create(

@@ -1,8 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { CreateBidDto } from './dto/create-bid.dto';
 import { PrismaService } from '@prisma/prisma.service';
 import { Bid, Prisma } from '@prisma/client';
-import { UpdateBidDto } from './dto/update-bid.dto';
+import { CreateBidDto, UpdateBidDto } from './dto';
 
 @Injectable()
 export class BidsDbService {
