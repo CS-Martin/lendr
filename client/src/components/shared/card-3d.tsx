@@ -6,7 +6,9 @@ interface Card3DInterface {
     className: string;
 }
 
-export const Card3D = ({ children, className = '' }: Card3DInterface) => {
+export const Card3D = ({ children, className = '' }:
+
+    Card3DInterface) => {
     const [rotateX, setRotateX] = useState(0);
     const [rotateY, setRotateY] = useState(0);
 
@@ -21,10 +23,16 @@ export const Card3D = ({ children, className = '' }: Card3DInterface) => {
         setRotateY(rotateYValue);
     };
 
-    const handleMouseLeave = () => {
-        setRotateX(0);
-        setRotateY(0);
-    };
+
+
+
+    const
+
+
+        handleMouseLeave = () => {
+            setRotateX(0);
+            setRotateY(0);
+        };
 
     return (
         <motion.div
