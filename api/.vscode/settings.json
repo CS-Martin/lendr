@@ -10,7 +10,7 @@
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "prettier.requireConfig": true,
     "editor.codeActionsOnSave": {
-        "source.fixAll": true
+        "source.fixAll": "explicit"
     },
     "editor.codeActionsOnSaveMode": "additional",
     "editor.codeActionsOnSaveTimeout": 5000,

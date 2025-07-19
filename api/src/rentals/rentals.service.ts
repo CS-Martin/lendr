@@ -14,7 +14,7 @@ import { CreateRentalDto, UpdateRentalDto, RentalDto } from './dto';
 export class RentalsService implements RentalsServiceAbstractClass {
     private readonly logger = new Logger(RentalsService.name);
 
-    constructor(private readonly rentlsDbService: RentalsDbService) { }
+    constructor(private readonly rentlsDbService: RentalsDbService) {}
 
     async create(
         createRentalDto: CreateRentalDto,

@@ -6,6 +6,6 @@ import { RentalPostsDbService } from './rental-posts.db.service';
 @Module({
     controllers: [RentalPostsController],
     providers: [RentalPostsService, RentalPostsDbService],
-    exports: [RentalPostsService, RentalPostsDbService]
+    exports: [RentalPostsService, RentalPostsDbService],
 })
-export class RentalPostsModule { }
+export class RentalPostsModule {}

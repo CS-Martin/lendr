@@ -1,3 +1,5 @@
+import { Footer } from '@/components/shared/footer';
+import NavBar from '@/components/shared/navbar';
 import { ReactNode } from 'react';
 
 interface HomeLayoutProps {
@@ -7,7 +9,9 @@ interface HomeLayoutProps {
 export default function HomeLayout({ children }: HomeLayoutProps) {
     return (
         <div className='flex flex-col min-h-screen'>
-            <div className='flex-1 flex flex-col'>{children}</div>
+            <NavBar />
+            <main>{children}</main>
+            <Footer />
         </div>
     );
 }

@@ -16,7 +16,7 @@ import { BidsServiceAbstractClass } from './bids.service.abstract.class';
 export class BidsService implements BidsServiceAbstractClass {
     private readonly logger = new Logger(BidsService.name);
 
-    constructor(private readonly bidsDbService: BidsDbService) { }
+    constructor(private readonly bidsDbService: BidsDbService) {}
 
     async create(createBidDto: CreateBidDto): Promise<ResponseDto<BidDto>> {
         this.logger.log('Creating bid', createBidDto);

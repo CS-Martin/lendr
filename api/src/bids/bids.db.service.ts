@@ -5,7 +5,7 @@ import { CreateBidDto, UpdateBidDto } from './dto';
 
 @Injectable()
 export class BidsDbService {
-    constructor(private readonly prisma: PrismaService) { }
+    constructor(private readonly prisma: PrismaService) {}
 
     async create(createBidDto: CreateBidDto): Promise<Bid> {
         const bid = await this.prisma.bid.create({

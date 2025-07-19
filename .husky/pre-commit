@@ -1,0 +1,46 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+echo '👷‍♂️ Starting pre-commit checks...'
+
+# Run checks in /api
+echo '📦 Checking /api...'
+cd api || exit 1
+
+echo '🧹 Linting API service...'
+npm run lint
+if [ $? -ne 0 ]; then
+  echo '❌ Lint failed in /api. Please fix the issues above and try committing again.'
+  exit 1
+fi
+
+echo '🎨 Formatting API service...'
+npm run format
+if [ $? -ne 0 ]; then
+  echo '❌ Format failed in /api. Please fix the issues above and try committing again.'
+  exit 1
+fi
+
+cd ..
+
+# Run checks in /client
+echo '📦 Checking /client...'
+cd client || exit 1
+
+echo '🧹 Linting client app...'
+npm run lint
+if [ $? -ne 0 ]; then
+  echo '❌ Lint failed in /client. Please fix the issues above and try committing again.'
+  exit 1
+fi
+
+echo '🎨 Formatting client app...'
+npm run format
+if [ $? -ne 0 ]; then
+  echo '❌ Format failed in /client. Please fix the issues above and try committing again.'
+  exit 1
+fi
+
+cd ..
+
+echo '✅ All checks passed. Proceeding with commit. 🚀'

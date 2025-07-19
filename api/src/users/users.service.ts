@@ -14,7 +14,7 @@ import { CreateUserDto, UpdateUserDto, UserDto } from './dto';
 export class UsersService implements UsersServiceAbstractClass {
     private readonly logger = new Logger(UsersService.name);
 
-    constructor(private readonly usersDbService: UsersDbService) { }
+    constructor(private readonly usersDbService: UsersDbService) {}
 
     async create(createUserDto: CreateUserDto): Promise<ResponseDto<UserDto>> {
         this.logger.log('Creating user', createUserDto);

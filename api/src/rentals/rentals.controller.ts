@@ -14,7 +14,7 @@ import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 @ApiTags('Rentals')
 @Controller({ path: 'rental', version: '1' })
 export class RentalsController {
-    constructor(private readonly rentalsService: RentalsService) { }
+    constructor(private readonly rentalsService: RentalsService) {}
 
     @Post()
     @ApiOperation({
