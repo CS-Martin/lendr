@@ -4,8 +4,8 @@ STAGED_FILES=$(git diff --cached --name-only)
 echo '🔍 Staged files:'
 echo "$STAGED_FILES"
 
-HAS_API_CHANGES=$(echo "$STAGED_FILES" | grep -E '^api/' || true)
-HAS_CLIENT_CHANGES=$(echo "$STAGED_FILES" | grep -E '^client/' || true)
+HAS_API_CHANGES=$(echo "$STAGED_FILES" | grep -E '^apps/api/' || true)
+HAS_CLIENT_CHANGES=$(echo "$STAGED_FILES" | grep -E '^apps/client/' || true)
 
 if [ -n "$HAS_API_CHANGES" ]; then
   echo '📦 Changes detected in /api...'
