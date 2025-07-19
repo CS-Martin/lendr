@@ -1,37 +1,12 @@
-echo '👷‍♂️ Starting pre-commit checks...'
+echo '🚀 Running pre-push checks...'
 
-STAGED_FILES=$(git diff --cached --name-only)
-echo '🔍 Staged files:'
-echo "$STAGED_FILES"
+set -e
 
-HAS_API_CHANGES=$(echo "$STAGED_FILES" | grep -E '^api/' || true)
-HAS_CLIENT_CHANGES=$(echo "$STAGED_FILES" | grep -E '^client/' || true)
+echo '🧹 Linting all packages (turbo lint)...'
+npm run lint || exit 1
 
-if [ -n "$HAS_API_CHANGES" ]; then
-  echo '📦 Changes detected in /api...'
-  cd api || exit 1
+echo '🧹 Building all packages (turbo build)...'
+npm run build || exit 1
 
-  echo '🧹 Linting API service...'
-  npm run lint || exit 1
-
-  echo '🎨 Formatting API service...'
-  npm run format || exit 1
-
-  cd ..
-fi
-
-if [ -n "$HAS_CLIENT_CHANGES" ]; then
-  echo '📦 Changes detected in /client...'
-  cd client || exit 1
-
-  echo '🧹 Linting client app...'
-  npm run lint || exit 1
-
-  echo '🎨 Formatting client app...'
-  npm run format || exit 1
-
-  cd ..
-fi
-
-echo '✅ All relevant checks passed. Proceeding with commit. 🚀'
+echo '✅ Pre-push checks passed!'
 exit 0
