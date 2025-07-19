@@ -4,10 +4,14 @@
 echo '🚀 Running pre-push checks...'
 
 # Get list of staged files
-CHANGED_FILES=$(git diff --name-only origin/HEAD)
+CHANGED_FILES=$(git diff --cached --name-only)
+
+echo '🔍 Staged files:'
+echo "$CHANGED_FILES"
 
 # Check if /api has changes
 HAS_API_CHANGES=$(echo "$CHANGED_FILES" | grep '^api/')
+
 # Check if /client has changes
 HAS_CLIENT_CHANGES=$(echo "$CHANGED_FILES" | grep '^client/')
 
