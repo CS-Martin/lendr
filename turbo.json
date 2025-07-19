@@ -10,12 +10,10 @@
             "cache": false
         },
         "lint": {
-            "dependsOn": ["^lint"],
-            "outputs": [".next/**", "!.next/cache/**"]
+            "dependsOn": ["^lint"]
         },
         "format": {
-            "dependsOn": ["^format"],
-            "outputs": [".next/**", "!.next/cache/**"]
+            "dependsOn": ["^format"]
         }
     }
 }

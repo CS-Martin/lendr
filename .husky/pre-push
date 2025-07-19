@@ -2,8 +2,8 @@
 echo '🚀 Running pre-push checks...'
 
 echo '🧹 Linting and building all packages...'
-npm run lint
-npm run format
-npm run build
+pnpm run lint
+pnpm run format
+pnpm run build
 
 echo '✅ Pre-push checks passed!'
