@@ -1,5 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsBoolean, IsDate, IsNumber, IsString } from 'class-validator';
+import { Type } from 'class-transformer';
+import {
+    IsBoolean,
+    IsDate,
+    IsNumber,
+    IsOptional,
+    IsString,
+} from 'class-validator';
 
 export class BidDto {
     @ApiProperty({
@@ -36,6 +43,7 @@ export class BidDto {
         type: String,
     })
     @IsString()
+    @IsOptional()
     message?: string;
 
     @ApiProperty({
@@ -48,8 +56,8 @@ export class BidDto {
     hourlyRate!: number;
 
     @ApiProperty({
-        description: 'Proposed rental duration of the bidder',
-        example: '48(Int) for 48 hours or 2 days',
+        description: `Proposed rental duration of the bidder in hours (e.g. 48 for 48 hours or 2 days)`,
+        example: 48,
         required: true,
         type: Number,
     })
@@ -72,6 +80,8 @@ export class BidDto {
         type: Date,
     })
     @IsDate()
+    @Type(() => Date)
+    @IsOptional()
     acceptedTimestamp?: Date;
 
     @ApiProperty({
@@ -81,6 +91,7 @@ export class BidDto {
         type: Date,
     })
     @IsDate()
+    @Type(() => Date)
     createdAt!: Date;
 
     @ApiProperty({
@@ -90,5 +101,7 @@ export class BidDto {
         type: Date,
     })
     @IsDate()
+    @Type(() => Date)
+    @IsOptional()
     updatedAt?: Date;
 }
