@@ -9,28 +9,22 @@ HAS_CLIENT_CHANGES=$(echo "$STAGED_FILES" | grep -E '^client/' || true)
 
 if [ -n "$HAS_API_CHANGES" ]; then
   echo '📦 Changes detected in /api...'
-  cd api || exit 1
 
   echo '🧹 Linting API service...'
   npm run lint || exit 1
 
   echo '🎨 Formatting API service...'
   npm run format || exit 1
-
-  cd ..
 fi
 
 if [ -n "$HAS_CLIENT_CHANGES" ]; then
   echo '📦 Changes detected in /client...'
-  cd client || exit 1
 
   echo '🧹 Linting client app...'
   npm run lint || exit 1
 
   echo '🎨 Formatting client app...'
   npm run format || exit 1
-
-  cd ..
 fi
 
 echo '✅ All relevant checks passed. Proceeding with commit. 🚀'
