@@ -48,11 +48,11 @@ After adding or modifying any DTOs, you need to build the package:
 
 ```bash
 # From the root of the monorepo
-npm run build -w packages/shared-dtos
+pnpm build --filter=@repo/shared-dtos
 
 # Or navigate to the package and run
 cd packages/shared-dtos
-npm run build
+pnpm build
 ```
 
 ## Using DTOs in Other Packages
@@ -62,9 +62,6 @@ To use a DTO from another package, import it from the package root:
 ```typescript
 // Correct way
 import { NftDto } from '@repo/shared-dtos';
-
-// If you need to import from a specific subpath (if explicitly exported in package.json)
-import { NftDto } from '@repo/shared-dtos/nft';
 ```
 
 ## Best Practices
