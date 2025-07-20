@@ -23,7 +23,7 @@ export class NftService implements NftServiceAbstractClass {
     constructor(
         private readonly nftDbService: NftDbService,
         private readonly userDbService: UsersDbService,
-    ) { }
+    ) {}
 
     async create(createNftDto: CreateNftDto): Promise<ResponseDto<NftDto>> {
         this.logger.log('Creating NFT', createNftDto);
