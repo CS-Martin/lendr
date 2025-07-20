@@ -9,29 +9,29 @@ Lendr is a decentralized platform that allows users to rent NFTs securely using 
 ## Key Features
 
 - **Web3 Authentication**
-  - Sign-In With Ethereum (SIWE) using MetaMask or WalletConnect
-  - Stateless authentication using NextAuth + JWT
-  - Wallet-based identity system
+    - Sign-In With Ethereum (SIWE) using MetaMask or WalletConnect
+    - Stateless authentication using NextAuth + JWT
+    - Wallet-based identity system
 
 - **User Profiles**
-  - Customizable profile with username, bio, and avatar
-  - Public profile with owned and listed NFTs
-  - Social metrics including reputation score, ratings, and rental history
+    - Customizable profile with username, bio, and avatar
+    - Public profile with owned and listed NFTs
+    - Social metrics including reputation score, ratings, and rental history
 
 - **NFT Listings**
-  - List NFTs with price per day and collateral requirements
-  - Set rental duration and auto-renewal options
-  - Pull NFT metadata from blockchain or IPFS
+    - List NFTs with price per day and collateral requirements
+    - Set rental duration and auto-renewal options
+    - Pull NFT metadata from blockchain or IPFS
 
 - **Rental Contracts**
-  - Secure rental agreements with collateral locking
-  - Automated NFT return system
-  - Smart contract dispute resolution
+    - Secure rental agreements with collateral locking
+    - Automated NFT return system
+    - Smart contract dispute resolution
 
 - **Bidding System**
-  - Optional bidding for high-value NFTs
-  - Custom bid parameters (price, duration, message)
-  - Owner review and acceptance workflow
+    - Optional bidding for high-value NFTs
+    - Custom bid parameters (price, duration, message)
+    - Owner review and acceptance workflow
 
 ## Use Cases
 
@@ -44,9 +44,24 @@ Lendr is a decentralized platform that allows users to rent NFTs securely using 
 
 ```
 lendr/
-├── api/                 # Backend API services
-├── client/             # Frontend React application
-└── rental-escrow-smart-contract/  # Smart contract implementation
+├── apps/
+│   ├── api/                 # Backend API service (NestJS)
+│   └── client/              # Frontend application (Next.js)
+│
+├── packages/                # Shared packages
+│   ├── eslint-config/       # Shared ESLint configuration
+│   ├── shared-dtos/         # Shared Data Transfer Objects
+│   ├── typescript-config/   # Shared TypeScript configuration
+│   └── ui/                  # Shared UI components
+│
+├── prisma/                  # Database schema and migrations
+├── rental-escrow-smart-contract/  # Smart contract implementation
+│
+├── .env                    # Environment variables
+├── .gitignore             # Git ignore rules
+├── docker-compose.yml      # Docker Compose configuration
+├── package.json            # Root package.json
+└── turbo.json             # Turborepo configuration
 ```
 
 ## Tech Stack
@@ -61,6 +76,7 @@ lendr/
 ## Getting Started
 
 ### Prerequisites
+
 - Node.js (latest LTS version recommended)
 - pnpm (v10.13.1 or later)
 - Git
@@ -68,50 +84,57 @@ lendr/
 ### Installation
 
 1. **Clone the repository**
-   ```bash
-   git clone https://github.com/CS-Martin/lendr.git
-   cd lendr
-   ```
+
+    ```bash
+    git clone https://github.com/CS-Martin/lendr.git
+    cd lendr
+    ```
 
 2. **Install dependencies**
-   ```bash
-   pnpm install
-   ```
+
+    ```bash
+    pnpm install
+    ```
 
 3. **Set up environment variables**
-   - Copy `.env.example` to `.env` in the root directory
-   - Update the environment variables with your configuration
+    - Copy `.env.example` to `.env` in the root directory
+    - Update the environment variables with your configuration
 
 4. **Generate Prisma client**
-   ```bash
-   npx prisma generate
-   ```
+    ```bash
+    npx prisma generate
+    ```
 
 ### Running the Application
 
 #### Start both API and Client (recommended for development)
+
 ```bash
 pnpm run dev
 ```
 
 #### Start applications individually
+
 - **Run API server only**
-  ```bash
-  pnpm run dev:api
-  ```
+
+    ```bash
+    pnpm run dev:api
+    ```
 
 - **Run Client application only**
-  ```bash
-  pnpm run dev:client
-  ```
+    ```bash
+    pnpm run dev:client
+    ```
 
 #### Build for production
+
 ```bash
 pnpm run build
 pnpm start
 ```
 
 ### Development URLs
+
 - **Client**: http://localhost:3000
 - **API**: http://localhost:4000
 

@@ -15,7 +15,7 @@ import { CreateNftDto, UpdateNftDto, FilterNftDto } from '@repo/shared-dtos';
 @ApiTags('NFTs')
 @Controller({ path: 'nft', version: '1' })
 export class NftController {
-    constructor(private readonly nftService: NftService) { }
+    constructor(private readonly nftService: NftService) {}
 
     @Post()
     @ApiOperation({ summary: 'Create a new NFT' })
