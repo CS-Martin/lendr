@@ -5,12 +5,16 @@ import {
     NotFoundException,
 } from '@nestjs/common';
 import { NftDbService } from './nft.db.service';
-import { NftDto } from './dto/nft.dto';
 import { NFT } from '@prisma/client';
-import { ResponseDto } from 'lib/shared/dto/response.dto';
 import { UsersDbService } from 'users/users.db.service';
 import { NftServiceAbstractClass } from './nft.service.abstract.class';
-import { FilterNftDto, CreateNftDto, UpdateNftDto } from './dto';
+import {
+    FilterNftDto,
+    CreateNftDto,
+    UpdateNftDto,
+    ResponseDto,
+    NftDto,
+} from '@repo/shared-dtos';
 
 @Injectable()
 export class NftService implements NftServiceAbstractClass {
@@ -19,7 +23,7 @@ export class NftService implements NftServiceAbstractClass {
     constructor(
         private readonly nftDbService: NftDbService,
         private readonly userDbService: UsersDbService,
-    ) {}
+    ) { }
 
     async create(createNftDto: CreateNftDto): Promise<ResponseDto<NftDto>> {
         this.logger.log('Creating NFT', createNftDto);

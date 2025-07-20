@@ -3,7 +3,6 @@
     "version": "0.0.1",
     "type": "commonjs",
     "scripts": {
-        "dev": "tsc --watch",
         "build": "tsc"
     },
     "exports": {
@@ -11,6 +10,11 @@
             "types": "./dist/index.d.ts",
             "require": "./dist/index.js",
             "import": "./dist/index.js"
+        },
+        "./nft/nft.dto": {
+            "types": "./dist/nft/nft.dto.d.ts",
+            "require": "./dist/nft/nft.dto.js",
+            "import": "./dist/nft/nft.dto.js"
         }
     },
     "types": "./dist/index.d.ts",
@@ -19,7 +23,8 @@
         "@nestjs/common": "^11.0.1",
         "@nestjs/swagger": "^11.2.0",
         "class-transformer": "^0.5.1",
-        "class-validator": "^0.14.2"
+        "class-validator": "^0.14.2",
+        "@nestjs/mapped-types": "*"
     },
     "devDependencies": {
         "@repo/eslint-config": "workspace:*",

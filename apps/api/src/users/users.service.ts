@@ -6,9 +6,13 @@ import {
     NotFoundException,
 } from '@nestjs/common';
 import { UsersServiceAbstractClass } from './users.service.abstract.class';
-import { ResponseDto } from 'lib/shared/dto/response.dto';
 import { User } from '@prisma/client';
-import { CreateUserDto, UpdateUserDto, UserDto } from './dto';
+import {
+    CreateUserDto,
+    UpdateUserDto,
+    UserDto,
+    ResponseDto,
+} from '@repo/shared-dtos';
 
 @Injectable()
 export class UsersService implements UsersServiceAbstractClass {

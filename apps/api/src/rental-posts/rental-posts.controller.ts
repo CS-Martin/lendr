@@ -8,7 +8,7 @@ import {
     Delete,
 } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { CreateRentalPostDto, UpdateRentalPostDto } from './dto';
+import { CreateRentalPostDto, UpdateRentalPostDto } from '@repo/shared-dtos';
 import { RentalPostsService } from './rental-posts.service';
 
 @ApiTags('Rental Posts')

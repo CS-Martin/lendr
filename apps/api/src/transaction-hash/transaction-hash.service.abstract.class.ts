@@ -1,9 +1,9 @@
-import { ResponseDto } from 'lib/shared/dto/response.dto';
 import {
     CreateTransactionHashDto,
     TransactionHashDto,
     FilterTransactionHashDto,
-} from './dto';
+    ResponseDto,
+} from '@repo/shared-dtos';
 
 export abstract class TransactionHashServiceAbstractClass {
     abstract create(

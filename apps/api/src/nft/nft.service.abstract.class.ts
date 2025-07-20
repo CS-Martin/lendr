@@ -1,5 +1,10 @@
-import { ResponseDto } from 'lib/shared/dto/response.dto';
-import { FilterNftDto, CreateNftDto, UpdateNftDto, NftDto } from './dto';
+import {
+    FilterNftDto,
+    CreateNftDto,
+    UpdateNftDto,
+    NftDto,
+    ResponseDto,
+} from '@repo/shared-dtos';
 
 export abstract class NftServiceAbstractClass {
     abstract create(dto: CreateNftDto): Promise<ResponseDto<NftDto>>;

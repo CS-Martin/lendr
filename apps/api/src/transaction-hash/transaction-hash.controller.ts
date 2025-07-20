@@ -8,7 +8,10 @@ import {
     Query,
 } from '@nestjs/common';
 import { TransactionHashService } from './transaction-hash.service';
-import { CreateTransactionHashDto, FilterTransactionHashDto } from './dto';
+import {
+    CreateTransactionHashDto,
+    FilterTransactionHashDto,
+} from '@repo/shared-dtos';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 @ApiTags('Transaction Hashes')
