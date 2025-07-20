@@ -3,20 +3,23 @@ import {
     Injectable,
     NotFoundException,
 } from '@nestjs/common';
-import { CreateBidDto } from './dto/create-bid.dto';
-import { UpdateBidDto } from './dto/update-bid.dto';
-import { BidDto } from './dto/bid.dto';
-import { ResponseDto } from 'lib/shared/dto/response.dto';
+
 import { Logger } from '@nestjs/common';
 import { BidsDbService } from './bids.db.service';
 import { Bid } from '@prisma/client';
 import { BidsServiceAbstractClass } from './bids.service.abstract.class';
+import {
+    CreateBidDto,
+    UpdateBidDto,
+    BidDto,
+    ResponseDto,
+} from '@repo/shared-dtos';
 
 @Injectable()
 export class BidsService implements BidsServiceAbstractClass {
     private readonly logger = new Logger(BidsService.name);
 
-    constructor(private readonly bidsDbService: BidsDbService) {}
+    constructor(private readonly bidsDbService: BidsDbService) { }
 
     async create(createBidDto: CreateBidDto): Promise<ResponseDto<BidDto>> {
         this.logger.log('Creating bid', createBidDto);

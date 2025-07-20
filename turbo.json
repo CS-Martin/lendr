@@ -5,14 +5,26 @@
         "build": {
             "dependsOn": ["^build"],
             "inputs": ["$TURBO_DEFAULT$", ".env*"],
-            "outputs": [".next/**", "!.next/cache/**"]
+            "outputs": [".next/**", "!.next/cache/**", "dist/**"]
         },
         "dev": {
             "persistent": true,
-            "cache": false
+            "cache": false,
+            "env": [
+                "NEXTAUTH_URL",
+                "NEXTAUTH_SECRET",
+                "NODE_ENV",
+                "API_BASE_URL"
+            ]
         },
         "lint": {
-            "dependsOn": ["^lint"]
+            "dependsOn": ["^lint"],
+            "env": [
+                "NEXTAUTH_URL",
+                "NEXTAUTH_SECRET",
+                "NODE_ENV",
+                "API_BASE_URL"
+            ]
         },
         "format": {
             "dependsOn": ["^format"]

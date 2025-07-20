@@ -12,6 +12,9 @@ importers:
         specifier: 6.12.0
         version: 6.12.0(prisma@6.12.0(typescript@5.8.3))(typescript@5.8.3)
     devDependencies:
+      eslint-plugin-only-warn:
+        specifier: ^1.1.0
+        version: 1.1.0
       husky:
         specifier: ^9.1.7
         version: 9.1.7
@@ -48,6 +51,9 @@ importers:
       '@prisma/client':
         specifier: ^6.12.0
         version: 6.12.0(prisma@6.12.0(typescript@5.8.3))(typescript@5.8.3)
+      '@repo/shared-dtos':
+        specifier: workspace:*
+        version: link:../../packages/shared-dtos
       class-transformer:
         specifier: ^0.5.1
         version: 0.5.1
@@ -290,6 +296,31 @@ importers:
       typescript-eslint:
         specifier: ^8.36.0
         version: 8.37.0(eslint@9.31.0(jiti@2.4.2))(typescript@5.8.3)
+
+  packages/shared-dtos:
+    dependencies:
+      '@nestjs/common':
+        specifier: ^11.0.1
+        version: 11.1.5(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2)
+      '@nestjs/swagger':
+        specifier: ^11.2.0
+        version: 11.2.0(@nestjs/common@11.1.5(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.5)(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)
+      class-transformer:
+        specifier: ^0.5.1
+        version: 0.5.1
+      class-validator:
+        specifier: ^0.14.2
+        version: 0.14.2
+    devDependencies:
+      '@repo/eslint-config':
+        specifier: workspace:*
+        version: link:../eslint-config
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
+      typescript:
+        specifier: latest
+        version: 5.8.3
 
   packages/typescript-config: {}
 
