@@ -71,7 +71,7 @@ export class BidDto {
         type: Boolean,
     })
     @IsBoolean()
-    isAccepted: boolean;
+    isAccepted!: boolean;
 
     @ApiProperty({
         description: 'The date and time when the bid was accepted',

@@ -5,10 +5,14 @@ import {
     NotFoundException,
 } from '@nestjs/common';
 import { RentalsDbService } from './rentals.db.service';
-import { ResponseDto } from 'lib/shared/dto/response.dto';
 import { Rental } from '@prisma/client';
 import { RentalsServiceAbstractClass } from './rentals.service.abstract.class';
-import { CreateRentalDto, UpdateRentalDto, RentalDto } from './dto';
+import {
+    CreateRentalDto,
+    UpdateRentalDto,
+    RentalDto,
+    ResponseDto,
+} from '@repo/shared-dtos';
 
 @Injectable()
 export class RentalsService implements RentalsServiceAbstractClass {

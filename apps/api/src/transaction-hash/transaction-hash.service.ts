@@ -10,9 +10,9 @@ import {
     CreateTransactionHashDto,
     TransactionHashDto,
     FilterTransactionHashDto,
-} from './dto';
+    ResponseDto,
+} from '@repo/shared-dtos';
 import { TransactionHash } from '@prisma/client';
-import { ResponseDto } from 'lib/shared/dto/response.dto';
 import { RentalPostsDbService } from 'rental-posts/rental-posts.db.service';
 
 @Injectable()

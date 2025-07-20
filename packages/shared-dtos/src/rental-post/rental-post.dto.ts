@@ -18,7 +18,7 @@ export class RentalPostDto {
         type: Number,
     })
     @IsNumber()
-    rentalPostId: number;
+    rentalPostId!: number;
 
     @ApiProperty({
         description: 'The poster address',

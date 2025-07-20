@@ -9,8 +9,8 @@ import {
     Query,
 } from '@nestjs/common';
 import { BidsService } from './bids.service';
-import { CreateBidDto, UpdateBidDto } from './dto';
 import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { CreateBidDto, UpdateBidDto } from '@repo/shared-dtos';
 
 @ApiTags('Bids')
 @Controller({ path: 'bid', version: '1' })

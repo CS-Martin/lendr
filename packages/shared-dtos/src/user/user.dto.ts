@@ -8,7 +8,7 @@ export class UserDto {
         example: 0x12345678910,
     })
     @IsString()
-    address: string;
+    address!: string;
 
     @ApiProperty({
         description: 'Username of the user',

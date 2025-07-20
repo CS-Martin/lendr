@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '@prisma/prisma.service';
 import { Prisma } from '@prisma/client';
 import { NFT } from '@prisma/client';
-import { FilterNftDto, CreateNftDto, UpdateNftDto } from './dto';
+import { FilterNftDto, CreateNftDto, UpdateNftDto } from '@repo/shared-dtos';
 
 @Injectable()
 export class NftDbService {

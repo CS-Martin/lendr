@@ -1,17 +1,30 @@
 {
     "$schema": "https://turborepo.com/schema.json",
+    "ui": "tui",
     "tasks": {
         "build": {
             "dependsOn": ["^build"],
-            "outputs": [".next/**", "!.next/cache/**"],
-            "cache": true
+            "inputs": ["$TURBO_DEFAULT$", ".env*"],
+            "outputs": [".next/**", "!.next/cache/**", "dist/**"]
         },
         "dev": {
             "persistent": true,
-            "cache": false
+            "cache": false,
+            "env": [
+                "NEXTAUTH_URL",
+                "NEXTAUTH_SECRET",
+                "NODE_ENV",
+                "API_BASE_URL"
+            ]
         },
         "lint": {
-            "dependsOn": ["^lint"]
+            "dependsOn": ["^lint"],
+            "env": [
+                "NEXTAUTH_URL",
+                "NEXTAUTH_SECRET",
+                "NODE_ENV",
+                "API_BASE_URL"
+            ]
         },
         "format": {
             "dependsOn": ["^format"]

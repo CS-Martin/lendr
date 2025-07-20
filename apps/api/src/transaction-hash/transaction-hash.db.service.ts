@@ -1,7 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '@prisma/prisma.service';
 import { Prisma, TransactionHash } from '@prisma/client';
-import { CreateTransactionHashDto, FilterTransactionHashDto } from './dto';
+import {
+    CreateTransactionHashDto,
+    FilterTransactionHashDto,
+} from '@repo/shared-dtos';
 
 @Injectable()
 export class TransactionHashDbService {

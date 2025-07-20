@@ -1,6 +1,10 @@
-import { ResponseDto } from 'lib/shared/dto/response.dto';
 import { RentalPost } from '@prisma/client';
-import { CreateRentalPostDto, UpdateRentalPostDto, RentalPostDto } from './dto';
+import {
+    CreateRentalPostDto,
+    UpdateRentalPostDto,
+    RentalPostDto,
+    ResponseDto,
+} from '@repo/shared-dtos';
 
 export abstract class RentalPostsServiceAbstractClass {
     abstract create(
