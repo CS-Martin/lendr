@@ -25,3 +25,5 @@ export class RentalPostApiService {
         }
     }
 }
+
+export const rentalPostApiService = new RentalPostApiService();

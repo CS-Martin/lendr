@@ -3,6 +3,7 @@ import { Geist, Azeret_Mono } from 'next/font/google';
 import './globals.css';
 import dynamic from 'next/dynamic';
 import '@rainbow-me/rainbowkit/styles.css';
+import { LoadingProgressProvider } from '@/providers/bprogress';
 
 const geistSans = Geist({
     variable: '--font-geist-sans',
@@ -20,7 +21,7 @@ export const metadata: Metadata = {
 };
 
 const WagmiProvider = dynamic(() =>
-    import('../providers/wagmi-provider').then(
+    import('../providers/wagmi').then(
         (mod) => mod.CustomWagmiProvider,
     ),
 );
@@ -34,7 +35,9 @@ export default function RootLayout({
         <html lang='en'>
             <body
                 className={`${geistSans.variable} ${azeretMono.variable} font-sans`}>
-                <WagmiProvider>{children}</WagmiProvider>
+                <WagmiProvider>
+                    <LoadingProgressProvider>{children}</LoadingProgressProvider>
+                </WagmiProvider>
             </body>
         </html>
     );

@@ -13,6 +13,7 @@ import { FilterSection } from '@/app/(services)/marketplace/_components/filter-s
 import { EmptyState } from './_components/empty-state';
 import { RentalPostApiService } from '@/services/rental-posts.api';
 import { RentalPostDto } from '@repo/shared-dtos';
+import { useFindAllRentalPost } from '@/hooks/useRentalPost';
 
 // Register GSAP plugins
 if (typeof window !== 'undefined') {
@@ -72,14 +73,9 @@ export default function MarketplacePage() {
         }
     };
 
-    const [rentalPosts, setPosts] = useState<RentalPostDto[]>([]);
+    const { rentalPosts, error } = useFindAllRentalPost();
 
-    useEffect(() => {
-        const apiService = new RentalPostApiService();
-        apiService.findAll().then((res) => setPosts(res.data));
-    }, []);
-
-    console.log(rentalPosts);
+    console.log(rentalPosts, error);
 
     const clearAllFilters = () => {
         setSelectedFilters([]);

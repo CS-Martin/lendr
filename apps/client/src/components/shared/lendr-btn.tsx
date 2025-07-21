@@ -7,12 +7,12 @@ interface LendrButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
     size?: 'default' | 'icon' | 'lg' | 'sm';
     icon?: React.ReactNode;
     variant?:
-        | 'default'
-        | 'destructive'
-        | 'ghost'
-        | 'link'
-        | 'outline'
-        | 'secondary';
+    | 'default'
+    | 'destructive'
+    | 'ghost'
+    | 'link'
+    | 'outline'
+    | 'secondary';
     link?: string;
 }
 
@@ -73,35 +73,48 @@ const LendrButton = forwardRef<HTMLButtonElement, LendrButtonProps>(
                 style = '';
         }
 
+        const buttonContent = (
+            <motion.span className='flex items-center'>
+                {children}
+                {icon !== null && icon !== undefined && (
+                    <motion.div
+                        animate={{ x: [0, 5, 0] }}
+                        transition={{
+                            duration: 1.5,
+                            repeat: Infinity,
+                        }}
+                        className='ml-2'>
+                        {icon}
+                    </motion.div>
+                )}
+            </motion.span>
+        );
+
         return (
             <motion.div
                 whileHover={{ scale: 1.05, rotateX: 5 }}
                 whileTap={{ scale: 0.95 }}
                 style={{ transformStyle: 'preserve-3d' }}>
-                <Button
-                    ref={ref}
-                    className={`${style} ${className}`}
-                    size={size}
-                    variant={variant}
-                    {...props}
-                    asChild>
-                    <Link href={link || ''}>
-                        <motion.span className='flex items-center'>
-                            {children}
-                            {icon !== null && icon !== undefined && (
-                                <motion.div
-                                    animate={{ x: [0, 5, 0] }}
-                                    transition={{
-                                        duration: 1.5,
-                                        repeat: Infinity,
-                                    }}
-                                    className='ml-2'>
-                                    {icon}
-                                </motion.div>
-                            )}
-                        </motion.span>
-                    </Link>
-                </Button>
+                {link ? (
+                    <Button
+                        ref={ref}
+                        className={`${style} ${className}`}
+                        size={size}
+                        variant={variant}
+                        {...props}
+                        asChild>
+                        <Link href={link}>{buttonContent}</Link>
+                    </Button>
+                ) : (
+                    <Button
+                        ref={ref}
+                        className={`${style} ${className}`}
+                        size={size}
+                        variant={variant}
+                        {...props}>
+                        {buttonContent}
+                    </Button>
+                )}
             </motion.div>
         );
     },
