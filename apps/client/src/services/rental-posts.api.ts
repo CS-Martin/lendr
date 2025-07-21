@@ -1,5 +1,5 @@
-import { config } from "@/config/env";
-import { RentalPostDto, ResponseDto } from "@repo/shared-dtos";
+import { config } from '@/config/env';
+import { RentalPostDto, ResponseDto } from '@repo/shared-dtos';
 
 export class RentalPostApiService {
     private API_BASE_URL: string;

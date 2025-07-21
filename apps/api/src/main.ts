@@ -12,7 +12,6 @@ async function bootstrap() {
         methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     });
 
-
     app.enableVersioning({
         type: VersioningType.URI,
         defaultVersion: '1',

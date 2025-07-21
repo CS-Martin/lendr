@@ -1,4 +1,3 @@
-
 // Sample datas
 // Updated to match Prisma schema with more diverse data
 const rentalPosts = [
