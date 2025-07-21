@@ -7,6 +7,12 @@ import { ValidationPipe, VersioningType } from '@nestjs/common';
 async function bootstrap() {
     const app = await NestFactory.create(AppModule);
 
+    app.enableCors({
+        origin: 'http://localhost:8080',
+        methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    });
+
+
     app.enableVersioning({
         type: VersioningType.URI,
         defaultVersion: '1',

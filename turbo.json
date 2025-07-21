@@ -14,7 +14,8 @@
                 "NEXTAUTH_URL",
                 "NEXTAUTH_SECRET",
                 "NODE_ENV",
-                "API_BASE_URL"
+                "API_BASE_URL",
+                "API_VERSION"
             ]
         },
         "lint": {
@@ -23,7 +24,8 @@
                 "NEXTAUTH_URL",
                 "NEXTAUTH_SECRET",
                 "NODE_ENV",
-                "API_BASE_URL"
+                "API_BASE_URL",
+                "API_VERSION"
             ]
         },
         "format": {

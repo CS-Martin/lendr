@@ -13,16 +13,15 @@ interface NFTGridProps {
 export function NFTGrid({ posts, viewMode, isInView }: NFTGridProps) {
     return (
         <motion.div
-            className={`grid gap-6 ${
-                viewMode === 'grid'
+            className={`grid gap-6 ${viewMode === 'grid'
                     ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4'
                     : 'grid-cols-1'
-            }`}
+                }`}
             layout>
             <AnimatePresence mode='popLayout'>
                 {posts.map((post, index) => (
                     <motion.div
-                        key={post.rentalPostId}
+                        key={index}
                         className='nft-card'
                         initial={{ opacity: 0, y: 50, scale: 0.9 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
