@@ -280,7 +280,7 @@ contract DelegationRegistryTest is Test {
         assertEq(registry.userExpires(address(mockERC721), TOKEN_ID), 0);
     }
 
-    function test_originalOwnerOf_forNonDepositedToken() public {
+    function test_originalOwnerOf_forNonDepositedToken() public view {
         assertEq(registry.originalOwnerOf(address(mockERC721), TOKEN_ID + 5), address(0));
     }
 

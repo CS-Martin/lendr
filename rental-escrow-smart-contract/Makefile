@@ -13,3 +13,6 @@ gas-estimate-mainnet:
 
 deploy-mainnet:
 	forge script script/DeployLendrRentalSystem.s.sol:DeployLendrRentalSystem --rpc-url ${MAINNET_RPC_URL} --private-key ${PRIVATE_KEY} --broadcast --verify --etherscan-api-key ${ETHERSCAN_API_KEY} -vvvv
+
+deploy-anvil:
+	forge create src/LendrRentalSystem.sol:LendrRentalSystem --private-key ${ANVIL_PRIVATE_KEY} --broadcast --constructor-args 500

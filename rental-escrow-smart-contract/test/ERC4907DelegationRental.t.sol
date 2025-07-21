@@ -605,7 +605,7 @@ contract ERC4907DelegationRentalTest is Test {
                             EDGE CASE TESTS
     //////////////////////////////////////////////////////////////*/
 
-    function test_constructor_sets_initial_state_correctly() public {
+    function test_constructor_sets_initial_state_correctly() public view {
         // This test verifies that the constructor correctly initializes all state variables.
         // It's created via the factory, so we check the state of the created agreement.
 
