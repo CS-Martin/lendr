@@ -4,8 +4,9 @@ pragma solidity ^0.8.20;
 import {CollateralRentalAgreement} from './CollateralRentalAgreement.sol';
 import {DelegationRentalAgreement} from './DelegationRentalAgreement.sol';
 import {DelegationRegistry} from './DelegationRegistryERC1155ERC721.sol';
-import {FeeCalculator} from './utils/ComputePercentage.sol';
 import {RentalEnums} from './libraries/RentalEnums.sol';
+import {CollateralAgreementFactory} from './CollateralAgreementFactory.sol';
+import {DelegationAgreementFactory} from './DelegationAgreementFactory.sol';
 
 /**
  * @title Rental System
@@ -38,6 +39,8 @@ contract LendrRentalSystem {
     mapping(uint256 => address) public s_delegationRentalAgreementById;
     uint256 public s_totalRentals;
     DelegationRegistry public immutable i_delegationRegistry;
+    CollateralAgreementFactory public immutable i_collateralAgreementFactory;
+    DelegationAgreementFactory public immutable i_delegationAgreementFactory;
 
     /*//////////////////////////////////////////////////////////////
                                 EVENTS
@@ -84,6 +87,8 @@ contract LendrRentalSystem {
         s_feeBps = initialPlatformFeePercentInBps;
         // Deploy DelegationRegistry with this contract as the sole authorization manager
         i_delegationRegistry = new DelegationRegistry(address(this));
+        i_collateralAgreementFactory = new CollateralAgreementFactory();
+        i_delegationAgreementFactory = new DelegationAgreementFactory();
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -152,17 +157,17 @@ contract LendrRentalSystem {
         s_totalRentals++;
         uint256 rentalId = s_totalRentals;
 
-        CollateralRentalAgreement rentalAgreement = new CollateralRentalAgreement(
-            _lender,
-            _nftContract,
-            _tokenId,
-            _hourlyRentalFee,
-            _collateral,
-            _rentalDurationInHours,
-            _nftStandard,
-            _dealDuration
-        );
-        address agreementAddress = address(rentalAgreement);
+        address agreementAddress = i_collateralAgreementFactory
+            .createCollateralRentalAgreement(
+                _lender,
+                _nftContract,
+                _tokenId,
+                _hourlyRentalFee,
+                _collateral,
+                _rentalDurationInHours,
+                _nftStandard,
+                _dealDuration
+            );
 
         s_collateralRentalAgreementById[rentalId] = agreementAddress;
 
@@ -216,17 +221,17 @@ contract LendrRentalSystem {
             ? DelegationRegistry(address(0))
             : i_delegationRegistry;
 
-        DelegationRentalAgreement rentalAgreement = new DelegationRentalAgreement(
-            _lender,
-            _nftContract,
-            _tokenId,
-            _hourlyRentalFee,
-            _rentalDurationInHours,
-            _nftStandard,
-            _dealDuration,
-            registryToUse
-        );
-        address agreementAddress = address(rentalAgreement);
+        address agreementAddress = i_delegationAgreementFactory
+            .createDelegationRentalAgreement(
+                _lender,
+                _nftContract,
+                _tokenId,
+                _hourlyRentalFee,
+                _rentalDurationInHours,
+                _nftStandard,
+                _dealDuration,
+                registryToUse
+            );
 
         if (address(registryToUse) != address(0)) {
             i_delegationRegistry.addAuthorized(agreementAddress);
