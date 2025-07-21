@@ -7,7 +7,7 @@ import {ERC721Holder} from '@openzeppelin/contracts/token/ERC721/utils/ERC721Hol
 import {ERC1155Holder} from '@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol';
 import {ReentrancyGuard} from '@openzeppelin/contracts/utils/ReentrancyGuard.sol';
 import {TimeConverter} from './utils/TimeConverter.sol';
-import {FeeCalculator} from './utils/ComputePercentage.sol';
+import {FeeSplitter} from './utils/FeeSplitter.sol';
 import {LendrRentalSystem} from './LendrRentalSystem.sol';
 import {RentalEnums} from './libraries/RentalEnums.sol';
 
@@ -462,8 +462,7 @@ contract CollateralRentalAgreement is
      */
     function _distributePayouts() private {
         uint256 totalRentalFee = getTotalHourlyFee();
-        uint256 platformFee = FeeCalculator.calculateFee(totalRentalFee, i_factoryContract.s_feeBps());
-        uint256 lenderPayout = totalRentalFee - platformFee;
+        (uint256 lenderPayout, uint256 platformFee) = FeeSplitter.splitFee(totalRentalFee, i_factoryContract.s_feeBps());
 
         if (s_rentalState == State.COMPLETED) {
             if (i_collateral > 0) {

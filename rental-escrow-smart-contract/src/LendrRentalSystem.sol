@@ -1,12 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import {CollateralRentalAgreement} from './CollateralRentalAgreement.sol';
-import {DelegationRentalAgreement} from './DelegationRentalAgreement.sol';
-import {DelegationRegistry} from './DelegationRegistryERC1155ERC721.sol';
 import {RentalEnums} from './libraries/RentalEnums.sol';
 import {CollateralAgreementFactory} from './CollateralAgreementFactory.sol';
-import {DelegationAgreementFactory} from './DelegationAgreementFactory.sol';
+import {DelegationRegistry} from './DelegationRegistry.sol';
 
 /**
  * @title Rental System
@@ -36,11 +33,9 @@ contract LendrRentalSystem {
     address public immutable i_deployer;
     uint256 public s_feeBps; // base fee in basis points. 500 basis points = 5%.
     mapping(uint256 => address) public s_collateralRentalAgreementById;
-    mapping(uint256 => address) public s_delegationRentalAgreementById;
     uint256 public s_totalRentals;
     DelegationRegistry public immutable i_delegationRegistry;
     CollateralAgreementFactory public immutable i_collateralAgreementFactory;
-    DelegationAgreementFactory public immutable i_delegationAgreementFactory;
 
     /*//////////////////////////////////////////////////////////////
                                 EVENTS
@@ -88,7 +83,6 @@ contract LendrRentalSystem {
         // Deploy DelegationRegistry with this contract as the sole authorization manager
         i_delegationRegistry = new DelegationRegistry(address(this));
         i_collateralAgreementFactory = new CollateralAgreementFactory();
-        i_delegationAgreementFactory = new DelegationAgreementFactory();
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -216,38 +210,26 @@ contract LendrRentalSystem {
         s_totalRentals++;
         uint256 rentalId = s_totalRentals;
 
-        DelegationRegistry registryToUse = (_nftStandard ==
-            RentalEnums.NftStandard.ERC4907)
-            ? DelegationRegistry(address(0))
-            : i_delegationRegistry;
-
-        address agreementAddress = i_delegationAgreementFactory
-            .createDelegationRentalAgreement(
-                _lender,
-                _nftContract,
-                _tokenId,
-                _hourlyRentalFee,
-                _rentalDurationInHours,
-                _nftStandard,
-                _dealDuration,
-                registryToUse
-            );
-
-        if (address(registryToUse) != address(0)) {
-            i_delegationRegistry.addAuthorized(agreementAddress);
-        }
-
-        s_delegationRentalAgreementById[rentalId] = agreementAddress;
+        i_delegationRegistry.createRentalAgreement(
+            rentalId,
+            _lender,
+            _nftContract,
+            _tokenId,
+            _hourlyRentalFee,
+            _rentalDurationInHours,
+            _nftStandard,
+            _dealDuration
+        );
 
         emit DelegationRentalAgreementCreated(
             rentalId,
-            agreementAddress,
+            address(i_delegationRegistry),
             _lender,
             _nftContract,
             _tokenId
         );
 
-        return agreementAddress;
+        return address(i_delegationRegistry);
     }
 
     /*//////////////////////////////////////////////////////////////
