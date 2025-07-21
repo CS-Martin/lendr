@@ -4,8 +4,8 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { Logger } from '@nestjs/common';
 import { ValidationPipe, VersioningType } from '@nestjs/common';
 import {
-  FastifyAdapter,
-  NestFastifyApplication,
+    FastifyAdapter,
+    NestFastifyApplication,
 } from '@nestjs/platform-fastify';
 import cors from '@fastify/cors';
 
