@@ -9,7 +9,7 @@ import {IERC165} from '@openzeppelin/contracts/utils/introspection/IERC165.sol';
 import {ReentrancyGuard} from '@openzeppelin/contracts/utils/ReentrancyGuard.sol';
 import {RentalEnums} from './libraries/RentalEnums.sol';
 import {TimeConverter} from './utils/TimeConverter.sol';
-import {FeeCalculator} from './utils/ComputePercentage.sol';
+import {FeeSplitter} from './utils/FeeSplitter.sol';
 import {LendrRentalSystem} from './LendrRentalSystem.sol';
 
 interface IERC4907 {
@@ -386,6 +386,7 @@ contract DelegationRegistry is
     function completeDelegationRental(uint256 rentalId)
         external
         inState(rentalId, State.ACTIVE_DELEGATION)
+        nonReentrant
     {
         RentalAgreement storage agreement = rentalAgreements[rentalId];
         if (block.timestamp < agreement.rentalEndTime) {
@@ -395,11 +396,7 @@ contract DelegationRegistry is
         agreement.rentalState = State.COMPLETED;
 
         uint256 totalFee = getTotalHourlyFee(rentalId);
-        uint256 platformFee = FeeCalculator.calculateFee(
-            totalFee,
-            agreement.platformFeeBps
-        );
-        uint256 lenderPayout = totalFee - platformFee;
+        (uint256 lenderPayout, uint256 platformFee) = FeeSplitter.splitFee(totalFee, agreement.platformFeeBps);
 
         if (agreement.nftStandard == RentalEnums.NftStandard.ERC4907) {
             IERC4907(agreement.nftContract).setUser(
@@ -610,6 +607,14 @@ contract DelegationRegistry is
         return agreement.hourlyRentalFee * agreement.rentalDurationInHours;
     }
 
+    function getRentalAgreement(uint256 rentalId)
+        public
+        view
+        returns (RentalAgreement memory)
+    {
+        return rentalAgreements[rentalId];
+    }
+
     /**
      * @notice Gets the user of an NFT if a valid delegation exists.
      * @param nftContract The address of the NFT contract.
@@ -640,6 +645,14 @@ contract DelegationRegistry is
         returns (uint256)
     {
         return _delegations[nftContract][tokenId].expires;
+    }
+
+    function getDelegation(address nftContract, uint256 tokenId)
+        public
+        view
+        returns (Delegation memory)
+    {
+        return _delegations[nftContract][tokenId];
     }
 
     /*//////////////////////////////////////////////////////////////
