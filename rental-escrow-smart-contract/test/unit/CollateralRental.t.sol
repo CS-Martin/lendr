@@ -2,12 +2,12 @@
 pragma solidity ^0.8.20;
 
 import {Test} from 'forge-std/Test.sol';
-import {CollateralRentalAgreement} from '../src/CollateralRentalAgreement.sol';
-import {LendrRentalSystem} from '../src/LendrRentalSystem.sol';
-import {RentalEnums} from '../src/libraries/RentalEnums.sol';
-import {ERC721Mock} from './mocks/ERC721Mock.sol';
-import {ERC1155Mock} from './mocks/ERC1155Mock.sol';
-import {Attacker} from './mocks/Attacker.sol';
+import {CollateralRentalAgreement} from '../../src/CollateralRentalAgreement.sol';
+import {LendrRentalSystem} from '../../src/LendrRentalSystem.sol';
+import {RentalEnums} from '../../src/libraries/RentalEnums.sol';
+import {ERC721Mock} from '../mocks/ERC721Mock.sol';
+import {ERC1155Mock} from '../mocks/ERC1155Mock.sol';
+import {Attacker} from '../mocks/Attacker.sol';
 
 contract CollateralRentalTest is Test {
     /*//////////////////////////////////////////////////////////////
