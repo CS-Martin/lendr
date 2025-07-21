@@ -3,9 +3,17 @@ import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { Logger } from '@nestjs/common';
 import { ValidationPipe, VersioningType } from '@nestjs/common';
+import {
+    FastifyAdapter,
+    NestFastifyApplication,
+} from '@nestjs/platform-fastify';
+import cors from '@fastify/cors';
 
 async function bootstrap() {
-    const app = await NestFactory.create(AppModule);
+    const app = await NestFactory.create<NestFastifyApplication>(
+        AppModule,
+        new FastifyAdapter(),
+    );
 
     app.enableVersioning({
         type: VersioningType.URI,
@@ -19,6 +27,11 @@ async function bootstrap() {
             transform: true,
         }),
     );
+
+    await app.register(cors, {
+        origin: 'http://localhost:8080',
+        methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE'],
+    });
 
     const config = new DocumentBuilder()
         .setTitle('Lendr API')
