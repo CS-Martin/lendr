@@ -139,6 +139,7 @@ contract DelegationRentalAgreement is ReentrancyGuard {
                             CONSTRUCTOR
     //////////////////////////////////////////////////////////////*/
     constructor(
+        address _factoryAddress,
         address _lender,
         address _nftContract,
         uint256 _tokenId,
@@ -159,7 +160,7 @@ contract DelegationRentalAgreement is ReentrancyGuard {
         i_tokenId = _tokenId;
         i_hourlyRentalFee = _hourlyRentalFee;
         i_rentalDurationInHours = _rentalDurationInHours;
-        i_factoryContract = LendrRentalSystem(payable(msg.sender));
+        i_factoryContract = LendrRentalSystem(payable(_factoryAddress));
         i_delegationRegistry = _delegationRegistry;
         i_nftStandard = _nftStandard;
         i_DealDuration = _dealDuration;
