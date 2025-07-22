@@ -20,17 +20,23 @@ import { cn } from '@/lib/utils';
 import { OwnedNft } from 'alchemy-sdk';
 import LendrButton from '@/components/shared/lendr-btn';
 import z from 'zod';
-import { useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useCreateRentalPost } from '@/hooks/useRentalPost';
+import { CreateRentalDto, CreateRentalPostDto } from '@repo/shared-dtos';
+import { Session } from 'next-auth';
+import { s } from 'framer-motion/dist/types.d-Bq-Qm38R';
 
 interface ListNFTDrawerProps {
     nft: OwnedNft | null;
     isOpen: boolean;
     onClose: () => void;
+    session: Session | null;
 }
 
 // RentalPost Zod Schema
 const listNftFormSchema = z.object({
+    posterAddress: z.string().min(1, 'Poster address is required'),
     name: z.string().min(1, 'Name is required').max(100, 'Name must be less than 100 characters'),
     description: z.string().max(255, 'Description must be less than 500 characters').optional(),
     category: z.string().optional(),
@@ -41,12 +47,12 @@ const listNftFormSchema = z.object({
     biddingEndtime: z.date().optional(),
     isActive: z.boolean(),
     statusCode: z.enum(['AVAILABLE', 'RENTED', 'DELISTED', 'DISPUTED_FOR_LENDER', 'DISPUTED_FOR_RENTER']),
-})
+});
 
 type ListNftFormInputs = z.infer<typeof listNftFormSchema>;
 
-export const ListNFTDrawer = ({ nft, isOpen, onClose }: ListNFTDrawerProps) => {
-
+export const ListNFTDrawer = ({ nft, isOpen, onClose, session }: ListNFTDrawerProps) => {
+    console.log(session)
     const {
         register,
         handleSubmit,
@@ -57,6 +63,7 @@ export const ListNFTDrawer = ({ nft, isOpen, onClose }: ListNFTDrawerProps) => {
     } = useForm<ListNftFormInputs>({
         resolver: zodResolver(listNftFormSchema),
         defaultValues: {
+            posterAddress: session?.user?.address,
             name: '',
             description: '',
             hourlyRate: 0,
@@ -66,23 +73,32 @@ export const ListNFTDrawer = ({ nft, isOpen, onClose }: ListNFTDrawerProps) => {
             biddingStarttime: undefined,
             biddingEndtime: undefined,
             isActive: true,
-            statusCode: 'AVAILABLE'
+            statusCode: 'AVAILABLE',
         },
-
-    })
+    });
 
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const handleNftPostSubmit = async (data: ListNftFormInputs) => {
+    const { createRentalPost } = useCreateRentalPost();
+
+    const onSubmit = async (data: ListNftFormInputs) => {
         setIsSubmitting(true);
+
+        console.log(session)
+
+        if (!session) {
+            console.error('User is not authenticated');
+            return null;
+        }
 
         console.log('NFT Listing Data:', data);
 
         try {
+            const post = await createRentalPost(data as CreateRentalPostDto)
 
+            console.log('NFT rental listing created:', post);
         } catch (error) {
             console.error('Error creating NFT rental listing:', error);
-            // Handle error (e.g., show notification)
         } finally {
             setIsSubmitting(false);
             onClose();
@@ -159,7 +175,7 @@ export const ListNFTDrawer = ({ nft, isOpen, onClose }: ListNFTDrawerProps) => {
                             )}
 
                             <form
-                                onSubmit={handleSubmit(handleNftPostSubmit)}
+                                onSubmit={handleSubmit(onSubmit)}
                                 className='space-y-6'>
                                 {/* Basic Information */}
                                 <motion.div
@@ -206,25 +222,36 @@ export const ListNFTDrawer = ({ nft, isOpen, onClose }: ListNFTDrawerProps) => {
                                     </div>
 
                                     <div className='space-y-2'>
-                                        <Label
-                                            htmlFor='category'
-                                            className='text-gray-300'>
+                                        <Label htmlFor='category' className='text-gray-300'>
                                             Category
                                         </Label>
-                                        <Select {...register('category')}>
-                                            <SelectTrigger className='bg-gray-800/50 border-gray-700/50 text-white focus:border-lendr-400/50'>
-                                                <SelectValue placeholder='Select a category' />
-                                            </SelectTrigger>
-                                            <SelectContent className='bg-gray-800 border-gray-700 text-white'>
-                                                {categories.map((category) => (
-                                                    <SelectItem
-                                                        key={category}
-                                                        value={category.toLowerCase()}>
-                                                        {category}
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
+                                        <Controller
+                                            name="category"
+                                            control={control}
+                                            render={({ field }) => (
+                                                <Select
+                                                    value={field.value}
+                                                    onValueChange={field.onChange}
+                                                >
+                                                    <SelectTrigger className='bg-gray-800/50 border-gray-700/50 text-white focus:border-lendr-400/50'>
+                                                        <SelectValue placeholder='Select a category' />
+                                                    </SelectTrigger>
+                                                    <SelectContent className='bg-gray-800 border-gray-700 text-white'>
+                                                        {categories.map((category) => (
+                                                            <SelectItem
+                                                                key={category}
+                                                                value={category.toLowerCase()}
+                                                            >
+                                                                {category}
+                                                            </SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                            )}
+                                        />
+                                        {errors.category && (
+                                            <small className='text-red-400 mt-1'>{errors.category.message}</small>
+                                        )}
                                     </div>
                                 </motion.div>
 
@@ -318,7 +345,6 @@ export const ListNFTDrawer = ({ nft, isOpen, onClose }: ListNFTDrawerProps) => {
                                                     setValue('biddingEndtime', undefined);
                                                 }
                                             }}
-
                                         />
                                     </div>
 
@@ -329,8 +355,7 @@ export const ListNFTDrawer = ({ nft, isOpen, onClose }: ListNFTDrawerProps) => {
                                                 animate={{ height: 'auto', opacity: 1 }}
                                                 exit={{ height: 0, opacity: 0 }}
                                                 transition={{ duration: 0.3 }}
-                                                className='space-y-4 overflow-hidden'
-                                            >
+                                                className='space-y-4 overflow-hidden'>
                                                 <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
                                                     <div className='space-y-2'>
                                                         <Label className='text-gray-300'>Bidding Start Date</Label>
@@ -341,8 +366,7 @@ export const ListNFTDrawer = ({ nft, isOpen, onClose }: ListNFTDrawerProps) => {
                                                                     className={cn(
                                                                         'w-full justify-start text-left font-normal bg-gray-800/50 border-gray-700/50 text-white hover:bg-gray-700/50',
                                                                         !biddingStarttime && 'text-gray-400',
-                                                                    )}
-                                                                >
+                                                                    )}>
                                                                     <CalendarIcon className='mr-2 h-4 w-4' />
                                                                     {biddingStarttime ? format(biddingStarttime, 'PPP') : 'Pick a date'}
                                                                 </Button>
@@ -380,8 +404,7 @@ export const ListNFTDrawer = ({ nft, isOpen, onClose }: ListNFTDrawerProps) => {
                                                                         'w-full justify-start text-left font-normal bg-gray-800/50 border-gray-700/50 text-white hover:bg-gray-700/50',
                                                                         !biddingEndtime && 'text-gray-400',
                                                                     )}
-                                                                    disabled={!biddingStarttime}
-                                                                >
+                                                                    disabled={!biddingStarttime}>
                                                                     <CalendarIcon className='mr-2 h-4 w-4' />
                                                                     {biddingEndtime ? format(biddingEndtime, 'PPP') : 'Pick a date'}
                                                                 </Button>
@@ -402,8 +425,7 @@ export const ListNFTDrawer = ({ nft, isOpen, onClose }: ListNFTDrawerProps) => {
                                                                         }
                                                                     }}
                                                                     disabled={(date) =>
-                                                                        date < new Date() ||
-                                                                        (biddingStarttime ? date < biddingStarttime : false)
+                                                                        date < new Date() || (biddingStarttime ? date < biddingStarttime : false)
                                                                     }
                                                                     initialFocus
                                                                     className='text-white'
@@ -420,8 +442,7 @@ export const ListNFTDrawer = ({ nft, isOpen, onClose }: ListNFTDrawerProps) => {
                                                     <motion.p
                                                         initial={{ opacity: 0 }}
                                                         animate={{ opacity: 1 }}
-                                                        className='text-sm text-red-400'
-                                                    >
+                                                        className='text-sm text-red-400'>
                                                         Bidding end date must be after start date
                                                     </motion.p>
                                                 )}

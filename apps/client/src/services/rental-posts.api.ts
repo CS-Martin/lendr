@@ -1,6 +1,6 @@
 import { config } from '@/config/env';
 import { logger } from '@/lib/logger';
-import { RentalPostDto, ResponseDto } from '@repo/shared-dtos';
+import { CreateRentalPostDto, RentalPostDto, ResponseDto } from '@repo/shared-dtos';
 
 export class RentalPostApiService {
     private API_BASE_URL: string;
@@ -9,7 +9,7 @@ export class RentalPostApiService {
         this.API_BASE_URL = `${config.api.BASE_URL}/${config.api.VERSION}/rental-post`;
     }
 
-    public async create(rentalPost: RentalPostDto): Promise<ResponseDto<RentalPostDto>> {
+    public async create(rentalPost: CreateRentalPostDto): Promise<ResponseDto<RentalPostDto>> {
         logger.info('Creating rental post:', rentalPost);
 
         try {
