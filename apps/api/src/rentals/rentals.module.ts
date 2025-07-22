@@ -4,7 +4,7 @@ import { RentalsController } from './rentals.controller';
 import { RentalsDbService } from './rentals.db.service';
 
 @Module({
-    controllers: [RentalsController],
-    providers: [RentalsService, RentalsDbService],
+  controllers: [RentalsController],
+  providers: [RentalsService, RentalsDbService],
 })
 export class RentalsModule {}

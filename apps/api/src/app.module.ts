@@ -10,16 +10,8 @@ import { BidsModule } from './bids/bids.module';
 import { TransactionHashModule } from './transaction-hash/transaction-hash.module';
 
 @Module({
-    imports: [
-        UsersModule,
-        NftModule,
-        RentalsModule,
-        RentalPostsModule,
-        PrismaModule,
-        BidsModule,
-        TransactionHashModule,
-    ],
-    controllers: [AppController],
-    providers: [AppService],
+  imports: [UsersModule, NftModule, RentalsModule, RentalPostsModule, PrismaModule, BidsModule, TransactionHashModule],
+  controllers: [AppController],
+  providers: [AppService],
 })
 export class AppModule {}

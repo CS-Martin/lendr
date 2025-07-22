@@ -5,65 +5,60 @@ import { CreateRentalPostDto, UpdateRentalPostDto } from '@repo/shared-dtos';
 
 @Injectable()
 export class RentalPostsDbService {
-    constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) {}
 
-    async create(
-        createRentalPostDto: CreateRentalPostDto,
-    ): Promise<RentalPost> {
-        const rentalPost = await this.prisma.rentalPost.create({
-            data: createRentalPostDto,
-        });
+  async create(createRentalPostDto: CreateRentalPostDto): Promise<RentalPost> {
+    const rentalPost = await this.prisma.rentalPost.create({
+      data: createRentalPostDto,
+    });
 
-        return rentalPost;
-    }
+    return rentalPost;
+  }
 
-    async update(
-        rentalPostId: number,
-        updateRentalPostDto: UpdateRentalPostDto,
-    ): Promise<RentalPost> {
-        const rentalPost = await this.prisma.rentalPost.update({
-            where: {
-                rentalPostId,
-            },
-            data: updateRentalPostDto,
-        });
+  async update(rentalPostId: number, updateRentalPostDto: UpdateRentalPostDto): Promise<RentalPost> {
+    const rentalPost = await this.prisma.rentalPost.update({
+      where: {
+        rentalPostId,
+      },
+      data: updateRentalPostDto,
+    });
 
-        return rentalPost;
-    }
+    return rentalPost;
+  }
 
-    async findAll(): Promise<RentalPost[]> {
-        const rentalPosts = await this.prisma.rentalPost.findMany();
+  async findAll(): Promise<RentalPost[]> {
+    const rentalPosts = await this.prisma.rentalPost.findMany();
 
-        return rentalPosts;
-    }
+    return rentalPosts;
+  }
 
-    async findAllByAddress(address: string): Promise<RentalPost[]> {
-        const rentalPosts = await this.prisma.rentalPost.findMany({
-            where: {
-                posterAddress: {
-                    equals: address,
-                },
-            },
-        });
+  async findAllByAddress(address: string): Promise<RentalPost[]> {
+    const rentalPosts = await this.prisma.rentalPost.findMany({
+      where: {
+        posterAddress: {
+          equals: address,
+        },
+      },
+    });
 
-        return rentalPosts;
-    }
+    return rentalPosts;
+  }
 
-    async findOne(rentalPostId: number): Promise<RentalPost | null> {
-        const rentalPost = await this.prisma.rentalPost.findUnique({
-            where: {
-                rentalPostId,
-            },
-        });
+  async findOne(rentalPostId: number): Promise<RentalPost | null> {
+    const rentalPost = await this.prisma.rentalPost.findUnique({
+      where: {
+        rentalPostId,
+      },
+    });
 
-        return rentalPost;
-    }
+    return rentalPost;
+  }
 
-    async remove(rentalPostId: number): Promise<void> {
-        await this.prisma.rentalPost.delete({
-            where: {
-                rentalPostId,
-            },
-        });
-    }
+  async remove(rentalPostId: number): Promise<void> {
+    await this.prisma.rentalPost.delete({
+      where: {
+        rentalPostId,
+      },
+    });
+  }
 }
