@@ -1,18 +1,23 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import {CollateralRentalAgreement} from '../../src/CollateralRentalAgreement.sol';
+import {CollateralRegistry} from '../../src/CollateralRegistry.sol';
 import {IERC721Receiver} from '@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol';
 
 contract Attacker is IERC721Receiver {
-    CollateralRentalAgreement public immutable rentalAgreement;
+    CollateralRegistry public immutable collateralRegistry;
+    uint256 public rentalId;
 
-    constructor(address rentalAgreementAddress) {
-        rentalAgreement = CollateralRentalAgreement(rentalAgreementAddress);
+    constructor(address registryAddress) {
+        collateralRegistry = CollateralRegistry(registryAddress);
+    }
+
+    function setRentalId(uint256 _rentalId) external {
+        rentalId = _rentalId;
     }
 
     function attack() external {
-        rentalAgreement.returnNFTToLender();
+        collateralRegistry.returnNFTToLender(rentalId);
     }
 
     function onERC721Received(
@@ -25,8 +30,8 @@ contract Attacker is IERC721Receiver {
     }
 
     receive() external payable {
-        if (address(rentalAgreement).balance > 0) {
-            rentalAgreement.returnNFTToLender();
+        if (address(collateralRegistry).balance > 0) {
+            collateralRegistry.returnNFTToLender(rentalId);
         }
     }
 } 
