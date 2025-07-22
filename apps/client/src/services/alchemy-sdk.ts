@@ -1,8 +1,8 @@
-import { Alchemy, Network, OwnedNft, OwnedNftsResponse } from "alchemy-sdk";
+import { Alchemy, Network, OwnedNft, OwnedNftsResponse } from 'alchemy-sdk';
 
 const config = {
-    apiKey: process.env.NEXT_PUBLIC_ALCHEMY_API_KEY || "",
-    network: Network.ETH_MAINNET
+    apiKey: process.env.NEXT_PUBLIC_ALCHEMY_API_KEY || '',
+    network: Network.ETH_MAINNET,
 };
 
 const alchemy = new Alchemy(config);
@@ -10,28 +10,26 @@ const alchemy = new Alchemy(config);
 export class AlchemyService {
     public async getNFTsForAddress(
         walletAddress: string,
-        pageKey?: string
+        pageKey?: string,
     ): Promise<{ nfts: OwnedNft[]; nextPageKey?: string }> {
         try {
-            const response: OwnedNftsResponse = await alchemy.nft.getNftsForOwner(walletAddress, {
-                pageSize: 10,
-                pageKey,
-                omitMetadata: false,
-                excludeFilters: [],
-            });
+            const response: OwnedNftsResponse =
+                await alchemy.nft.getNftsForOwner(walletAddress, {
+                    pageSize: 10,
+                    pageKey,
+                    omitMetadata: false,
+                    excludeFilters: [],
+                });
 
             return {
                 nfts: response.ownedNfts,
                 nextPageKey: response.pageKey,
             };
         } catch (error) {
-            console.error("Failed to fetch NFTs:", error);
+            console.error('Failed to fetch NFTs:', error);
             return { nfts: [] };
         }
     }
 }
-
-
-
 
 export const alchemyService = new AlchemyService();

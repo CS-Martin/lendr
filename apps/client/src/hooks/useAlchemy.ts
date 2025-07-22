@@ -1,9 +1,9 @@
 'use client';
 
-import { alchemyService } from "@/services/alchemy-sdk";
-import { useProgress } from "@bprogress/next"
-import { OwnedNft } from "alchemy-sdk";
-import { useEffect, useState } from "react";
+import { alchemyService } from '@/services/alchemy-sdk';
+import { useProgress } from '@bprogress/next';
+import { OwnedNft } from 'alchemy-sdk';
+import { useEffect, useState } from 'react';
 
 export const useGetNFTsForAddress = (address: string) => {
     const { start, stop } = useProgress();
@@ -13,8 +13,9 @@ export const useGetNFTsForAddress = (address: string) => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                start()
-                const { nfts: newNfts, nextPageKey } = await alchemyService.getNFTsForAddress(address);
+                start();
+                const { nfts: newNfts, nextPageKey } =
+                    await alchemyService.getNFTsForAddress(address);
 
                 setNfts(newNfts);
             } catch (err) {
@@ -28,7 +29,7 @@ export const useGetNFTsForAddress = (address: string) => {
     }, [start, stop, address]);
 
     return { nfts, error };
-}
+};
 
 export const usePaginatedNFTs = (walletAddress: string) => {
     const [nfts, setNfts] = useState<OwnedNft[]>([]);
@@ -39,7 +40,8 @@ export const usePaginatedNFTs = (walletAddress: string) => {
     const loadNFTs = async () => {
         if (loading || !hasMore) return;
         setLoading(true);
-        const { nfts: newNfts, nextPageKey } = await alchemyService.getNFTsForAddress(walletAddress, pageKey);
+        const { nfts: newNfts, nextPageKey } =
+            await alchemyService.getNFTsForAddress(walletAddress, pageKey);
         setNfts((prev) => [...prev, ...newNfts]);
         setPageKey(nextPageKey);
         setHasMore(!!nextPageKey);

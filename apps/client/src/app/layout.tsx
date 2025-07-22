@@ -21,9 +21,7 @@ export const metadata: Metadata = {
 };
 
 const WagmiProvider = dynamic(() =>
-    import('../providers/wagmi').then(
-        (mod) => mod.CustomWagmiProvider,
-    ),
+    import('../providers/wagmi').then((mod) => mod.CustomWagmiProvider),
 );
 
 export default function RootLayout({
@@ -36,7 +34,9 @@ export default function RootLayout({
             <body
                 className={`${geistSans.variable} ${azeretMono.variable} font-sans`}>
                 <WagmiProvider>
-                    <LoadingProgressProvider>{children}</LoadingProgressProvider>
+                    <LoadingProgressProvider>
+                        {children}
+                    </LoadingProgressProvider>
                 </WagmiProvider>
             </body>
         </html>

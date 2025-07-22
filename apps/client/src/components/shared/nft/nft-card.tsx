@@ -1,13 +1,13 @@
-import { Button } from "@/components/ui/button"
-import { Card3D } from "../card-3d"
-import { motion } from "framer-motion"
-import { Star } from "lucide-react"
-import { OwnedNft } from "alchemy-sdk"
-import { useRef } from "react"
-import { useEffect } from "react"
-import Image from "next/image"
-import gsap from "gsap"
-import LendrButton from "../lendr-btn"
+import { Button } from '@/components/ui/button';
+import { Card3D } from '../card-3d';
+import { motion } from 'framer-motion';
+import { Star } from 'lucide-react';
+import { OwnedNft } from 'alchemy-sdk';
+import { useRef } from 'react';
+import { useEffect } from 'react';
+import Image from 'next/image';
+import gsap from 'gsap';
+import LendrButton from '../lendr-btn';
 
 export const NFTCard = ({ nft }: { nft: OwnedNft }) => {
     const cardRef = useRef<HTMLDivElement>(null);
@@ -31,9 +31,8 @@ export const NFTCard = ({ nft }: { nft: OwnedNft }) => {
 
     if (!nft.tokenId || !nft.contract.address) return null;
 
-
     return (
-        <Card3D className="group h-full">
+        <Card3D className='group h-full'>
             <motion.div
                 ref={cardRef}
                 className='relative flex flex-col h-full bg-gradient-to-br from-slate-900/90 to-slate-800/90 backdrop-blur-xl border border-slate-700/50 hover:border-lendr-400/50 rounded-xl overflow-hidden shadow-2xl hover:shadow-lendr-400/30 transition-all duration-500'
@@ -64,9 +63,8 @@ export const NFTCard = ({ nft }: { nft: OwnedNft }) => {
                                 e.currentTarget.src = '/placeholder.svg';
                             }}
                             unoptimized
-                            className="w-full h-64 object-cover"
+                            className='w-full h-64 object-cover group-hover:scale-105 transition-all duration-500'
                         />
-
                     </motion.div>
 
                     {/* Holographic overlay */}
@@ -99,15 +97,14 @@ export const NFTCard = ({ nft }: { nft: OwnedNft }) => {
                         whileTap={{ scale: 0.98 }}
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
-                        transition={{ delay: 0.9 }} className="absolute w-[90%] -bottom-10 group-hover:-translate-y-13 left-1/2 -translate-x-1/2 transition-all duration-500">
-                        <LendrButton
-                            className='w-full rounded-md bg-gradient-to-r from-lendr-400 to-lendr-500 hover:from-lendr-500 hover:to-lendr-600 text-slate-950 border-0 font-bold shadow-md shadow-lendr-400/30 hover:shadow-lendr-400/50 transition-all duration-500 overflow-hidden'
-                        >
+                        transition={{ delay: 0.9 }}
+                        className='absolute w-[90%] -bottom-10 group-hover:-translate-y-13 left-1/2 -translate-x-1/2 transition-all duration-500'>
+                        <LendrButton className='w-full rounded-md bg-gradient-to-r from-lendr-400 to-lendr-500 hover:from-lendr-500 hover:to-lendr-600 text-slate-950 border-0 font-bold shadow-md shadow-lendr-400/30 hover:shadow-lendr-400/50 transition-all duration-500 overflow-hidden'>
                             List NFT
                         </LendrButton>
                     </motion.div>
                 </div>
             </motion.div>
         </Card3D>
-    )
-}
+    );
+};

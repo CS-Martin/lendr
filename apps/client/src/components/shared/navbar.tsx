@@ -29,7 +29,9 @@ export default function NavBar() {
                 isScrolled ? 'h-23' : 'h-15 md:h-28',
                 pathname === '/' ? '' : '!h-20 bg-transparent ',
                 pathname === '/marketplace' ? 'border-b border-slate-800' : '',
-                pathname !== '/' && isScrolled ? 'bg-slate-950 border-b border-slate-800' : ''
+                pathname !== '/' && isScrolled
+                    ? 'bg-slate-950 border-b border-slate-800'
+                    : '',
             )}>
             <div
                 className={cn(

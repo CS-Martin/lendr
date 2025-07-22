@@ -7,12 +7,12 @@ interface LendrButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
     size?: 'default' | 'icon' | 'lg' | 'sm';
     icon?: React.ReactNode;
     variant?:
-    | 'default'
-    | 'destructive'
-    | 'ghost'
-    | 'link'
-    | 'outline'
-    | 'secondary';
+        | 'default'
+        | 'destructive'
+        | 'ghost'
+        | 'link'
+        | 'outline'
+        | 'secondary';
     link?: string;
 }
 
