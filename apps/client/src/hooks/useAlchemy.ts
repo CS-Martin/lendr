@@ -14,8 +14,7 @@ export const useGetNFTsForAddress = (address: string) => {
     const fetchData = async () => {
       try {
         start();
-        const { nfts: newNfts } =
-          await alchemyService.getNFTsForAddress(address);
+        const { nfts: newNfts } = await alchemyService.getNFTsForAddress(address);
 
         setNfts(newNfts);
       } catch (err) {
@@ -40,10 +39,7 @@ export const usePaginatedNFTs = (walletAddress: string) => {
   const loadNFTs = async () => {
     if (loading || !hasMore) return;
     setLoading(true);
-    const { nfts: newNfts } = await alchemyService.getNFTsForAddress(
-      walletAddress,
-      pageKey,
-    );
+    const { nfts: newNfts } = await alchemyService.getNFTsForAddress(walletAddress, pageKey);
     setNfts((prev) => [...prev, ...newNfts]);
     setPageKey(undefined);
     setHasMore(false);

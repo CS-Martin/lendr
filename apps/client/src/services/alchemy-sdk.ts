@@ -13,15 +13,12 @@ export class AlchemyService {
     pageKey?: string,
   ): Promise<{ nfts: OwnedNft[]; nextPageKey?: string }> {
     try {
-      const response: OwnedNftsResponse = await alchemy.nft.getNftsForOwner(
-        walletAddress,
-        {
-          pageSize: 10,
-          pageKey,
-          omitMetadata: false,
-          excludeFilters: [],
-        },
-      );
+      const response: OwnedNftsResponse = await alchemy.nft.getNftsForOwner(walletAddress, {
+        pageSize: 10,
+        pageKey,
+        omitMetadata: false,
+        excludeFilters: [],
+      });
 
       return {
         nfts: response.ownedNfts,

@@ -1,12 +1,5 @@
 import { getDefaultConfig } from '@rainbow-me/rainbowkit';
-import {
-  mainnet,
-  polygon,
-  optimism,
-  arbitrum,
-  base,
-  sepolia,
-} from 'viem/chains';
+import { mainnet, polygon, optimism, arbitrum, base, sepolia } from 'viem/chains';
 
 export const projectId = '3b91fcfc4c2e58e0700f26cfff36ffac';
 

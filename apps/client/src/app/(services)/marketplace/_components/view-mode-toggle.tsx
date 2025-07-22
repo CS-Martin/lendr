@@ -14,9 +14,7 @@ export function ViewModeToggle({ viewMode, setViewMode }: ViewModeToggleProps) {
       <motion.button
         onClick={() => setViewMode('grid')}
         className={`p-2 rounded-lg transition-colors ${
-          viewMode === 'grid'
-            ? 'bg-lendr-400 text-black'
-            : 'text-gray-400 hover:text-white'
+          viewMode === 'grid' ? 'bg-lendr-400 text-black' : 'text-gray-400 hover:text-white'
         }`}
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}>
@@ -25,9 +23,7 @@ export function ViewModeToggle({ viewMode, setViewMode }: ViewModeToggleProps) {
       <motion.button
         onClick={() => setViewMode('list')}
         className={`p-2 rounded-lg transition-colors ${
-          viewMode === 'list'
-            ? 'bg-lendr-400 text-black'
-            : 'text-gray-400 hover:text-white'
+          viewMode === 'list' ? 'bg-lendr-400 text-black' : 'text-gray-400 hover:text-white'
         }`}
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}>

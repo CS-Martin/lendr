@@ -9,12 +9,7 @@ interface FloatingElementInterface {
   className?: string;
 }
 
-export const FloatingElement = ({
-  children,
-  delay = 0,
-  duration = 4,
-  className = '',
-}: FloatingElementInterface) => {
+export const FloatingElement = ({ children, delay = 0, duration = 4, className = '' }: FloatingElementInterface) => {
   return (
     <motion.div
       className={`absolute ${className}`}

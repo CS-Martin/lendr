@@ -3,16 +3,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { gsap } from 'gsap';
-import {
-  Zap,
-  TrendingUp,
-  Globe,
-  Cpu,
-  Star,
-  Layers,
-  Database,
-  Shield,
-} from 'lucide-react';
+import { Zap, TrendingUp, Globe, Cpu, Star, Layers, Database, Shield } from 'lucide-react';
 
 interface FlashScreenProps {
   onComplete: () => void;
@@ -27,9 +18,7 @@ export default function FlashScreen({ onComplete }: FlashScreenProps) {
   const gridRef = useRef<HTMLDivElement>(null);
   const progressRef = useRef<HTMLDivElement>(null);
   const [progress, setProgress] = useState(0);
-  const [particlePositions, setParticlePositions] = useState<
-    { left: string; top: string; delay: string }[]
-  >([]);
+  const [particlePositions, setParticlePositions] = useState<{ left: string; top: string; delay: string }[]>([]);
   const [isFlashCompleteState, setIsFlashCompleteState] = useState(false);
 
   useEffect(() => {
@@ -315,12 +304,8 @@ export default function FlashScreen({ onComplete }: FlashScreenProps) {
               Lendr
             </span>
           </h1>
-          <p className='text-xl text-slate-400 mb-2'>
-            Decentralized NFT Lending Protocol
-          </p>
-          <p className='text-sm text-slate-500'>
-            Powered by Advanced DeFi Infrastructure
-          </p>
+          <p className='text-xl text-slate-400 mb-2'>Decentralized NFT Lending Protocol</p>
+          <p className='text-sm text-slate-500'>Powered by Advanced DeFi Infrastructure</p>
         </div>
 
         {/* Progress Bar */}
@@ -340,24 +325,19 @@ export default function FlashScreen({ onComplete }: FlashScreenProps) {
 
         {/* Loading States */}
         <div className='text-xs text-slate-500 space-y-1'>
-          <div
-            className={`transition-opacity duration-300 ${progress > 20 ? 'opacity-100' : 'opacity-30'}`}>
+          <div className={`transition-opacity duration-300 ${progress > 20 ? 'opacity-100' : 'opacity-30'}`}>
             ✓ Smart Contracts Loaded
           </div>
-          <div
-            className={`transition-opacity duration-300 ${progress > 40 ? 'opacity-100' : 'opacity-30'}`}>
+          <div className={`transition-opacity duration-300 ${progress > 40 ? 'opacity-100' : 'opacity-30'}`}>
             ✓ Blockchain Connection Established
           </div>
-          <div
-            className={`transition-opacity duration-300 ${progress > 60 ? 'opacity-100' : 'opacity-30'}`}>
+          <div className={`transition-opacity duration-300 ${progress > 60 ? 'opacity-100' : 'opacity-30'}`}>
             ✓ DeFi Protocols Initialized
           </div>
-          <div
-            className={`transition-opacity duration-300 ${progress > 80 ? 'opacity-100' : 'opacity-30'}`}>
+          <div className={`transition-opacity duration-300 ${progress > 80 ? 'opacity-100' : 'opacity-30'}`}>
             ✓ NFT Marketplace Ready
           </div>
-          <div
-            className={`transition-opacity duration-300 ${progress > 95 ? 'opacity-100' : 'opacity-30'}`}>
+          <div className={`transition-opacity duration-300 ${progress > 95 ? 'opacity-100' : 'opacity-30'}`}>
             ✓ Welcome to Lendr
           </div>
         </div>

@@ -45,9 +45,7 @@ export const ProfileHeader = () => {
               </h1>
               <div className='flex items-center gap-1 bg-yellow-500/20 px-2 py-1 rounded-full'>
                 <Star className='h-4 w-4 text-yellow-400 fill-current' />
-                <span className='text-yellow-400 text-sm font-semibold'>
-                  {'4.3'}
-                </span>
+                <span className='text-yellow-400 text-sm font-semibold'>{'4.3'}</span>
               </div>
             </div>
 

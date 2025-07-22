@@ -45,12 +45,9 @@ export function HeroSection() {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.8, duration: 0.8 }}>
-          The first{' '}
-          <span className='text-lendr-400 font-semibold'>
-            decentralized marketplace
-          </span>{' '}
-          for lending NFT assets. Unlock utility from your digital collectibles
-          with <span className='text-cyan-400'>advanced DeFi protocols</span>.
+          The first <span className='text-lendr-400 font-semibold'>decentralized marketplace</span> for lending NFT
+          assets. Unlock utility from your digital collectibles with{' '}
+          <span className='text-cyan-400'>advanced DeFi protocols</span>.
         </motion.p>
 
         <motion.div

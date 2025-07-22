@@ -1,13 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
-import {
-  CheckCircle,
-  Coins,
-  CreditCard,
-  Search,
-  Upload,
-  Wallet,
-} from 'lucide-react';
+import { CheckCircle, Coins, CreditCard, Search, Upload, Wallet } from 'lucide-react';
 import { useState } from 'react';
 
 export const StepsToRentAndList = () => {
@@ -31,9 +24,8 @@ export const StepsToRentAndList = () => {
             in our Marketplace
           </h2>
           <p className='text-slate-400 text-sm text-center md:text-left md:text-[16px] font-mono leading-relaxed'>
-            Our decentralized platform enables seamless NFT rentals with
-            advanced DeFi protocols, smart contract security, and automated
-            yield optimization for maximum returns.
+            Our decentralized platform enables seamless NFT rentals with advanced DeFi protocols, smart contract
+            security, and automated yield optimization for maximum returns.
           </p>
         </div>
         {/* Main visual container */}
@@ -208,72 +200,68 @@ export const StepsToRentAndList = () => {
 
         {/* Steps */}
         <div className='space-y-6'>
-          {(activeTab === 'rent' ? rentalSteps : listingSteps).map(
-            (step, index) => (
-              <motion.div
-                key={step.number}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{
-                  duration: 0.6,
-                  delay: index * 0.1,
-                }}
-                viewport={{ once: true }}
-                className='flex items-start space-x-6 group'>
-                {/* Step number and icon */}
-                <div className='flex-shrink-0'>
-                  <motion.div
-                    className={`w-12 h-12 md:w-16 md:h-16 bg-gradient-to-br ${step.color} rounded-xl md:rounded-2xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300`}
-                    whileHover={{
-                      scale: 1.1,
-                      rotateY: 180,
-                    }}
-                    style={{
-                      transformStyle: 'preserve-3d',
-                    }}>
-                    <div className='text-slate-950'>{step.icon}</div>
-                  </motion.div>
-                  <div className='text-lendr-400/60 text-4xl md:text-6xl font-bold font-mono mt-2 leading-none'>
-                    {step.number}
-                  </div>
+          {(activeTab === 'rent' ? rentalSteps : listingSteps).map((step, index) => (
+            <motion.div
+              key={step.number}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{
+                duration: 0.6,
+                delay: index * 0.1,
+              }}
+              viewport={{ once: true }}
+              className='flex items-start space-x-6 group'>
+              {/* Step number and icon */}
+              <div className='flex-shrink-0'>
+                <motion.div
+                  className={`w-12 h-12 md:w-16 md:h-16 bg-gradient-to-br ${step.color} rounded-xl md:rounded-2xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300`}
+                  whileHover={{
+                    scale: 1.1,
+                    rotateY: 180,
+                  }}
+                  style={{
+                    transformStyle: 'preserve-3d',
+                  }}>
+                  <div className='text-slate-950'>{step.icon}</div>
+                </motion.div>
+                <div className='text-lendr-400/60 text-4xl md:text-6xl font-bold font-mono mt-2 leading-none'>
+                  {step.number}
                 </div>
+              </div>
 
-                {/* Step content */}
-                <div className='flex-1 pt-2'>
-                  <h3 className='text-xl md:text-2xl font-bold text-white mb-3 group-hover:text-lendr-400 transition-colors duration-300'>
-                    {step.title}
-                  </h3>
-                  <p className='text-slate-400 text-sm md:text-[16px] leading-relaxed font-mono'>
-                    {step.description}
-                  </p>
+              {/* Step content */}
+              <div className='flex-1 pt-2'>
+                <h3 className='text-xl md:text-2xl font-bold text-white mb-3 group-hover:text-lendr-400 transition-colors duration-300'>
+                  {step.title}
+                </h3>
+                <p className='text-slate-400 text-sm md:text-[16px] leading-relaxed font-mono'>{step.description}</p>
 
-                  {/* Progress line */}
+                {/* Progress line */}
+                <motion.div
+                  className='w-full h-0.5 bg-slate-700 mt-6 overflow-hidden rounded-full'
+                  whileInView={{ scaleX: 1 }}
+                  initial={{ scaleX: 0 }}
+                  transition={{
+                    duration: 0.8,
+                    delay: index * 0.2,
+                  }}
+                  viewport={{ once: true }}>
                   <motion.div
-                    className='w-full h-0.5 bg-slate-700 mt-6 overflow-hidden rounded-full'
-                    whileInView={{ scaleX: 1 }}
-                    initial={{ scaleX: 0 }}
+                    className={`h-full bg-gradient-to-r ${step.color} rounded-full`}
+                    animate={{
+                      x: ['-100%', '100%'],
+                    }}
                     transition={{
-                      duration: 0.8,
-                      delay: index * 0.2,
+                      duration: 2,
+                      repeat: Number.POSITIVE_INFINITY,
+                      ease: 'linear',
+                      delay: index * 0.5,
                     }}
-                    viewport={{ once: true }}>
-                    <motion.div
-                      className={`h-full bg-gradient-to-r ${step.color} rounded-full`}
-                      animate={{
-                        x: ['-100%', '100%'],
-                      }}
-                      transition={{
-                        duration: 2,
-                        repeat: Number.POSITIVE_INFINITY,
-                        ease: 'linear',
-                        delay: index * 0.5,
-                      }}
-                    />
-                  </motion.div>
-                </div>
-              </motion.div>
-            ),
-          )}
+                  />
+                </motion.div>
+              </div>
+            </motion.div>
+          ))}
         </div>
       </motion.div>
     </div>
@@ -284,24 +272,21 @@ const rentalSteps = [
   {
     number: '01',
     title: 'Connect Your Wallet',
-    description:
-      'Connect your Web3 wallet to access the decentralized marketplace and browse available NFT rentals.',
+    description: 'Connect your Web3 wallet to access the decentralized marketplace and browse available NFT rentals.',
     icon: <Wallet className='w-6 h-6 md:w-8 md:h-8' />,
     color: 'from-lendr-400 to-yellow-400',
   },
   {
     number: '02',
     title: 'Browse & Search NFTs',
-    description:
-      'Explore our curated collection of rental NFTs. Filter by category, price, and rental duration.',
+    description: 'Explore our curated collection of rental NFTs. Filter by category, price, and rental duration.',
     icon: <Search className='w-6 h-6 md:w-8 md:h-8' />,
     color: 'from-cyan-400 to-blue-400',
   },
   {
     number: '03',
     title: 'Rent & Enjoy',
-    description:
-      'Pay the rental fee and collateral through smart contracts. Use the NFT for your desired duration.',
+    description: 'Pay the rental fee and collateral through smart contracts. Use the NFT for your desired duration.',
     icon: <CreditCard className='w-6 h-6 md:w-8 md:h-8' />,
     color: 'from-purple-400 to-pink-400',
   },
@@ -311,24 +296,21 @@ const listingSteps = [
   {
     number: '01',
     title: 'Upload Your NFT',
-    description:
-      'Connect your wallet and select the NFT you want to list for rental from your collection.',
+    description: 'Connect your wallet and select the NFT you want to list for rental from your collection.',
     icon: <Upload className='w-6 h-6 md:w-8 md:h-8' />,
     color: 'from-green-400 to-emerald-400',
   },
   {
     number: '02',
     title: 'Set Rental Terms',
-    description:
-      'Configure rental duration, pricing, collateral requirements, and any special conditions.',
+    description: 'Configure rental duration, pricing, collateral requirements, and any special conditions.',
     icon: <Coins className='w-6 h-6 md:w-8 md:h-8' />,
     color: 'from-orange-400 to-red-400',
   },
   {
     number: '03',
     title: 'Earn Passive Income',
-    description:
-      'Your NFT is now live! Earn rental fees automatically through our secure smart contract system.',
+    description: 'Your NFT is now live! Earn rental fees automatically through our secure smart contract system.',
     icon: <CheckCircle className='w-6 h-6 md:w-8 md:h-8' />,
     color: 'from-indigo-400 to-purple-400',
   },

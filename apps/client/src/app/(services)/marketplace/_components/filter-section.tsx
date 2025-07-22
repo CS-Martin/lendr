@@ -12,13 +12,7 @@ interface FilterSectionProps {
   onToggleFilter: (filterId: string) => void;
 }
 
-export function FilterSection({
-  title,
-  filters,
-  icon,
-  selectedFilters,
-  onToggleFilter,
-}: FilterSectionProps) {
+export function FilterSection({ title, filters, icon, selectedFilters, onToggleFilter }: FilterSectionProps) {
   return (
     <motion.div
       className='space-y-3'
@@ -52,9 +46,7 @@ export function FilterSection({
               </label>
             </div>
             {filter.count && (
-              <span className='text-xs text-gray-500 group-hover:text-gray-400 transition-colors'>
-                {filter.count}
-              </span>
+              <span className='text-xs text-gray-500 group-hover:text-gray-400 transition-colors'>{filter.count}</span>
             )}
           </motion.div>
         ))}

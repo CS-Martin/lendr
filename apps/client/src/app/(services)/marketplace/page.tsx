@@ -109,8 +109,7 @@ export default function MarketplacePage() {
 
         // New categories from sample
         if (filter === 'collectibles') return post.category === 'Collectibles';
-        if (filter === 'virtual-real-estate')
-          return post.category === 'Virtual Real Estate';
+        if (filter === 'virtual-real-estate') return post.category === 'Virtual Real Estate';
         if (filter === 'sports') return post.category === 'Sports';
         if (filter === 'metaverse') return post.category === 'Metaverse';
         if (filter === 'domain-names') return post.category === 'Domain Names';
@@ -197,8 +196,7 @@ export default function MarketplacePage() {
               animate={{ opacity: 1 }}
               transition={{ delay: 0.4 }}>
               <span>
-                Showing {filteredRentalPosts.length} of {rentalPosts.length}{' '}
-                NFTs
+                Showing {filteredRentalPosts.length} of {rentalPosts.length} NFTs
               </span>
               <motion.div
                 className='text-xs text-gray-500'
@@ -220,9 +218,7 @@ export default function MarketplacePage() {
           />
 
           {/* Empty State */}
-          {filteredRentalPosts.length === 0 && (
-            <EmptyState onClearFilters={clearAllFilters} />
-          )}
+          {filteredRentalPosts.length === 0 && <EmptyState onClearFilters={clearAllFilters} />}
         </div>
       </div>
 

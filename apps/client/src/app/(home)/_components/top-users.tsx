@@ -1,14 +1,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
-import {
-  CheckCircle,
-  ChevronLeft,
-  ChevronRight,
-  Crown,
-  Star,
-  TrendingUp,
-} from 'lucide-react';
+import { CheckCircle, ChevronLeft, ChevronRight, Crown, Star, TrendingUp } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
 const topLenders = [
@@ -154,8 +147,8 @@ export const TopUsersCarousel = () => {
           </span>{' '}
         </h2>
         <p className='text-slate-400 text-[16px] md:text-lg md:max-w-3xl mx-auto'>
-          Discover our most successful lenders based on completed transactions,
-          reputation scores, and total earnings in the Lendr ecosystem.
+          Discover our most successful lenders based on completed transactions, reputation scores, and total earnings in
+          the Lendr ecosystem.
         </p>
       </div>
 
@@ -237,8 +230,7 @@ export const TopUsersCarousel = () => {
                           alt={lender.username}
                         />
                         <AvatarFallback className='bg-gradient-to-br from-lendr-400 to-cyan-400 text-slate-950 font-bold text-xl'>
-                          {lender.username?.charAt(0) ||
-                            lender.address.slice(2, 4).toUpperCase()}
+                          {lender.username?.charAt(0) || lender.address.slice(2, 4).toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
 
@@ -276,13 +268,7 @@ export const TopUsersCarousel = () => {
                                   ? '#C0C0C0' // Silver
                                   : '#CD7F32' // Bronze
                             }
-                            fill={
-                              lender.rank === 1
-                                ? '#FFD700'
-                                : lender.rank === 2
-                                  ? '#C0C0C0'
-                                  : '#CD7F32'
-                            }
+                            fill={lender.rank === 1 ? '#FFD700' : lender.rank === 2 ? '#C0C0C0' : '#CD7F32'}
                           />
                         ) : (
                           <span>{lender.rank}</span>
@@ -302,9 +288,7 @@ export const TopUsersCarousel = () => {
                           delay: index * 0.2,
                         }}>
                         <Star className='w-3 h-3 text-yellow-400 fill-current' />
-                        <span className='text-xs text-lendr-400 font-bold'>
-                          {lender.reputationScore}
-                        </span>
+                        <span className='text-xs text-lendr-400 font-bold'>{lender.reputationScore}</span>
                       </motion.div>
                     </div>
                   </motion.div>
@@ -344,9 +328,7 @@ export const TopUsersCarousel = () => {
                     </div>
                     <div className='flex items-center space-x-1'>
                       <TrendingUp className='w-3 h-3 text-cyan-400' />
-                      <span>
-                        +{((lender.reputationScore - 4) * 100).toFixed(0)}%
-                      </span>
+                      <span>+{((lender.reputationScore - 4) * 100).toFixed(0)}%</span>
                     </div>
                   </div>
 
@@ -392,9 +374,7 @@ export const TopUsersCarousel = () => {
               key={index}
               onClick={() => setCurrentSlide(index)}
               className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                currentSlide === index
-                  ? 'bg-lendr-400 w-8'
-                  : 'bg-slate-600 hover:bg-slate-500'
+                currentSlide === index ? 'bg-lendr-400 w-8' : 'bg-slate-600 hover:bg-slate-500'
               }`}
               whileHover={{ scale: 1.2 }}
               whileTap={{ scale: 0.9 }}

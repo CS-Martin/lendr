@@ -5,12 +5,7 @@ interface IconProps {
   className?: string;
 }
 
-export const EthereumIcon = ({
-  width,
-  height,
-  color,
-  className,
-}: IconProps) => {
+export const EthereumIcon = ({ width, height, color, className }: IconProps) => {
   return (
     <svg
       xmlns='http://www.w3.org/2000/svg'

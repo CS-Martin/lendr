@@ -56,8 +56,7 @@ export const FeaturedRentalPosts = () => {
           Premium Asset Pools
         </HolographicText>
         <p className='text-slate-400 text-xl max-w-3xl mx-auto font-mono'>
-          Discover high-yield NFT assets in our curated liquidity pools with
-          institutional-grade security
+          Discover high-yield NFT assets in our curated liquidity pools with institutional-grade security
         </p>
       </motion.div>
 
@@ -148,22 +147,16 @@ export const FeaturedRentalPosts = () => {
                     </div>
                     <div>
                       <div className='text-sm text-slate-400'>Collateral</div>
-                      <div className='text-lg font-bold text-cyan-400'>
-                        {nft.collateral} ETH
-                      </div>
+                      <div className='text-lg font-bold text-cyan-400'>{nft.collateral} ETH</div>
                     </div>
                   </div>
 
                   <div className='flex items-center justify-between mb-6'>
                     <div className='flex items-center space-x-1'>
                       <Star className='w-4 h-4 text-yellow-400 fill-current' />
-                      <span className='text-sm text-slate-300'>
-                        {nft.rating}
-                      </span>
+                      <span className='text-sm text-slate-300'>{nft.rating}</span>
                     </div>
-                    <div className='text-sm text-slate-400 font-mono'>
-                      {nft.merchant}
-                    </div>
+                    <div className='text-sm text-slate-400 font-mono'>{nft.merchant}</div>
                   </div>
 
                   <motion.div

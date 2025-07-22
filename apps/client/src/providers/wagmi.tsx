@@ -11,11 +11,7 @@ import { getWagmiConfig } from '@/lib/wagmi';
 const queryClient = new QueryClient();
 const config = getWagmiConfig();
 
-export function CustomWagmiProvider({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export function CustomWagmiProvider({ children }: { children: React.ReactNode }) {
   return (
     <WagmiProvider config={config}>
       <SessionProvider refetchInterval={0}>

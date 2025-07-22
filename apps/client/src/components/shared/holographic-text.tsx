@@ -6,20 +6,12 @@ interface HolographicTextInterface {
   className: string;
 }
 
-export const HolographicText = ({
-  children,
-  className = '',
-}: HolographicTextInterface) => {
+export const HolographicText = ({ children, className = '' }: HolographicTextInterface) => {
   return (
     <motion.div
       className={`relative ${className}`}
       whileHover={{
-        textShadow: [
-          '0 0 10px #dcf347',
-          '0 0 20px #dcf347',
-          '0 0 30px #dcf347',
-          '0 0 40px #dcf347',
-        ],
+        textShadow: ['0 0 10px #dcf347', '0 0 20px #dcf347', '0 0 30px #dcf347', '0 0 40px #dcf347'],
       }}
       transition={{ duration: 0.3 }}>
       <motion.div

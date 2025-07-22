@@ -142,8 +142,7 @@ export const RentalPostCard = ({ post }: RentalPostProps) => {
               initial={{ x: -50, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               transition={{ delay: 0.2 }}>
-              <Badge
-                className={`${post.isActive ? 'bg-green-500' : 'bg-red-500'} shadow-lg`}>
+              <Badge className={`${post.isActive ? 'bg-green-500' : 'bg-red-500'} shadow-lg`}>
                 {post.isActive ? 'Available' : 'Locked'}
               </Badge>
             </motion.div>
@@ -151,9 +150,7 @@ export const RentalPostCard = ({ post }: RentalPostProps) => {
               initial={{ x: -50, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               transition={{ delay: 0.3 }}>
-              <Badge className='bg-lendr-400 text-slate-950 font-semibold shadow-lg'>
-                {post.category}
-              </Badge>
+              <Badge className='bg-lendr-400 text-slate-950 font-semibold shadow-lg'>{post.category}</Badge>
             </motion.div>
           </div>
         </div>
@@ -202,9 +199,7 @@ export const RentalPostCard = ({ post }: RentalPostProps) => {
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.7 }}>
               <div className='text-sm text-slate-400'>Collateral</div>
-              <div className='text-lg font-bold text-cyan-400'>
-                {post.collateral} ETH
-              </div>
+              <div className='text-lg font-bold text-cyan-400'>{post.collateral} ETH</div>
             </motion.div>
           </div>
 
@@ -216,9 +211,7 @@ export const RentalPostCard = ({ post }: RentalPostProps) => {
             <div className='flex items-center space-x-1'>
               <Star className='w-4 h-4 text-yellow-400 fill-current' />
               <span className='text-sm text-slate-300'>{post.rating}</span>
-              <span className='text-xs text-slate-500'>
-                ({post.currentBids} bids)
-              </span>
+              <span className='text-xs text-slate-500'>({post.currentBids} bids)</span>
             </div>
             <div className='text-xs text-slate-400 font-mono'>
               {post.posterAddress.slice(0, 6)}...
@@ -241,9 +234,7 @@ export const RentalPostCard = ({ post }: RentalPostProps) => {
                 whileHover={{ x: '100%' }}
                 transition={{ duration: 0.6 }}
               />
-              <span className='relative z-10'>
-                {post.isActive ? 'Enter Pool' : 'Pool Locked'}
-              </span>
+              <span className='relative z-10'>{post.isActive ? 'Enter Pool' : 'Pool Locked'}</span>
             </Button>
           </motion.div>
         </div>

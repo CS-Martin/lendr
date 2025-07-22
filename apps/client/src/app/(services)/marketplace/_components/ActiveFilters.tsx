@@ -11,11 +11,7 @@ interface ActiveFiltersProps {
   onRemoveFilter: (filter: string) => void;
 }
 
-export function ActiveFilters({
-  selectedFilters,
-  onClearAll,
-  onRemoveFilter,
-}: ActiveFiltersProps) {
+export function ActiveFilters({ selectedFilters, onClearAll, onRemoveFilter }: ActiveFiltersProps) {
   return (
     <AnimatePresence>
       {selectedFilters.length > 0 && (

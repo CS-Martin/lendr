@@ -32,9 +32,7 @@ export const authOptions: NextAuthOptions = {
             logger.info(`SIWE auth succeeded for address ${siwe.address}`);
             return { id: siwe.address, address: siwe.address };
           } else {
-            logger.warn(
-              `SIWE auth failed verification for address ${siwe.address}`,
-            );
+            logger.warn(`SIWE auth failed verification for address ${siwe.address}`);
           }
           return null;
         } catch (e) {

@@ -26,9 +26,7 @@ export function EmptyState({ onClearFilters, className }: EmptyStateProps) {
       <div className='text-slate-400 text-lg mb-4'>No NFTs found</div>
       {onClearFilters && (
         <>
-          <div className='text-slate-400 text-lg mb-4'>
-            No NFTs found matching your criteria
-          </div>
+          <div className='text-slate-400 text-lg mb-4'>No NFTs found matching your criteria</div>
           <motion.div
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}>

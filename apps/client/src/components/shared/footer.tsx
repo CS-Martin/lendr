@@ -42,8 +42,7 @@ export const Footer = () => {
               <h3 className='text-2xl font-bold text-lendr-400'>Lendr</h3>
             </div>
             <p className='text-slate-400 text-md leading-relaxed text-sm font-mono'>
-              The future of NFT utility through advanced DeFi protocols and
-              decentralized lending infrastructure.
+              The future of NFT utility through advanced DeFi protocols and decentralized lending infrastructure.
             </p>
           </motion.div>
 
@@ -67,9 +66,7 @@ export const Footer = () => {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: index * 0.1 }}
               viewport={{ once: true }}>
-              <h4 className='text-white font-bold mb-6 text-lg'>
-                {section.title}
-              </h4>
+              <h4 className='text-white font-bold mb-6 text-lg'>{section.title}</h4>
               <div className='space-y-3'>
                 {section.links.map((link) => (
                   <motion.div
@@ -103,9 +100,7 @@ export const Footer = () => {
           whileInView={{ opacity: 1 }}
           transition={{ duration: 0.8, delay: 0.5 }}
           viewport={{ once: true }}>
-          <p className='text-slate-400 text-sm'>
-            &copy; 2025 Lendr. All rights reserved. Built on Ethereum with ❤️
-          </p>
+          <p className='text-slate-400 text-sm'>&copy; 2025 Lendr. All rights reserved. Built on Ethereum with ❤️</p>
         </motion.div>
       </div>
     </footer>

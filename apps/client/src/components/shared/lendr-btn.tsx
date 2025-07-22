@@ -6,29 +6,12 @@ import Link from 'next/link';
 interface LendrButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   size?: 'default' | 'icon' | 'lg' | 'sm';
   icon?: React.ReactNode;
-  variant?:
-    | 'default'
-    | 'destructive'
-    | 'ghost'
-    | 'link'
-    | 'outline'
-    | 'secondary';
+  variant?: 'default' | 'destructive' | 'ghost' | 'link' | 'outline' | 'secondary';
   link?: string;
 }
 
 const LendrButton = forwardRef<HTMLButtonElement, LendrButtonProps>(
-  (
-    {
-      size = 'default',
-      className = '',
-      icon,
-      variant = 'default',
-      children,
-      link,
-      ...props
-    },
-    ref,
-  ) => {
+  ({ size = 'default', className = '', icon, variant = 'default', children, link, ...props }, ref) => {
     let style = '';
 
     switch (variant) {
