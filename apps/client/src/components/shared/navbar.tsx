@@ -8,14 +8,11 @@ import { HolographicText } from '@/components/shared/holographic-text';
 import { Zap } from 'lucide-react';
 import { WalletConnectButton } from './custom-connect';
 import Link from 'next/link';
-import { useAccount } from 'wagmi';
+import { ConnectButton } from '@rainbow-me/rainbowkit';
 
 export default function NavBar() {
     const pathname = usePathname();
     const [isScrolled, setIsScrolled] = useState(false);
-
-    // Get user account balance infos
-    const { address, isConnected, } = useAccount();
 
     useEffect(() => {
         const handleScroll = () => {
@@ -36,8 +33,7 @@ export default function NavBar() {
                 pathname !== '/' && isScrolled
                     ? 'bg-slate-950 border-b border-slate-800'
                     : '',
-            )}
-        >
+            )}>
             <div
                 className={cn(
                     'flex items-center justify-between p-2.5 transition-all duration-500 w-full mx-auto',
@@ -48,8 +44,7 @@ export default function NavBar() {
                     isScrolled && pathname === '/'
                         ? 'rounded-2xl bg-slate bg-slate-950/80'
                         : 'bg-transparent border-none',
-                )}
-            >
+                )}>
                 <Link href={'/'}>
                     <motion.div
                         className='flex items-center space-x-2'
@@ -58,8 +53,7 @@ export default function NavBar() {
                             type: 'spring',
                             stiffness: 400,
                             damping: 10,
-                        }}
-                    >
+                        }}>
                         <motion.div
                             className='w-8 h-8 bg-gradient-to-br from-lendr-400 to-lendr-500 rounded-lg flex items-center justify-center shadow-lg shadow-lendr-400/50'
                             animate={{
@@ -81,8 +75,7 @@ export default function NavBar() {
                                     repeat: Number.POSITIVE_INFINITY,
                                     ease: 'easeInOut',
                                 },
-                            }}
-                        >
+                            }}>
                             <Zap className='w-5 h-5 text-slate-950' />
                         </motion.div>
                         <HolographicText className='text-xl font-bold text-lendr-400'>
@@ -91,7 +84,8 @@ export default function NavBar() {
                     </motion.div>
                 </Link>
 
-                <div className="relative z-50">
+                <div className='relative z-50'>
+                    <ConnectButton />
                     <WalletConnectButton />
                 </div>
             </div>
