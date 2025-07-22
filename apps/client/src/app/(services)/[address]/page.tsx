@@ -1,95 +1,107 @@
 'use client';
 
 import LendrButton from '@/components/shared/lendr-btn';
-import { NFTCard } from '@/components/shared/nft/nft-card';
-import { usePaginatedNFTs } from '@/hooks/useAlchemy';
+import { useShowMoreNFTs } from '@/hooks/useAlchemy';
 import { ProfileHeader } from './_components/profile-header';
 import { useRef, useState } from 'react';
 import { OwnedNft } from 'alchemy-sdk';
 import { NFTDetailsModal } from './_components/nft-details-modal';
+import { useParams } from 'next/navigation';
+import { NFTCardSkeleton } from '@/components/shared/skeletons/nft-card';
 import { EmptyState } from '../marketplace/_components/empty-state';
-import { cn } from '@/lib/utils';
-import { useSession } from 'next-auth/react';
+import { NFTCard } from '@/components/shared/nft/nft-card';
+
 
 export default function UserProfilePage() {
-  const { data: session } = useSession();
+    //  Get user address from URL
+    const { address } = useParams();
 
-  const [selectedNFTForListing, setSelectedNFTForListing] = useState<OwnedNft | null>(null);
-  const [selectedNFTForDetails, setSelectedNFTForDetails] = useState<OwnedNft | null>(null);
-  const [isListDrawerOpen, setIsListDrawerOpen] = useState(false);
-  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+    const [selectedNFTForListing, setSelectedNFTForListing] = useState<OwnedNft | null>(null);
+    const [selectedNFTForDetails, setSelectedNFTForDetails] = useState<OwnedNft | null>(null);
+    const [isListDrawerOpen, setIsListDrawerOpen] = useState(false);
+    const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
 
-  const { nfts, loadMore, loading, hasMore } = usePaginatedNFTs(session?.user?.address);
+    const { nfts, loadMore, loading, hasMore } = useShowMoreNFTs(address as string);
 
-  // Create a ref for the container that holds all NFTs
-  const nftContainerRef = useRef<HTMLDivElement>(null);
+    // Create a ref for the container that holds all NFTs
+    const nftContainerRef = useRef<HTMLDivElement>(null);
 
-  const handleLoadMore = async () => {
-    // Save current scroll position if needed
-    await loadMore();
+    const handleLoadMore = async () => {
+        await loadMore();
 
-    // Scroll to bottom after new NFTs are loaded
-    setTimeout(() => {
-      nftContainerRef.current?.scrollIntoView({
-        behavior: 'smooth',
-        block: 'end',
-      });
-    }, 100);
-  };
+        // Scroll to bottom after new NFTs are loaded
+        setTimeout(() => {
+            nftContainerRef.current?.scrollIntoView({
+                behavior: 'smooth',
+                block: 'end',
+            });
+        }, 100);
+    };
 
-  const handleViewNFT = (nft: OwnedNft) => {
-    setSelectedNFTForDetails(nft);
-    setIsDetailsModalOpen(true);
-  };
+    const handleViewNFT = (nft: OwnedNft) => {
+        setSelectedNFTForDetails(nft);
+        setIsDetailsModalOpen(true);
+    };
 
-  return (
-    <div className='bg-slate-950'>
-      <ProfileHeader />
+    if (nfts.length === 0 && !loading) {
+        return (
+            <div className='bg-slate-950'>
+                <ProfileHeader />
+                <div className='max-w-7xl mx-auto py-20 min-h-screen'>
+                    <EmptyState title="No NFTs Found" description="No NFTs found for this user" />
+                </div>
+            </div>
+        );
+    }
 
-      <div className='max-w-7xl min-h-screen mx-auto py-20'>
-        {/* If empty */}
-        {nfts?.length === 0 ? (
-          <EmptyState />
-        ) : (
-          <div
-            className={cn(
-              'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 h-full',
-              nfts?.length === 0 && 'grid-cols-1',
-            )}>
-            {nfts?.map((nft, index) => {
-              if (!nft.name) return null;
-              return (
-                <NFTCard
-                  nft={nft}
-                  key={index}
-                  onViewNFT={() => handleViewNFT(nft)}
-                  onListNFT={() => setSelectedNFTForListing(nft)}
+
+    return (
+        <div className='bg-slate-950'>
+            <ProfileHeader />
+
+            <div className='max-w-7xl min-h-screen mx-auto py-20'>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 min-h-[calc(100vh-20rem)]">
+                    {nfts.map((nft, index) =>
+                        nft.name ? (
+                            <NFTCard
+                                key={index}
+                                nft={nft}
+                                onViewNFT={() => handleViewNFT(nft)}
+                                onListNFT={() => setSelectedNFTForListing(nft)}
+                            />
+                        ) : null
+                    )}
+
+                    {/* Show skeletons while loading more */}
+                    {loading &&
+                        Array.from({ length: 10 }).map((_, index) => (
+                            <NFTCardSkeleton key={`skeleton-${index}`} />
+                        ))}
+                </div>
+
+                {hasMore && (
+                    <div className="flex justify-center mt-8">
+                        <LendrButton
+                            onClick={handleLoadMore}
+                            disabled={loading}
+                            className="p-6.5 text-sm"
+                        >
+                            {loading ? 'Loading...' : 'Load More NFTs'}
+                        </LendrButton>
+                    </div>
+                )}
+            </div>
+
+
+            <div ref={nftContainerRef} />
+
+            {selectedNFTForDetails && isDetailsModalOpen && (
+                <NFTDetailsModal
+                    nft={selectedNFTForDetails}
+                    isOpen={isDetailsModalOpen}
+                    onClose={() => setIsDetailsModalOpen(false)}
                 />
-              );
-            })}
-          </div>
-        )}
-        {hasMore && (
-          <div className='flex justify-center mt-8'>
-            <LendrButton
-              onClick={handleLoadMore}
-              disabled={loading}
-              className='p-6.5 text-sm'>
-              {loading ? 'Loading...' : 'Load More NFTs'}
-            </LendrButton>
-          </div>
-        )}
-      </div>
-
-      <div ref={nftContainerRef} />
-
-      {selectedNFTForDetails && isDetailsModalOpen && (
-        <NFTDetailsModal
-          nft={selectedNFTForDetails}
-          isOpen={isDetailsModalOpen}
-          onClose={() => setIsDetailsModalOpen(false)}
-        />
-      )}
-    </div>
-  );
+            )}
+        </div>
+    );
 }
