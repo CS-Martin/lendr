@@ -5,23 +5,27 @@ import { useShowMoreNFTs } from '@/hooks/useAlchemy';
 import { ProfileHeader } from './_components/profile-header';
 import { useRef, useState } from 'react';
 import { OwnedNft } from 'alchemy-sdk';
-import { NFTDetailsModal } from './_components/nft-details-modal';
 import { useParams } from 'next/navigation';
 import { NFTCardSkeleton } from '@/components/shared/skeletons/nft-card';
 import { EmptyState } from '../marketplace/_components/empty-state';
 import { NFTCard } from '@/components/shared/nft/nft-card';
-
+import dynamic from 'next/dynamic';
+import { ListNFTDrawer } from './_components/list-nft-drawer';
+const NFTDetailsModal = dynamic(() =>
+    import('./_components/nft-details-modal').then(mod => mod.NFTDetailsModal),
+    { ssr: false }
+);
 
 export default function UserProfilePage() {
     //  Get user address from URL
     const { address } = useParams();
 
+    const { nfts, loadMore, loading, hasMore } = useShowMoreNFTs(address as string);
+
     const [selectedNFTForListing, setSelectedNFTForListing] = useState<OwnedNft | null>(null);
     const [selectedNFTForDetails, setSelectedNFTForDetails] = useState<OwnedNft | null>(null);
     const [isListDrawerOpen, setIsListDrawerOpen] = useState(false);
     const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
-
-    const { nfts, loadMore, loading, hasMore } = useShowMoreNFTs(address as string);
 
     // Create a ref for the container that holds all NFTs
     const nftContainerRef = useRef<HTMLDivElement>(null);
@@ -43,55 +47,57 @@ export default function UserProfilePage() {
         setIsDetailsModalOpen(true);
     };
 
+    const handleListNFT = (nft: OwnedNft) => {
+        setSelectedNFTForListing(nft);
+        setIsListDrawerOpen(true);
+    }
+
     if (nfts.length === 0 && !loading) {
         return (
             <div className='bg-slate-950'>
                 <ProfileHeader />
                 <div className='max-w-7xl mx-auto py-20 min-h-screen'>
-                    <EmptyState title="No NFTs Found" description="No NFTs found for this user" />
+                    <EmptyState
+                        title='No NFTs Found'
+                        description='No NFTs found for this user'
+                    />
                 </div>
             </div>
         );
     }
-
 
     return (
         <div className='bg-slate-950'>
             <ProfileHeader />
 
             <div className='max-w-7xl min-h-screen mx-auto py-20'>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 min-h-[calc(100vh-20rem)]">
+                <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 min-h-[calc(100vh-20rem)]'>
                     {nfts.map((nft, index) =>
                         nft.name ? (
                             <NFTCard
                                 key={index}
                                 nft={nft}
                                 onViewNFT={() => handleViewNFT(nft)}
-                                onListNFT={() => setSelectedNFTForListing(nft)}
+                                onListNFT={() => handleListNFT(nft)}
                             />
-                        ) : null
+                        ) : null,
                     )}
 
                     {/* Show skeletons while loading more */}
-                    {loading &&
-                        Array.from({ length: 10 }).map((_, index) => (
-                            <NFTCardSkeleton key={`skeleton-${index}`} />
-                        ))}
+                    {loading && Array.from({ length: 10 }).map((_, index) => <NFTCardSkeleton key={`skeleton-${index}`} />)}
                 </div>
 
                 {hasMore && (
-                    <div className="flex justify-center mt-8">
+                    <div className='flex justify-center mt-8'>
                         <LendrButton
                             onClick={handleLoadMore}
                             disabled={loading}
-                            className="p-6.5 text-sm"
-                        >
+                            className='p-6.5 text-sm'>
                             {loading ? 'Loading...' : 'Load More NFTs'}
                         </LendrButton>
                     </div>
                 )}
             </div>
-
 
             <div ref={nftContainerRef} />
 
@@ -101,6 +107,10 @@ export default function UserProfilePage() {
                     isOpen={isDetailsModalOpen}
                     onClose={() => setIsDetailsModalOpen(false)}
                 />
+            )}
+
+            {selectedNFTForListing && isListDrawerOpen && (
+                <ListNFTDrawer nft={selectedNFTForListing} isOpen={isListDrawerOpen} onClose={() => setIsListDrawerOpen(false)} />
             )}
         </div>
     );
