@@ -8,6 +8,7 @@ import { HolographicText } from '@/components/shared/holographic-text';
 import { Zap } from 'lucide-react';
 import { WalletConnectButton } from './custom-connect';
 import Link from 'next/link';
+import { ConnectButton, WalletButton } from '@rainbow-me/rainbowkit';
 
 export default function NavBar() {
     const pathname = usePathname();
@@ -83,16 +84,8 @@ export default function NavBar() {
                     </motion.div>
                 </Link>
 
-                <motion.div
-                    className='flex items-center space-x-2'
-                    whileHover={{ scale: 1.05 }}
-                    transition={{
-                        type: 'spring',
-                        stiffness: 400,
-                        damping: 10,
-                    }}>
-                    <WalletConnectButton />
-                </motion.div>
+                <ConnectButton />
+                <WalletConnectButton />
             </div>
         </nav>
     );

@@ -9,7 +9,13 @@ import Image from 'next/image';
 import gsap from 'gsap';
 import LendrButton from '../lendr-btn';
 
-export const NFTCard = ({ nft }: { nft: OwnedNft }) => {
+interface NFTCardProps {
+    nft: OwnedNft
+    onListNFT?: () => void
+    onViewNFT?: () => void
+}
+
+export const NFTCard = ({ nft, onViewNFT, onListNFT }: NFTCardProps) => {
     const cardRef = useRef<HTMLDivElement>(null);
     const imageRef = useRef<HTMLDivElement>(null);
 
@@ -29,11 +35,14 @@ export const NFTCard = ({ nft }: { nft: OwnedNft }) => {
         };
     }, []);
 
+
+
     if (!nft.tokenId || !nft.contract.address) return null;
 
     return (
-        <Card3D className='group h-full'>
+        <Card3D className='group h-full cursor-pointer'>
             <motion.div
+                onClick={onViewNFT}
                 ref={cardRef}
                 className='relative flex flex-col h-full bg-gradient-to-br from-slate-900/90 to-slate-800/90 backdrop-blur-xl border border-slate-700/50 hover:border-lendr-400/50 rounded-xl overflow-hidden shadow-2xl hover:shadow-lendr-400/30 transition-all duration-500'
                 whileHover={{
@@ -43,7 +52,7 @@ export const NFTCard = ({ nft }: { nft: OwnedNft }) => {
                 initial={{ opacity: 0, y: 50 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}>
-                <div className='relative overflow-hidden'>
+                <div className='relative overflow-hidden '>
                     <motion.div
                         ref={imageRef}
                         whileHover={{ scale: 1.1 }}
@@ -99,7 +108,7 @@ export const NFTCard = ({ nft }: { nft: OwnedNft }) => {
                         animate={{ opacity: 1 }}
                         transition={{ delay: 0.9 }}
                         className='absolute w-[90%] -bottom-10 group-hover:-translate-y-13 left-1/2 -translate-x-1/2 transition-all duration-500'>
-                        <LendrButton className='w-full rounded-md bg-gradient-to-r from-lendr-400 to-lendr-500 hover:from-lendr-500 hover:to-lendr-600 text-slate-950 border-0 font-bold shadow-md shadow-lendr-400/30 hover:shadow-lendr-400/50 transition-all duration-500 overflow-hidden'>
+                        <LendrButton onClick={onListNFT} className='w-full rounded-md bg-gradient-to-r from-lendr-400 to-lendr-500 hover:from-lendr-500 hover:to-lendr-600 text-slate-950 border-0 font-bold shadow-md shadow-lendr-400/30 hover:shadow-lendr-400/50 transition-all duration-500 overflow-hidden'>
                             List NFT
                         </LendrButton>
                     </motion.div>

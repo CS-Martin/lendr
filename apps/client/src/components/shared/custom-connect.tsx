@@ -18,6 +18,7 @@ export const WalletConnectButton = () => {
 
                 return (
                     <motion.button
+                        style={{ zIndex: 1000, pointerEvents: 'auto' }}
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                         className='flex items-center text-sm space-x-2 px-4 py-3 cursor-pointer rounded-xl font-semibold transition-all duration-300 bg-gradient-to-r from-lendr-400 to-lendr-500 hover:from-lendr-500 hover:to-lendr-600 text-slate-950 shadow-xl shadow-lendr-400/40'
@@ -25,8 +26,8 @@ export const WalletConnectButton = () => {
                             !connected
                                 ? openConnectModal
                                 : !chain?.unsupported
-                                  ? openAccountModal
-                                  : openChainModal
+                                    ? openAccountModal
+                                    : openChainModal
                         }
                         disabled={!ready}>
                         <Wallet className='w-4 h-4 mr-2' />
