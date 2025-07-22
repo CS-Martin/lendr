@@ -26,8 +26,8 @@ export const WalletConnectButton = () => {
                             !connected
                                 ? openConnectModal
                                 : !chain?.unsupported
-                                    ? openAccountModal
-                                    : openChainModal
+                                  ? openAccountModal
+                                  : openChainModal
                         }
                         disabled={!ready}>
                         <Wallet className='w-4 h-4 mr-2' />

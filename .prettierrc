@@ -14,7 +14,7 @@
     "proseWrap": "preserve",
     "insertPragma": false,
     "requirePragma": false,
-    "tabWidth": 4,
+    "tabWidth": 2,
     "useTabs": false,
     "embeddedLanguageFormatting": "auto",
     "printWidth": 80,

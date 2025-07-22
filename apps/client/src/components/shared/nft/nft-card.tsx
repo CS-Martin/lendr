@@ -10,9 +10,9 @@ import gsap from 'gsap';
 import LendrButton from '../lendr-btn';
 
 interface NFTCardProps {
-    nft: OwnedNft
-    onListNFT?: () => void
-    onViewNFT?: () => void
+    nft: OwnedNft;
+    onListNFT?: () => void;
+    onViewNFT?: () => void;
 }
 
 export const NFTCard = ({ nft, onViewNFT, onListNFT }: NFTCardProps) => {
@@ -34,8 +34,6 @@ export const NFTCard = ({ nft, onViewNFT, onListNFT }: NFTCardProps) => {
             tl.kill();
         };
     }, []);
-
-
 
     if (!nft.tokenId || !nft.contract.address) return null;
 
@@ -108,7 +106,9 @@ export const NFTCard = ({ nft, onViewNFT, onListNFT }: NFTCardProps) => {
                         animate={{ opacity: 1 }}
                         transition={{ delay: 0.9 }}
                         className='absolute w-[90%] -bottom-10 group-hover:-translate-y-13 left-1/2 -translate-x-1/2 transition-all duration-500'>
-                        <LendrButton onClick={onListNFT} className='w-full rounded-md bg-gradient-to-r from-lendr-400 to-lendr-500 hover:from-lendr-500 hover:to-lendr-600 text-slate-950 border-0 font-bold shadow-md shadow-lendr-400/30 hover:shadow-lendr-400/50 transition-all duration-500 overflow-hidden'>
+                        <LendrButton
+                            onClick={onListNFT}
+                            className='w-full rounded-md bg-gradient-to-r from-lendr-400 to-lendr-500 hover:from-lendr-500 hover:to-lendr-600 text-slate-950 border-0 font-bold shadow-md shadow-lendr-400/30 hover:shadow-lendr-400/50 transition-all duration-500 overflow-hidden'>
                             List NFT
                         </LendrButton>
                     </motion.div>

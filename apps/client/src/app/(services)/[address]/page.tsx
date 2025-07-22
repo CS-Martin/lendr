@@ -14,12 +14,14 @@ import { WalletConnectButton } from '@/components/shared/custom-connect';
 export default function UserProfilePage() {
     const { address } = useAccount();
 
-    const [selectedNFTForListing, setSelectedNFTForListing] = useState<OwnedNft | null>(null)
-    const [selectedNFTForDetails, setSelectedNFTForDetails] = useState<OwnedNft | null>(null)
-    const [isListDrawerOpen, setIsListDrawerOpen] = useState(false)
-    const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false)
+    const [selectedNFTForListing, setSelectedNFTForListing] =
+        useState<OwnedNft | null>(null);
+    const [selectedNFTForDetails, setSelectedNFTForDetails] =
+        useState<OwnedNft | null>(null);
+    const [isListDrawerOpen, setIsListDrawerOpen] = useState(false);
+    const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
 
-    console.log(address)
+    console.log(address);
     const { nfts, loadMore, loading, hasMore } = usePaginatedNFTs(
         '0xd97bbd623e3ff9a12fa79b678e03b4cdeeaf4f29',
     );
@@ -41,9 +43,9 @@ export default function UserProfilePage() {
     };
 
     const handleViewNFT = (nft: OwnedNft) => {
-        setSelectedNFTForDetails(nft)
-        setIsDetailsModalOpen(true)
-    }
+        setSelectedNFTForDetails(nft);
+        setIsDetailsModalOpen(true);
+    };
 
     return (
         <div className='bg-slate-950'>
@@ -77,7 +79,11 @@ export default function UserProfilePage() {
 
             <div ref={nftContainerRef} />
 
-            <NFTDetailsModal nft={selectedNFTForDetails} isOpen={isDetailsModalOpen} onClose={() => setIsDetailsModalOpen(false)} />
+            <NFTDetailsModal
+                nft={selectedNFTForDetails}
+                isOpen={isDetailsModalOpen}
+                onClose={() => setIsDetailsModalOpen(false)}
+            />
         </div>
     );
 }
