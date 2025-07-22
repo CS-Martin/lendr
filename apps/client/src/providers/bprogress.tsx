@@ -3,17 +3,17 @@ import { AppProgressProvider as ProgressProvider } from '@bprogress/next';
 import React from 'react';
 
 export const LoadingProgressProvider = ({
-    children,
+  children,
 }: {
-    children: React.ReactNode;
+  children: React.ReactNode;
 }) => {
-    return (
-        <ProgressProvider
-            height='4px'
-            color='#e9b815'
-            shallowRouting
-            options={{ showSpinner: true }}>
-            {children}
-        </ProgressProvider>
-    );
+  return (
+    <ProgressProvider
+      height='4px'
+      color='#e9b815'
+      shallowRouting
+      options={{ showSpinner: true }}>
+      {children}
+    </ProgressProvider>
+  );
 };

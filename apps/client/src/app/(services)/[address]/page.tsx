@@ -1,15 +1,15 @@
 'use client';
 
-import { GridBackground } from '@/components/shared/grid-background';
 import LendrButton from '@/components/shared/lendr-btn';
 import { NFTCard } from '@/components/shared/nft/nft-card';
-import { useGetNFTsForAddress, usePaginatedNFTs } from '@/hooks/useAlchemy';
+import { usePaginatedNFTs } from '@/hooks/useAlchemy';
 import { ProfileHeader } from './_components/profile-header';
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useState } from 'react';
 import { OwnedNft } from 'alchemy-sdk';
 import { NFTDetailsModal } from './_components/nft-details-modal';
 import { useAccount } from 'wagmi';
-import { WalletConnectButton } from '@/components/shared/custom-connect';
+import { EmptyState } from '../marketplace/_components/empty-state';
+import { cn } from '@/lib/utils';
 
 export default function UserProfilePage() {
     const { address } = useAccount();
@@ -22,9 +22,7 @@ export default function UserProfilePage() {
     const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
 
     console.log(address);
-    const { nfts, loadMore, loading, hasMore } = usePaginatedNFTs(
-        '0xd97bbd623e3ff9a12fa79b678e03b4cdeeaf4f29',
-    );
+    const { nfts, loadMore, loading, hasMore } = usePaginatedNFTs(address);
 
     // Create a ref for the container that holds all NFTs
     const nftContainerRef = useRef<HTMLDivElement>(null);
@@ -52,19 +50,24 @@ export default function UserProfilePage() {
             <ProfileHeader />
 
             <div className='max-w-7xl min-h-screen mx-auto py-20'>
-                <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 h-full'>
-                    {nfts?.map((nft, index) => {
-                        if (!nft.name) return null;
-                        return (
-                            <NFTCard
-                                nft={nft}
-                                key={index}
-                                onViewNFT={() => handleViewNFT(nft)}
-                                onListNFT={() => setSelectedNFTForListing(nft)}
-                            />
-                        );
-                    })}
-                </div>
+                {/* If empty */}
+                {nfts?.length === 0 ? (
+                    <EmptyState />
+                ) : (
+                    <div className={cn('grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 h-full', nfts?.length === 0 && 'grid-cols-1')}>
+                        {nfts?.map((nft, index) => {
+                            if (!nft.name) return null;
+                            return (
+                                <NFTCard
+                                    nft={nft}
+                                    key={index}
+                                    onViewNFT={() => handleViewNFT(nft)}
+                                    onListNFT={() => setSelectedNFTForListing(nft)}
+                                />
+                            );
+                        })}
+                    </div>
+                )}
                 {hasMore && (
                     <div className='flex justify-center mt-8'>
                         <LendrButton
