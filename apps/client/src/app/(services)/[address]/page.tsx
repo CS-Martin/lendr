@@ -95,9 +95,9 @@ export default function UserProfilePage() {
                     <div className='flex justify-center mt-8'>
                         <LendrButton
                             onClick={handleLoadMore}
-                            disabled={loading}
+                            disabled={nftsLoading}
                             className='p-6.5 text-sm'>
-                            {loading ? 'Loading...' : 'Load More NFTs'}
+                            {nftsLoading ? 'Loading...' : 'Load More NFTs'}
                         </LendrButton>
                     </div>
                 )}
@@ -110,6 +110,8 @@ export default function UserProfilePage() {
                     nft={selectedNFTForDetails}
                     isOpen={isDetailsModalOpen}
                     onClose={() => setIsDetailsModalOpen(false)}
+                    session={session}
+                    profileAddress={address as string}
                 />
             )}
 
