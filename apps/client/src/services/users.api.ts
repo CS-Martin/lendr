@@ -1,6 +1,6 @@
-import { config } from "@/config/env";
-import { logger } from "@/lib/logger";
-import { ResponseDto, UserDto } from "@repo/shared-dtos";
+import { config } from '@/config/env';
+import { logger } from '@/lib/logger';
+import { ResponseDto, UserDto } from '@repo/shared-dtos';
 
 export class UserApiService {
     private API_BASE_URL: string;
@@ -21,10 +21,6 @@ export class UserApiService {
                 body: JSON.stringify(user),
             });
 
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
             const data = await response.json();
             return data;
         } catch (error) {
@@ -39,10 +35,6 @@ export class UserApiService {
 
         try {
             const response = await fetch(`${this.API_BASE_URL}/${address}`);
-
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
 
             const data = await response.json();
             return data;

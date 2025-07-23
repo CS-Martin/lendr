@@ -1,3 +1,5 @@
+'use client';
+
 import { userApiService } from "@/services/users.api";
 import { useProgress } from "@bprogress/next";
 import { UserDto } from "@repo/shared-dtos";
@@ -23,16 +25,16 @@ export const useCreateUser = () => {
 
 export const useFindOneUser = (address: string) => {
     const { start, stop } = useProgress();
-    const [user, setUser] = useState<UserDto | null>(null);
+    const [fetchedUser, setFetchedUser] = useState<UserDto | null>(null);
     const [error, setError] = useState<Error | null>(null);
 
     useEffect(() => {
-        const fetchData = async () => {
+        const findOneUser = async () => {
             try {
                 start();
                 const res = await userApiService.findOne(address);
 
-                setUser(res.data || null);
+                setFetchedUser(res.data || null);
             } catch (err) {
                 setError(err as Error);
             } finally {
@@ -40,8 +42,8 @@ export const useFindOneUser = (address: string) => {
             }
         };
 
-        fetchData();
+        findOneUser();
     }, [address, start, stop]);
 
-    return { user, error };
+    return { fetchedUser, error };
 };
