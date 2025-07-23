@@ -21,8 +21,8 @@ const NFTDetailsModal = dynamic(() => import('./_components/nft-details-modal').
 
 export default function UserProfilePage() {
     const { address } = useParams();
-    const { fetchedUser, error } = useFindOneUser(address as string);
-    const { nfts, loadMore, loading, hasMore } = useShowMoreNFTs(address as string);
+    const { fetchedUser, error, loading } = useFindOneUser(address as string);
+    const { nfts, loadMore, loading: nftsLoading, hasMore } = useShowMoreNFTs(address as string);
     const { data: session } = useSession();
 
     console.log('Session:', session);
@@ -57,32 +57,39 @@ export default function UserProfilePage() {
         setIsListDrawerOpen(true);
     };
 
-    if (!fetchedUser) {
-        return <NotFound />
+    if (!fetchedUser && !loading) {
+        return <NotFound />;
     }
 
     return (
         <div className='bg-slate-950'>
-            <ProfileHeader userDto={fetchedUser as UserDto} />
+            <ProfileHeader userDto={fetchedUser} />
 
             <div className='max-w-7xl min-h-screen mx-auto py-20'>
-                <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 min-h-[calc(100vh-20rem)]'>
-                    {nfts.map((nft, index) =>
-                        nft.name ? (
-                            <NFTCard
-                                key={index}
-                                nft={nft}
-                                onViewNFT={() => handleViewNFT(nft)}
-                                onListNFT={() => handleListNFT(nft)}
-                                session={session}
-                                profileAddress={address as string}
-                            />
-                        ) : null,
-                    )}
+                {nfts.length === 0 && !loading ? (
+                    <EmptyState
+                        title='No NFTs Found'
+                        description='No NFTs found for this user'
+                    />
+                ) : (
+                    <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 min-h-[calc(100vh-20rem)]'>
+                        {nfts.map((nft, index) =>
+                            nft.name ? (
+                                <NFTCard
+                                    key={index}
+                                    nft={nft}
+                                    onViewNFT={() => handleViewNFT(nft)}
+                                    onListNFT={() => handleListNFT(nft)}
+                                    session={session}
+                                    profileAddress={address as string}
+                                />
+                            ) : null,
+                        )}
 
-                    {/* Show skeletons while loading more */}
-                    {loading && Array.from({ length: 10 }).map((_, index) => <NFTCardSkeleton key={`skeleton-${index}`} />)}
-                </div>
+                        {/* Show skeletons while loading more */}
+                        {loading && Array.from({ length: 10 }).map((_, index) => <NFTCardSkeleton key={`skeleton-${index}`} />)}
+                    </div>
+                )}
 
                 {hasMore && (
                     <div className='flex justify-center mt-8'>
