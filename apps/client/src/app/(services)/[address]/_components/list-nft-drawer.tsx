@@ -23,15 +23,15 @@ import z from 'zod';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useCreateRentalPost } from '@/hooks/useRentalPost';
-import { CreateRentalDto, CreateRentalPostDto } from '@repo/shared-dtos';
+import { CreateRentalPostDto } from '@repo/shared-dtos';
 import { Session } from 'next-auth';
-import { s } from 'framer-motion/dist/types.d-Bq-Qm38R';
 
 interface ListNFTDrawerProps {
   nft: OwnedNft | null;
   isOpen: boolean;
   onClose: () => void;
   session: Session | null;
+  profileAddress: string;
 }
 
 // RentalPost Zod Schema
@@ -51,8 +51,11 @@ const listNftFormSchema = z.object({
 
 type ListNftFormInputs = z.infer<typeof listNftFormSchema>;
 
-export const ListNFTDrawer = ({ nft, isOpen, onClose, session }: ListNFTDrawerProps) => {
-  console.log(session);
+export const ListNFTDrawer = ({ nft, isOpen, onClose, session, profileAddress }: ListNFTDrawerProps) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const { createRentalPost } = useCreateRentalPost();
+
   const {
     register,
     handleSubmit,
@@ -76,10 +79,6 @@ export const ListNFTDrawer = ({ nft, isOpen, onClose, session }: ListNFTDrawerPr
       statusCode: 'AVAILABLE',
     },
   });
-
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const { createRentalPost } = useCreateRentalPost();
 
   const onSubmit = async (data: ListNftFormInputs) => {
     setIsSubmitting(true);
@@ -450,40 +449,42 @@ export const ListNFTDrawer = ({ nft, isOpen, onClose, session }: ListNFTDrawerPr
                 </motion.div>
 
                 {/* Submit Button */}
-                <motion.div
-                  initial={{ y: 20, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: 0.6 }}
-                  className='flex flex-col-reverse md:flex-row w-full gap-4 py-3'>
-                  <div className='md:w-1/2'>
-                    <LendrButton
-                      type='button'
-                      variant='outline'
-                      onClick={onClose}
-                      className='w-full border-gray-600 rounded-md text-gray-300 hover:bg-gray-700 hover:text-white bg-transparent'
-                      disabled={isSubmitting}>
-                      Cancel
-                    </LendrButton>
-                  </div>
-                  <div className='md:w-1/2'>
-                    <LendrButton
-                      type='submit'
-                      className='w-full bg-gradient-to-r rounded-md from-lendr-400 hover:to-lendr-600 text-slate-950 font-semibold'
-                      disabled={isSubmitting}>
-                      {isSubmitting ? (
-                        <motion.div
-                          className='flex items-center gap-2'
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}>
-                          <Loader2 className='h-4 w-4 animate-spin' />
-                          Creating Listing...
-                        </motion.div>
-                      ) : (
-                        'Create Listing'
-                      )}
-                    </LendrButton>
-                  </div>
-                </motion.div>
+                {session?.user.address === profileAddress && (
+                  <motion.div
+                    initial={{ y: 20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ delay: 0.6 }}
+                    className='flex flex-col-reverse md:flex-row w-full gap-4 py-3'>
+                    <div className='md:w-1/2'>
+                      <LendrButton
+                        type='button'
+                        variant='outline'
+                        onClick={onClose}
+                        className='w-full border-gray-600 rounded-md text-gray-300 hover:bg-gray-700 hover:text-white bg-transparent'
+                        disabled={isSubmitting}>
+                        Cancel
+                      </LendrButton>
+                    </div>
+                    <div className='md:w-1/2'>
+                      <LendrButton
+                        type='submit'
+                        className='w-full bg-gradient-to-r rounded-md from-lendr-400 hover:to-lendr-600 text-slate-950 font-semibold'
+                        disabled={isSubmitting}>
+                        {isSubmitting ? (
+                          <motion.div
+                            className='flex items-center gap-2'
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}>
+                            <Loader2 className='h-4 w-4 animate-spin' />
+                            Creating Listing...
+                          </motion.div>
+                        ) : (
+                          'Create Listing'
+                        )}
+                      </LendrButton>
+                    </div>
+                  </motion.div>
+                )}
               </form>
             </motion.div>
           )}

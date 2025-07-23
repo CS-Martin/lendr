@@ -31,7 +31,7 @@ const LendrButton = forwardRef<HTMLButtonElement, LendrButtonProps>(
       case 'ghost':
         style = `
                     font-bold transition-all duration-300 rounded-xl
-                    bg-transparent text-slate-950 border border-slate-200 shadow-none hover:bg-slate-100
+                    bg-transparent text-slate-950 text-white shadow-none hover:bg-slate-100
                 `;
         break;
       case 'link':

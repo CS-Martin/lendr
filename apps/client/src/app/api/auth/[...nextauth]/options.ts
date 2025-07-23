@@ -2,6 +2,8 @@ import CredentialsProvider from 'next-auth/providers/credentials';
 import { SiweMessage } from 'siwe';
 import type { NextAuthOptions } from 'next-auth';
 import { logger } from '../../../../lib/logger';
+import { userApiService } from '@/services/users.api';
+import { UserDto } from '@repo/shared-dtos';
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -16,24 +18,41 @@ export const authOptions: NextAuthOptions = {
           logger.debug('Credentials received:', credentials);
 
           const siwe = new SiweMessage(credentials?.message || '');
-
           const result = await siwe.verify({
             signature: credentials?.signature || '',
             domain: process.env.NEXTAUTH_URL?.replace(/^https?:\/\//, ''),
             nonce: siwe.nonce,
           });
 
-          logger.debug('SIWE verification result:', result);
-
-          // TODO: Implement user creation if not exists
-          // TODO: Fetch user from database
-
           if (result.success) {
             logger.info(`SIWE auth succeeded for address ${siwe.address}`);
-            return { id: siwe.address, address: siwe.address };
-          } else {
-            logger.warn(`SIWE auth failed verification for address ${siwe.address}`);
+
+            // Fetch or create user right in the authorize callback
+            let user = await userApiService.findOne(siwe.address);
+
+            logger.info('User found:', user);
+            logger.info('Creating user:', siwe.address);
+
+            if (!user.data) {
+              const newUser = await userApiService.create({
+                address: siwe.address,
+                username: ``,
+                avatarUrl: ``,
+                bio: '',
+              } as UserDto);
+              user = newUser;
+            }
+
+            logger.info('User created:', user);
+
+            return {
+              id: siwe.address,
+              address: siwe.address,
+              ...user.data,
+            };
           }
+
+          logger.warn(`SIWE auth failed verification for address ${siwe.address}`);
           return null;
         } catch (e) {
           logger.error('SIWE auth failed:', e);
@@ -48,6 +67,7 @@ export const authOptions: NextAuthOptions = {
   },
   callbacks: {
     async jwt({ token, user }) {
+      // Initial sign in
       if (user) {
         token.address = user.address;
         token.username = user.username;
@@ -56,6 +76,25 @@ export const authOptions: NextAuthOptions = {
         token.createdAt = user.createdAt;
         token.updatedAt = user.updatedAt;
       }
+
+      // Subsequent requests - refresh user data periodically
+      else if (token.address) {
+        const now = Date.now();
+        const lastUpdated = (token.lastUpdated as number) || 0;
+
+        // Refresh user data if it's older than 5 minutes
+        if (now - lastUpdated > 5 * 60 * 1000) {
+          const userData = await userApiService.findOne(token.address as string);
+          if (userData.data) {
+            token.username = userData.data.username;
+            token.avatarUrl = userData.data.avatarUrl;
+            token.bio = userData.data.bio;
+            token.updatedAt = userData.data.updatedAt;
+            token.lastUpdated = now;
+          }
+        }
+      }
+
       return token;
     },
     async session({ session, token }) {
@@ -70,6 +109,5 @@ export const authOptions: NextAuthOptions = {
       return session;
     },
   },
-
   secret: process.env.NEXTAUTH_SECRET,
 };

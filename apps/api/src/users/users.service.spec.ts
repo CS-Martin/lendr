@@ -279,9 +279,5 @@ describe('UsersService', () => {
       expect(result.address).toEqual(user.address);
       expect(result.username).toEqual(user.username);
     });
-
-    it('should throw an error if user is null', () => {
-      expect(() => service.convertToUserDto(null)).toThrow(new NotFoundException('User not found'));
-    });
   });
 });

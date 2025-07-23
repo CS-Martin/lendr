@@ -29,5 +29,6 @@ declare module 'next-auth' {
     bio?: string;
     createdAt?: Date;
     updatedAt?: Date;
+    lastUpdated?: number;
   }
 }

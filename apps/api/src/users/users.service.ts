@@ -109,11 +109,7 @@ export class UsersService implements UsersServiceAbstractClass {
    * @param user The User entity to convert.
    * @returns The UserDto.
    */
-  convertToUserDto(user: User | null): UserDto {
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
-
+  convertToUserDto(user: User): UserDto {
     const userDto: UserDto = new UserDto();
 
     userDto.address = user.address ?? '';
