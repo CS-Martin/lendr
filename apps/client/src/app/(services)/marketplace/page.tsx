@@ -11,128 +11,12 @@ import { ActiveFilters } from '@/app/(services)/marketplace/_components/ActiveFi
 import { FilterHeader } from '@/app/(services)/marketplace/_components/filter-header';
 import { FilterSection } from '@/app/(services)/marketplace/_components/filter-section';
 import { EmptyState } from './_components/empty-state';
+import { useFindAllRentalPost } from '@/hooks/useRentalPost';
 
 // Register GSAP plugins
 if (typeof window !== 'undefined') {
     gsap.registerPlugin(ScrollTrigger);
 }
-
-// Updated to match Prisma schema with more diverse data
-const rentalPosts = [
-    {
-        posterAddress: '0x2',
-        name: 'Legendary Sword of Azerith',
-        description: "A rare weapon from the NFT game 'Realm of Warriors'.",
-        category: 'Gaming',
-        hourlyRate: 0.05,
-        collateral: 1.5,
-        isBiddable: true,
-        biddingStarttime: '2025-07-18T09:00:00.000Z',
-        biddingEndtime: '2025-07-20T09:00:00.000Z',
-        isActive: true,
-        statusCode: 'AVAILABLE',
-    },
-    {
-        posterAddress: '0x2',
-        name: 'Synthwave Cityscape',
-        description: 'Animated digital art in retro-futuristic style.',
-        category: 'Digital Art',
-        hourlyRate: 0.03,
-        collateral: 0.7,
-        isBiddable: true,
-        biddingStarttime: '2025-07-19T14:00:00.000Z',
-        biddingEndtime: '2025-07-21T14:00:00.000Z',
-        isActive: true,
-        statusCode: 'AVAILABLE',
-    },
-    {
-        posterAddress: '0x2',
-        name: 'Bass Drop #88',
-        description: 'Exclusive EDM loop from top crypto artist SatoshiSounds.',
-        category: 'Music',
-        hourlyRate: 0.02,
-        collateral: 0.5,
-        isBiddable: true,
-        biddingStarttime: '2025-07-19T12:00:00.000Z',
-        biddingEndtime: '2025-07-20T12:00:00.000Z',
-        isActive: true,
-        statusCode: 'AVAILABLE',
-    },
-    {
-        posterAddress: '0x2',
-        name: 'Pixel Wizard Avatar',
-        description: 'Playable avatar for blockchain-based RPG PixelVerse.',
-        category: 'Gaming',
-        hourlyRate: 0.01,
-        collateral: 0.2,
-        isBiddable: false,
-        isActive: true,
-        statusCode: 'AVAILABLE',
-    },
-    {
-        posterAddress: '0x2',
-        name: 'CryptoPunk Poster',
-        description: 'High-res digital art print of CryptoPunk #4587.',
-        category: 'Collectibles',
-        hourlyRate: 0.04,
-        collateral: 0.9,
-        isBiddable: true,
-        biddingStarttime: '2025-07-19T10:30:00.000Z',
-        biddingEndtime: '2025-07-21T10:30:00.000Z',
-        isActive: true,
-        statusCode: 'AVAILABLE',
-    },
-    {
-        posterAddress: '0x2',
-        name: 'Metaverse Fashion Outfit',
-        description: 'A full-body outfit wearable in Decentraland and Sandbox.',
-        category: 'Metaverse',
-        hourlyRate: 0.025,
-        collateral: 0.6,
-        isBiddable: true,
-        biddingStarttime: '2025-07-18T08:00:00.000Z',
-        biddingEndtime: '2025-07-19T08:00:00.000Z',
-        isActive: true,
-        statusCode: 'AVAILABLE',
-    },
-    {
-        posterAddress: '0x2',
-        name: 'Virtual Villa Parcel',
-        description: 'Prime virtual real estate near the MetaBeach.',
-        category: 'Virtual Real Estate',
-        hourlyRate: 0.1,
-        collateral: 2.5,
-        isBiddable: false,
-        isActive: false,
-        statusCode: 'AVAILABLE',
-    },
-    {
-        posterAddress: '0x2',
-        name: 'NFT Basketball Card - Zion Rookie',
-        description: 'Digital card from a limited sports NFT series.',
-        category: 'Sports',
-        hourlyRate: 0.03,
-        collateral: 0.8,
-        isBiddable: true,
-        biddingStarttime: '2025-07-19T15:00:00.000Z',
-        biddingEndtime: '2025-07-20T15:00:00.000Z',
-        isActive: true,
-        statusCode: 'AVAILABLE',
-    },
-    {
-        posterAddress: '0x2',
-        name: 'Crypto Domain: metahub.eth',
-        description: 'Premium ENS domain for metaverse ventures.',
-        category: 'Domain Names',
-        hourlyRate: 0.02,
-        collateral: 0.4,
-        isBiddable: true,
-        biddingStarttime: '2025-07-19T11:00:00.000Z',
-        biddingEndtime: '2025-07-21T11:00:00.000Z',
-        isActive: false,
-        statusCode: 'AVAILABLE',
-    },
-];
 
 // Filter options matching the reference image
 const statusFilters = [
@@ -145,10 +29,8 @@ const statusFilters = [
 const collectionFilters = [
     { id: 'digital-art', label: 'Digital Art', count: 234 },
     { id: 'gaming', label: 'Gaming', count: 189 },
-    { id: 'gaming-2', label: 'Gaming', count: 156 },
     { id: 'music', label: 'Music', count: 98 },
     { id: 'photography', label: 'Photography', count: 76 },
-    { id: 'typo', label: 'Typo', count: 45 },
     { id: 'crypto', label: 'Crypto', count: 123 },
 ];
 
@@ -189,6 +71,10 @@ export default function MarketplacePage() {
         }
     };
 
+    const { rentalPosts, error } = useFindAllRentalPost();
+
+    console.log(rentalPosts, error);
+
     const clearAllFilters = () => {
         setSelectedFilters([]);
         setSearchTerm('');
@@ -208,36 +94,25 @@ export default function MarketplacePage() {
     const filteredRentalPosts = rentalPosts.filter((post) => {
         const matchesSearch =
             post.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            post.category.toLowerCase().includes(searchTerm.toLowerCase());
+            (post.category?.toLowerCase() || '').includes(searchTerm.toLowerCase());
 
         const matchesFilters =
             selectedFilters.length === 0 ||
             selectedFilters.some((filter) => {
                 if (filter === 'buy-now') return !post.isBiddable;
                 if (filter === 'on-auction') return post.isBiddable;
-                if (filter === 'new') return post.statusCode === 'NEW';
-                if (filter === 'featured')
-                    return post.statusCode === 'FEATURED';
-                if (filter === 'digital-art')
-                    return post.category === 'Digital Art';
-                if (filter === 'gaming' || filter === 'gaming-2')
-                    return post.category === 'Gaming';
+                if (filter === 'digital-art') return post.category === 'Digital Art';
+                if (filter === 'gaming') return post.category === 'Gaming';
                 if (filter === 'music') return post.category === 'Music';
-                if (filter === 'photography')
-                    return post.category === 'Photography';
-                if (filter === 'typo') return post.category === 'Typo';
+                if (filter === 'photography') return post.category === 'Photography';
                 if (filter === 'crypto') return post.category === 'Crypto';
 
                 // New categories from sample
-                if (filter === 'collectibles')
-                    return post.category === 'Collectibles';
-                if (filter === 'virtual-real-estate')
-                    return post.category === 'Virtual Real Estate';
+                if (filter === 'collectibles') return post.category === 'Collectibles';
+                if (filter === 'virtual-real-estate') return post.category === 'Virtual Real Estate';
                 if (filter === 'sports') return post.category === 'Sports';
-                if (filter === 'metaverse')
-                    return post.category === 'Metaverse';
-                if (filter === 'domain-names')
-                    return post.category === 'Domain Names';
+                if (filter === 'metaverse') return post.category === 'Metaverse';
+                if (filter === 'domain-names') return post.category === 'Domain Names';
                 if (filter === 'utility') return post.category === 'Utility';
 
                 return false;
@@ -321,8 +196,7 @@ export default function MarketplacePage() {
                             animate={{ opacity: 1 }}
                             transition={{ delay: 0.4 }}>
                             <span>
-                                Showing {filteredRentalPosts.length} of{' '}
-                                {rentalPosts.length} NFTs
+                                Showing {filteredRentalPosts.length} of {rentalPosts.length} NFTs
                             </span>
                             <motion.div
                                 className='text-xs text-gray-500'
@@ -344,9 +218,7 @@ export default function MarketplacePage() {
                     />
 
                     {/* Empty State */}
-                    {filteredRentalPosts.length === 0 && (
-                        <EmptyState onClearFilters={clearAllFilters} />
-                    )}
+                    {filteredRentalPosts.length === 0 && <EmptyState onClearFilters={clearAllFilters} />}
                 </div>
             </div>
 

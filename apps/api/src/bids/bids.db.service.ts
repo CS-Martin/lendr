@@ -5,58 +5,55 @@ import { CreateBidDto, UpdateBidDto } from '@repo/shared-dtos';
 
 @Injectable()
 export class BidsDbService {
-    constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) {}
 
-    async create(createBidDto: CreateBidDto): Promise<Bid> {
-        const bid = await this.prisma.bid.create({
-            data: createBidDto,
-        });
+  async create(createBidDto: CreateBidDto): Promise<Bid> {
+    const bid = await this.prisma.bid.create({
+      data: createBidDto,
+    });
 
-        return bid;
-    }
+    return bid;
+  }
 
-    async remove(id: number): Promise<Bid> {
-        const bid = await this.prisma.bid.delete({
-            where: {
-                bidId: id,
-            },
-        });
+  async remove(id: number): Promise<Bid> {
+    const bid = await this.prisma.bid.delete({
+      where: {
+        bidId: id,
+      },
+    });
 
-        return bid;
-    }
+    return bid;
+  }
 
-    async update(bidId: number, updateBidDto: UpdateBidDto): Promise<Bid> {
-        const bid = await this.prisma.bid.update({
-            where: {
-                bidId,
-            },
-            data: updateBidDto,
-        });
+  async update(bidId: number, updateBidDto: UpdateBidDto): Promise<Bid> {
+    const bid = await this.prisma.bid.update({
+      where: {
+        bidId,
+      },
+      data: updateBidDto,
+    });
 
-        return bid;
-    }
+    return bid;
+  }
 
-    async findFiltered(params: {
-        bidderAddress?: string;
-        rentalPostId?: number;
-    }): Promise<Bid[]> {
-        const { bidderAddress, rentalPostId } = params;
+  async findFiltered(params: { bidderAddress?: string; rentalPostId?: number }): Promise<Bid[]> {
+    const { bidderAddress, rentalPostId } = params;
 
-        const where: Prisma.BidWhereInput = {};
+    const where: Prisma.BidWhereInput = {};
 
-        if (bidderAddress) where.bidderAddress = bidderAddress;
-        if (rentalPostId !== undefined) where.rentalPostId = rentalPostId;
+    if (bidderAddress) where.bidderAddress = bidderAddress;
+    if (rentalPostId !== undefined) where.rentalPostId = rentalPostId;
 
-        return this.prisma.bid.findMany({ where });
-    }
+    return this.prisma.bid.findMany({ where });
+  }
 
-    async findByBidId(id: number): Promise<Bid | null> {
-        const bid = await this.prisma.bid.findUnique({
-            where: {
-                bidId: id,
-            },
-        });
+  async findByBidId(id: number): Promise<Bid | null> {
+    const bid = await this.prisma.bid.findUnique({
+      where: {
+        bidId: id,
+      },
+    });
 
-        return bid;
-    }
+    return bid;
+  }
 }

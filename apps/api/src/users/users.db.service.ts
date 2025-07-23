@@ -5,40 +5,40 @@ import { CreateUserDto, UpdateUserDto } from '@repo/shared-dtos';
 
 @Injectable()
 export class UsersDbService {
-    constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) {}
 
-    async create(createUserDto: CreateUserDto): Promise<User> {
-        const user = await this.prisma.user.create({
-            data: createUserDto,
-        });
+  async create(createUserDto: CreateUserDto): Promise<User> {
+    const user = await this.prisma.user.create({
+      data: createUserDto,
+    });
 
-        return user;
-    }
+    return user;
+  }
 
-    async update(address: string, updateUserDto: UpdateUserDto): Promise<User> {
-        const user = await this.prisma.user.update({
-            where: {
-                address,
-            },
-            data: updateUserDto,
-        });
+  async update(address: string, updateUserDto: UpdateUserDto): Promise<User> {
+    const user = await this.prisma.user.update({
+      where: {
+        address,
+      },
+      data: updateUserDto,
+    });
 
-        return user;
-    }
+    return user;
+  }
 
-    async findAll(): Promise<User[] | null> {
-        const users = await this.prisma.user.findMany();
+  async findAll(): Promise<User[] | null> {
+    const users = await this.prisma.user.findMany();
 
-        return users;
-    }
+    return users;
+  }
 
-    async findOne(address: string): Promise<User | null> {
-        const user = await this.prisma.user.findUnique({
-            where: {
-                address,
-            },
-        });
+  async findOne(address: string): Promise<User | null> {
+    const user = await this.prisma.user.findUnique({
+      where: {
+        address,
+      },
+    });
 
-        return user;
-    }
+    return user;
+  }
 }

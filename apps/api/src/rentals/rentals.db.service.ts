@@ -5,63 +5,60 @@ import { CreateRentalDto, UpdateRentalDto } from '@repo/shared-dtos';
 
 @Injectable()
 export class RentalsDbService {
-    constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) {}
 
-    async create(createRentalDto: CreateRentalDto): Promise<Rental> {
-        const rental = await this.prisma.rental.create({
-            data: createRentalDto,
-        });
+  async create(createRentalDto: CreateRentalDto): Promise<Rental> {
+    const rental = await this.prisma.rental.create({
+      data: createRentalDto,
+    });
 
-        return rental;
-    }
+    return rental;
+  }
 
-    async update(
-        rentalId: number,
-        updateRentalDto: UpdateRentalDto,
-    ): Promise<Rental> {
-        const rental = await this.prisma.rental.update({
-            where: {
-                rentalId,
-            },
-            data: updateRentalDto,
-        });
+  async update(rentalId: number, updateRentalDto: UpdateRentalDto): Promise<Rental> {
+    const rental = await this.prisma.rental.update({
+      where: {
+        rentalId,
+      },
+      data: updateRentalDto,
+    });
 
-        return rental;
-    }
+    return rental;
+  }
 
-    async findAllByAddress(address: string): Promise<Rental[]> {
-        const rentals = await this.prisma.rental.findMany({
-            where: {
-                renterAddress: address,
-            },
-        });
+  async findAllByAddress(address: string): Promise<Rental[]> {
+    const rentals = await this.prisma.rental.findMany({
+      where: {
+        renterAddress: address,
+      },
+    });
 
-        return rentals;
-    }
+    return rentals;
+  }
 
-    async findAll(): Promise<Rental[]> {
-        const rentals = await this.prisma.rental.findMany();
+  async findAll(): Promise<Rental[]> {
+    const rentals = await this.prisma.rental.findMany();
 
-        return rentals;
-    }
+    return rentals;
+  }
 
-    async findOne(rentalId: number): Promise<Rental | null> {
-        const rental = await this.prisma.rental.findUnique({
-            where: {
-                rentalId,
-            },
-        });
+  async findOne(rentalId: number): Promise<Rental | null> {
+    const rental = await this.prisma.rental.findUnique({
+      where: {
+        rentalId,
+      },
+    });
 
-        return rental;
-    }
+    return rental;
+  }
 
-    async remove(rentalId: number): Promise<Rental> {
-        const rental = await this.prisma.rental.delete({
-            where: {
-                rentalId,
-            },
-        });
+  async remove(rentalId: number): Promise<Rental> {
+    const rental = await this.prisma.rental.delete({
+      where: {
+        rentalId,
+      },
+    });
 
-        return rental;
-    }
+    return rental;
+  }
 }

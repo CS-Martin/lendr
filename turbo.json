@@ -14,7 +14,9 @@
                 "NEXTAUTH_URL",
                 "NEXTAUTH_SECRET",
                 "NODE_ENV",
-                "API_BASE_URL"
+                "API_BASE_URL",
+                "API_VERSION",
+                "NEXT_PUBLIC_ALCHEMY_API_KEY"
             ]
         },
         "lint": {
@@ -23,7 +25,9 @@
                 "NEXTAUTH_URL",
                 "NEXTAUTH_SECRET",
                 "NODE_ENV",
-                "API_BASE_URL"
+                "API_BASE_URL",
+                "API_VERSION",
+                "NEXT_PUBLIC_ALCHEMY_API_KEY"
             ]
         },
         "format": {
