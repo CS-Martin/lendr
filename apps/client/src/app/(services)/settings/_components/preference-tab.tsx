@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Label } from '@/components/ui/label';
 import { Palette, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import ComingSoon from '@/components/shared/coming-soon';
 
 export const PreferenceTab = () => {
     return (
@@ -17,8 +18,9 @@ export const PreferenceTab = () => {
                         <Palette className='w-5 h-5 text-lendr-400' />
                         Display Preferences
                     </CardTitle>
-                    <CardDescription>Customize your experience</CardDescription>
+                    <CardDescription className='text-gray-400'>Customize your experience</CardDescription>
                 </CardHeader>
+                <ComingSoon />
                 <CardContent className='space-y-6'>
                     <div className='space-y-4'>
                         <div>
@@ -85,5 +87,5 @@ export const PreferenceTab = () => {
                 </CardContent>
             </Card>
         </motion.div>
-    )
-}
+    );
+};

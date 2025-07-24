@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Bell } from 'lucide-react';
+import ComingSoon from '@/components/shared/coming-soon';
 
 export const NotificationTab = () => {
     return (
@@ -14,7 +15,8 @@ export const NotificationTab = () => {
                         <Bell className='w-5 h-5 text-lendr-400' />
                         Notification Preferences
                     </CardTitle>
-                    <CardDescription>Choose what notifications you want to receive</CardDescription>
+                    <CardDescription className='text-gray-400'>Choose what notifications you want to receive</CardDescription>
+                    <ComingSoon />
                 </CardHeader>
                 <CardContent className='space-y-6'>
                     {[
@@ -56,5 +58,5 @@ export const NotificationTab = () => {
                 </CardContent>
             </Card>
         </motion.div>
-    )
-}
+    );
+};
