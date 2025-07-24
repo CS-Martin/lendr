@@ -12,12 +12,19 @@ import { ProfileTab } from './_components/profile-tab';
 import { SecurityTab } from './_components/security-tab';
 import { NotificationTab } from './_components/notification-tab';
 import { PreferenceTab } from './_components/preference-tab';
+import NotFound from '@/app/not-found';
 
 export default function SettingsPage() {
-    const user: UserDto = useSession().data?.user as UserDto;
+    const { data: session } = useSession();
+    const user = session?.user as UserDto;
+
 
     const [activeTab, setActiveTab] = useState('profile');
     //   const fileInputRef = useRef<HTMLInputElement>(null);
+
+    if (!user) {
+        return <NotFound />;
+    }
 
     return (
         <div className='min-h-screen bg-black text-white relative overflow-hidden'>
