@@ -1,6 +1,6 @@
 import { config } from '@/config/env';
 import { logger } from '@/lib/logger';
-import { ResponseDto, UserDto } from '@repo/shared-dtos';
+import { ResponseDto, UpdateUserDto, UserDto } from '@repo/shared-dtos';
 
 export class UserApiService {
   private API_BASE_URL: string;
@@ -25,6 +25,27 @@ export class UserApiService {
       return data;
     } catch (error) {
       console.error('Error creating user:', error);
+
+      throw error;
+    }
+  }
+
+  public async update(address: string, user: UpdateUserDto): Promise<ResponseDto<UserDto>> {
+    logger.info('Updating user:', user);
+
+    try {
+      const response = await fetch(`${this.API_BASE_URL}/${address}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(user),
+      });
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Error updating user:', error);
 
       throw error;
     }

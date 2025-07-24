@@ -13,7 +13,6 @@ import dynamic from 'next/dynamic';
 import { ListNFTDrawer } from './_components/list-nft-drawer';
 import { useSession } from 'next-auth/react';
 import { useFindOneUser } from '@/hooks/useUser';
-import { UserDto } from '@repo/shared-dtos';
 import NotFound from '@/app/not-found';
 const NFTDetailsModal = dynamic(() => import('./_components/nft-details-modal').then((mod) => mod.NFTDetailsModal), {
   ssr: false,
@@ -21,7 +20,7 @@ const NFTDetailsModal = dynamic(() => import('./_components/nft-details-modal').
 
 export default function UserProfilePage() {
   const { address } = useParams();
-  const { fetchedUser, error, loading } = useFindOneUser(address as string);
+  const { fetchedUser, loading } = useFindOneUser(address as string);
   const { nfts, loadMore, loading: nftsLoading, hasMore } = useShowMoreNFTs(address as string);
   const { data: session } = useSession();
 

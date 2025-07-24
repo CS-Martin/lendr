@@ -11,7 +11,6 @@ import LendrButton from '@/components/shared/lendr-btn';
 export default function NotFound() {
   const router = useRouter();
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  const [isHovering, setIsHovering] = useState(false);
   const [windowSize, setWindowSize] = useState({ width: 1200, height: 800 });
   const [mounted, setMounted] = useState(false);
 

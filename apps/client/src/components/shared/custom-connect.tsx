@@ -3,41 +3,20 @@
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { motion } from 'framer-motion';
 import { ChevronDown, Wallet, User } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
-import { useAccount, useDisconnect } from 'wagmi';
-import { useSession, signIn, signOut } from 'next-auth/react';
 import { EthereumIcon } from './icons/lendr.icons';
 
 export const WalletConnectButton = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const { disconnect } = useDisconnect();
-  const { data: session, status } = useSession();
-  const { address, isConnected } = useAccount();
-
-  // Handle session synchronization with connection state
-  useEffect(() => {
-    if (isConnected && address && status !== 'loading' && !session) {
-      // Trigger SIWE sign-in when wallet is connected but no session exists
-      signIn('credentials', {
-        message: 'Please sign this message to confirm your identity',
-        redirect: false,
-        callbackUrl: '/',
-      });
-    }
-  }, [isConnected, address, status, session]);
-
-  const handleDisconnect = () => {
-    disconnect();
-    signOut({ redirect: false });
-    setIsOpen(false);
-  };
 
   return (
     <ConnectButton.Custom>
-      {({ account, chain, openConnectModal, openAccountModal, mounted }) => {
-        const ready = mounted;
-        const connected = ready && account && chain;
+      {({ account, chain, openConnectModal, openAccountModal, openChainModal, mounted, authenticationStatus }) => {
+        const ready = mounted && authenticationStatus !== 'loading';
+        const connected =
+          ready && account && chain && (!authenticationStatus || authenticationStatus === 'authenticated');
+        const unsupportedChain = connected && chain.unsupported;
 
         return (
           <div className='relative'>
@@ -53,7 +32,8 @@ export const WalletConnectButton = () => {
             ) : (
               <div className='relative'>
                 <div className='flex flex-row gap-3 text-white'>
-                  {connected && (
+                  {/* Balance display */}
+                  {account.displayBalance && (
                     <div className='flex items-center gap-2 hover:bg-gray-700/20 rounded-md cursor-pointer px-2'>
                       <span className='text-sm font-medium flex items-center gap-2'>
                         <EthereumIcon
@@ -65,41 +45,43 @@ export const WalletConnectButton = () => {
                       </span>
                     </div>
                   )}
+
+                  {/* Main button with dropdown */}
                   <motion.button
                     whileHover={{ scale: 1.02 }}
                     className='flex items-center text-white hover:bg-gray-700/20 rounded-md gap-2 cursor-pointer px-3 py-2 transition-all'
-                    onClick={() => setIsOpen(!isOpen)}>
+                    onClick={() => (unsupportedChain ? openChainModal() : setIsOpen(!isOpen))}>
                     <div className='flex items-center gap-2'>
-                      <div className='w-2 h-2 rounded-full bg-green-400' />
-                      <span className='text-sm font-medium'>
-                        {account.address.slice(0, 6) + '...' + account?.address.slice(-4)}
-                      </span>
+                      <div className={`w-2 h-2 rounded-full ${unsupportedChain ? 'bg-red-400' : 'bg-green-400'}`} />
+                      <span className='text-sm font-medium'>{account.displayName}</span>
                     </div>
                     <ChevronDown className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
                   </motion.button>
                 </div>
 
-                {isOpen && (
+                {/* Dropdown menu */}
+                {isOpen && !unsupportedChain && (
                   <motion.div
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
                     className='absolute right-0 mt-2 w-48 bg-gray-900 text-white border border-gray-700 rounded-xl shadow-lg z-50 overflow-hidden'>
                     <div className='p-1'>
-                      {account.address && (
-                        <Link
-                          href={`/${account.address}`}
-                          className='flex items-center gap-2 px-4 py-2 text-sm hover:bg-gray-700/50 rounded-lg transition-colors'
-                          onClick={() => setIsOpen(false)}>
-                          <User className='w-4 h-4' />
-                          <span>Profile</span>
-                        </Link>
-                      )}
+                      <Link
+                        href={`/${account.address}`}
+                        className='flex items-center gap-2 px-4 py-2 text-sm hover:bg-gray-700/50 rounded-lg transition-colors'
+                        onClick={() => setIsOpen(false)}>
+                        <User className='w-4 h-4' />
+                        <span>Profile</span>
+                      </Link>
                       <button
                         className='w-full flex items-center gap-2 px-4 py-2 text-sm hover:bg-gray-700/50 rounded-lg transition-colors'
-                        onClick={handleDisconnect}>
+                        onClick={() => {
+                          openAccountModal();
+                          setIsOpen(false);
+                        }}>
                         <Wallet className='w-4 h-4' />
-                        <span>Disconnect</span>
+                        <span>Wallet Settings</span>
                       </button>
                     </div>
                   </motion.div>

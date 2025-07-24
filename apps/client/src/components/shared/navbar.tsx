@@ -8,7 +8,6 @@ import { HolographicText } from '@/components/shared/holographic-text';
 import { Zap } from 'lucide-react';
 import { WalletConnectButton } from './custom-connect';
 import Link from 'next/link';
-import { ConnectButton } from '@rainbow-me/rainbowkit';
 
 export default function NavBar() {
   const pathname = usePathname();
@@ -77,7 +76,6 @@ export default function NavBar() {
         </Link>
 
         <div className='relative z-50'>
-          <ConnectButton />
           <WalletConnectButton />
         </div>
       </div>

@@ -13,7 +13,7 @@ import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CalendarIcon, Loader2, Clock, DollarSign, Shield, Tag, CalendarDays, List } from 'lucide-react';
+import { CalendarIcon, Loader2, Clock, DollarSign, Shield, Tag, CalendarDays } from 'lucide-react';
 import { format } from 'date-fns';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';

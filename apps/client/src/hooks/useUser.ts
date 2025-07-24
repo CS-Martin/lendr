@@ -2,7 +2,8 @@
 
 import { userApiService } from '@/services/users.api';
 import { useProgress } from '@bprogress/next';
-import { UserDto } from '@repo/shared-dtos';
+import { UpdateUserDto, UserDto } from '@repo/shared-dtos';
+import { useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
 
 export const useCreateUser = () => {
@@ -21,6 +22,38 @@ export const useCreateUser = () => {
   };
 
   return { createUser, error };
+};
+
+export const useUpdateUser = () => {
+  const { update } = useSession();
+  const { start, stop } = useProgress();
+  const [error, setError] = useState<Error | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const updateUser = async (address: string, user: UpdateUserDto) => {
+    try {
+      setLoading(true);
+      start();
+      const updatedUser = await userApiService.update(address, user);
+
+      update({
+        user: {
+          ...updatedUser.data,
+          address,
+        },
+      });
+
+      return updatedUser.data;
+    } catch (err) {
+      setError(err as Error);
+      throw err;
+    } finally {
+      stop();
+      setLoading(false);
+    }
+  };
+
+  return { updateUser, error, loading };
 };
 
 export const useFindOneUser = (address: string) => {
