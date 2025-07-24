@@ -11,33 +11,29 @@ import { getWagmiConfig } from '@/lib/wagmi';
 
 const queryClient = new QueryClient();
 
-export function CustomWagmiProvider({
-    children,
-    initialState
-}: {
-    children: React.ReactNode;
-    initialState?: any;
-}) {
-    const config = getWagmiConfig();
+export function CustomWagmiProvider({ children, initialState }: { children: React.ReactNode; initialState?: any }) {
+  const config = getWagmiConfig();
 
-    return (
-        <WagmiProvider config={config} initialState={initialState}>
-            <SessionProvider refetchInterval={0}>
-                <QueryClientProvider client={queryClient}>
-                    <RainbowKitSiweNextAuthProvider>
-                        <RainbowKitProvider
-                            theme={lightTheme({
-                                accentColor: '#7b3fe4',
-                                accentColorForeground: 'white',
-                                borderRadius: 'medium',
-                                fontStack: 'system',
-                                overlayBlur: 'small',
-                            })}>
-                            {children}
-                        </RainbowKitProvider>
-                    </RainbowKitSiweNextAuthProvider>
-                </QueryClientProvider>
-            </SessionProvider>
-        </WagmiProvider>
-    );
+  return (
+    <WagmiProvider
+      config={config}
+      initialState={initialState}>
+      <SessionProvider refetchInterval={0}>
+        <QueryClientProvider client={queryClient}>
+          <RainbowKitSiweNextAuthProvider>
+            <RainbowKitProvider
+              theme={lightTheme({
+                accentColor: '#7b3fe4',
+                accentColorForeground: 'white',
+                borderRadius: 'medium',
+                fontStack: 'system',
+                overlayBlur: 'small',
+              })}>
+              {children}
+            </RainbowKitProvider>
+          </RainbowKitSiweNextAuthProvider>
+        </QueryClientProvider>
+      </SessionProvider>
+    </WagmiProvider>
+  );
 }
