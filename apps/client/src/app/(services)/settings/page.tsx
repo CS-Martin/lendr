@@ -2,22 +2,15 @@
 
 import type React from 'react';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Label } from '@/components/ui/label';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { User, Camera, Save, Shield, Bell, Palette, Trash2, X, Copy, ExternalLink } from 'lucide-react';
-import { toast } from 'sonner';
+import { User, Shield, Bell, Palette, Trash2 } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { UserDto } from '@repo/shared-dtos';
-import { z } from 'zod';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
 import { ProfileTab } from './_components/profile-tab';
 import { SecurityTab } from './_components/security-tab';
 
@@ -25,7 +18,7 @@ export default function SettingsPage() {
     const user: UserDto = useSession().data?.user as UserDto;
 
     const [activeTab, setActiveTab] = useState('profile');
-    const fileInputRef = useRef<HTMLInputElement>(null);
+    //   const fileInputRef = useRef<HTMLInputElement>(null);
 
     return (
         <div className='min-h-screen bg-black text-white relative overflow-hidden'>

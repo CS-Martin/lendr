@@ -8,7 +8,6 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { SessionProvider } from 'next-auth/react';
 import { RainbowKitSiweNextAuthProvider } from '@rainbow-me/rainbowkit-siwe-next-auth';
 import { getWagmiConfig } from '@/lib/wagmi';
-import { cookieToInitialState } from 'wagmi';
 
 const queryClient = new QueryClient();
 

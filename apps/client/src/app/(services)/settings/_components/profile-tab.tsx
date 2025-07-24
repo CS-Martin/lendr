@@ -11,12 +11,11 @@ import { Label } from '@/components/ui/label';
 import { Copy } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { toast } from 'sonner';
 import z from 'zod';
 import { UpdateUserDto, UserDto } from '@repo/shared-dtos';
 import { useUpdateUser } from '@/hooks/useUser';
-import { useSession } from 'next-auth/react';
 
 interface ProfileTabProps {
     user: UserDto;
@@ -34,14 +33,8 @@ export const userSchema = z.object({
 
 export type UserFormData = z.infer<typeof userSchema>;
 
-export const ProfileTab = () => {
-    const { data: session, update } = useSession();
+export const ProfileTab = ({ user }: ProfileTabProps) => {
     const { updateUser } = useUpdateUser();
-
-    // Use session user if available, otherwise fall back to initialUser
-    const currentUser = session?.user;
-
-    console.log(currentUser);
 
     const {
         register,
@@ -49,35 +42,31 @@ export const ProfileTab = () => {
         formState: { errors, isDirty, isSubmitting },
         reset,
         watch,
-        setValue,
-        getValues
     } = useForm<UserFormData>({
         resolver: zodResolver(userSchema),
         defaultValues: {
-            username: currentUser?.username || '',
-            bio: currentUser?.bio || '',
+            username: user?.username || '',
+            bio: user?.bio || '',
         },
     });
 
     // Watch for session changes and update form
     useEffect(() => {
-        if (session?.user) {
+        if (user) {
             reset({
-                username: session.user.username || '',
-                bio: session.user.bio || '',
+                username: user.username || '',
+                bio: user.bio || '',
             });
         }
-    }, [session, reset]);
+    }, [user, reset]);
 
     const onSubmit = async (data: UpdateUserDto) => {
-        const previousValues = getValues();
         try {
-
-            const updatedUser = await updateUser(currentUser?.address || '', data);
+            const updatedUser = await updateUser(user?.address || '', data);
 
             reset({
                 username: updatedUser?.username,
-                bio: updatedUser?.bio
+                bio: updatedUser?.bio,
             });
 
             toast.success('Profile updated successfully!');
@@ -85,16 +74,18 @@ export const ProfileTab = () => {
             toast.error('Failed to update profile');
 
             reset({
-                username: session?.user?.username || '',
-                bio: session?.user?.bio || ''
+                username: user?.username || '',
+                bio: user?.bio || '',
             });
+
+            throw error;
         }
     };
 
     const bioLength = watch('bio')?.length || 0;
 
     const copyAddress = () => {
-        navigator.clipboard.writeText(currentUser?.address || '');
+        navigator.clipboard.writeText(user?.address || '');
         toast.success('Address copied to clipboard!');
     };
     return (
@@ -116,22 +107,22 @@ export const ProfileTab = () => {
                         <div className='relative'>
                             <Avatar className='w-24 h-24 border-4 border-lendr-400/30'>
                                 <AvatarImage
-                                    src={currentUser?.avatarUrl || ''}
+                                    src={user?.avatarUrl || ''}
                                     alt='Profile'
                                 />
                                 <AvatarFallback className='bg-lendr-400/20 text-lendr-400 text-2xl'>
-                                    {currentUser?.username?.charAt(0) || 'U'}
+                                    {user?.username?.charAt(0) || 'U'}
                                 </AvatarFallback>
                             </Avatar>
                         </div>
                         <div>
-                            <h3 className='text-lg font-semibold text-white'>{currentUser?.username}</h3>
+                            <h3 className='text-lg font-semibold text-white'>{user?.username}</h3>
                             <p className='text-gray-400 text-sm'>
-                                Member since {currentUser?.createdAt ? new Date(currentUser.createdAt).toLocaleDateString() : 'Unknown'}
+                                Member since {user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'Unknown'}
                             </p>
                             <div className='flex items-center gap-2 mt-2'>
                                 <span className='text-xs font-mono bg-gray-800/50 px-2 py-1 rounded text-gray-300'>
-                                    {currentUser?.address.slice(0, 6)}...{currentUser?.address.slice(-4)}
+                                    {user?.address.slice(0, 6)}...{user?.address.slice(-4)}
                                 </span>
                                 <Button
                                     variant='ghost'
@@ -173,7 +164,7 @@ export const ProfileTab = () => {
                                 <div className='flex gap-2'>
                                     <Input
                                         id='wallet'
-                                        value={currentUser?.address || ''}
+                                        value={user?.address || ''}
                                         readOnly
                                         className='bg-gray-800/30 border-gray-700/50 text-gray-400 cursor-not-allowed'
                                     />
