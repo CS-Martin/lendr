@@ -35,7 +35,7 @@ contract LendrRentalSystem {
     mapping(uint256 => address) public s_collateralRentalAgreementById;
     uint256 public s_totalRentals;
     DelegationRegistry public immutable i_delegationRegistry;
-    CollateralRegistry public i_collateralRegistry;
+    CollateralRegistry public immutable i_collateralRegistry;
 
     /*//////////////////////////////////////////////////////////////
                                 EVENTS
