@@ -56,9 +56,6 @@ contract CollateralRegistry is ERC721Holder, ERC1155Holder, ReentrancyGuard {
         uint256 tokenId
     );
     event RentalStarted(uint256 indexed rentalId, uint256 endTime);
-    event RentalCompleted(uint256 indexed rentalId);
-    event RentalDefaulted(uint256 indexed rentalId);
-    event RentalCancelled(uint256 indexed rentalId, string reason);
     event CollateralClaimed(
         uint256 indexed rentalId,
         address indexed lender,
@@ -71,6 +68,7 @@ contract CollateralRegistry is ERC721Holder, ERC1155Holder, ReentrancyGuard {
         uint256 lenderPayout,
         uint256 platformFee
     );
+    event StateChanged(uint256 indexed rentalId, State oldState, State newState);
 
     /*//////////////////////////////////////////////////////////////
                             TYPE DECLARATIONS
@@ -250,7 +248,9 @@ contract CollateralRegistry is ERC721Holder, ERC1155Holder, ReentrancyGuard {
         agreement.lenderDepositDeadline =
             block.timestamp +
             getCustomDuration(agreement.dealDuration);
+        State oldState = agreement.rentalState;
         agreement.rentalState = State.READY_TO_RELEASE;
+        emit StateChanged(_rentalId, oldState, State.READY_TO_RELEASE);
 
         emit RentalInitiated(_rentalId, agreement.renter);
     }
@@ -281,7 +281,9 @@ contract CollateralRegistry is ERC721Holder, ERC1155Holder, ReentrancyGuard {
             agreement.nftStandard
         );
 
+        State oldState = agreement.rentalState;
         agreement.rentalState = State.ACTIVE_RENTAL;
+        emit StateChanged(_rentalId, oldState, State.ACTIVE_RENTAL);
         agreement.rentalEndTime =
             block.timestamp +
             (agreement.rentalDurationInHours * 1 hours);
@@ -318,14 +320,16 @@ contract CollateralRegistry is ERC721Holder, ERC1155Holder, ReentrancyGuard {
         nonReentrant
     {
         CollateralAgreement storage agreement = s_agreements[_rentalId];
+        State oldState = agreement.rentalState;
 
         if (block.timestamp > agreement.returnDeadline) {
             agreement.rentalState = State.DEFAULTED;
-            emit RentalDefaulted(_rentalId);
+            emit StateChanged(_rentalId, oldState, State.DEFAULTED);
             revert CollateralRegistry__ReturnDeadlineMissed();
         }
 
         agreement.rentalState = State.COMPLETED;
+        emit StateChanged(_rentalId, oldState, State.COMPLETED);
 
         _distributePayouts(_rentalId);
 
@@ -351,7 +355,6 @@ contract CollateralRegistry is ERC721Holder, ERC1155Holder, ReentrancyGuard {
             agreement.lender,
             agreement.tokenId
         );
-        emit RentalCompleted(_rentalId);
     }
 
     /**
@@ -373,7 +376,9 @@ contract CollateralRegistry is ERC721Holder, ERC1155Holder, ReentrancyGuard {
             revert CollateralRegistry__RenterStillHasTime();
         }
 
+        State oldState = agreement.rentalState;
         agreement.rentalState = State.CANCELLED;
+        emit StateChanged(_rentalId, oldState, State.CANCELLED);
 
         _transferNftFromEscrow(
             agreement.lender,
@@ -389,11 +394,6 @@ contract CollateralRegistry is ERC721Holder, ERC1155Holder, ReentrancyGuard {
             }('');
             if (!success) revert CollateralRegistry__PaymentFailed();
         }
-
-        emit RentalCancelled(
-            _rentalId,
-            'Renter failed to claim NFT before deadline.'
-        );
     }
 
     /////////////// --- LENDER-FACING FUNCTIONS --- ////////////////
@@ -463,7 +463,9 @@ contract CollateralRegistry is ERC721Holder, ERC1155Holder, ReentrancyGuard {
             revert CollateralRegistry__RenterStillHasTime();
         }
 
+        State oldState = agreement.rentalState;
         agreement.rentalState = State.CANCELLED;
+        emit StateChanged(_rentalId, oldState, State.CANCELLED);
         _transferNftFromEscrow(
             agreement.lender,
             agreement.nftContract,
@@ -478,11 +480,6 @@ contract CollateralRegistry is ERC721Holder, ERC1155Holder, ReentrancyGuard {
             }('');
             if (!success) revert CollateralRegistry__PaymentFailed();
         }
-
-        emit RentalCancelled(
-            _rentalId,
-            'Renter failed to claim NFT before deadline.'
-        );
     }
 
     /**
@@ -507,8 +504,9 @@ contract CollateralRegistry is ERC721Holder, ERC1155Holder, ReentrancyGuard {
                 revert CollateralRegistry__RentalNotEnded();
             }
 
+            State oldState = agreement.rentalState;
             agreement.rentalState = State.DEFAULTED;
-            emit RentalDefaulted(_rentalId);
+            emit StateChanged(_rentalId, oldState, State.DEFAULTED);
         }
 
         _distributePayouts(_rentalId);
@@ -535,12 +533,9 @@ contract CollateralRegistry is ERC721Holder, ERC1155Holder, ReentrancyGuard {
             revert CollateralRegistry__LenderStillHasTime();
         }
 
+        State oldState = agreement.rentalState;
         agreement.rentalState = State.CANCELLED;
-
-        emit RentalCancelled(
-            _rentalId,
-            'Lender failed to deposit NFT before deadline.'
-        );
+        emit StateChanged(_rentalId, oldState, State.CANCELLED);
 
         uint256 refundAmount = getTotalRentalFeeWithCollateral(_rentalId);
         if (refundAmount > 0) {

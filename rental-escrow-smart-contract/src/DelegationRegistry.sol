@@ -63,6 +63,7 @@ contract DelegationRegistry is
     error DelegationRegistry__AgreementDoesNotExist();
     error DelegationRegistry__DeadlinePassed();
     error DelegationRegistry__DelegationRentalDoesNotSupportNFTType();
+    error DelegationRegistry__NotOwner();
 
     /*//////////////////////////////////////////////////////////////
                                 EVENTS
@@ -91,7 +92,6 @@ contract DelegationRegistry is
     event AuthorizationRemoved(address indexed removedAuthorizedAddress);
     event RentalInitiated(uint256 indexed rentalId, address indexed renter);
     event RentalStarted(uint256 indexed rentalId, uint256 endTime);
-    event RentalCancelled(uint256 indexed rentalId);
     event PayoutsDistributed(
         uint256 indexed rentalId,
         address indexed lender,
@@ -99,6 +99,7 @@ contract DelegationRegistry is
         uint256 lenderPayout,
         uint256 platformFee
     );
+    event StateChanged(uint256 indexed rentalId, State oldState, State newState);
     event NftDepositedByLender(
         address indexed nftContract,
         uint256 indexed tokenId,
@@ -142,7 +143,8 @@ contract DelegationRegistry is
     //////////////////////////////////////////////////////////////*/
     mapping(address => mapping(uint256 => Delegation)) private _delegations;
     mapping(address => mapping(uint256 => address)) public originalOwnerOf;
-    address public immutable i_factory;
+    address public i_owner;
+    address public i_factory;
     mapping(address => bool) public isAuthorized;
     mapping(address => RentalEnums.NftStandard) public nftStandard;
     mapping(uint256 => RentalAgreement) public rentalAgreements;
@@ -153,6 +155,13 @@ contract DelegationRegistry is
     modifier onlyAuthorized() {
         if (!isAuthorized[msg.sender]) {
             revert DelegationRegistry__NotAuthorized();
+        }
+        _;
+    }
+
+    modifier onlyOwner() {
+        if (msg.sender != i_owner) {
+            revert DelegationRegistry__NotOwner();
         }
         _;
     }
@@ -204,14 +213,24 @@ contract DelegationRegistry is
     /*//////////////////////////////////////////////////////////////
                                 CONSTRUCTOR
     //////////////////////////////////////////////////////////////*/
-    constructor(address factory) {
-        i_factory = factory;
-        isAuthorized[factory] = true;
+    constructor() {
+        i_owner = msg.sender;
     }
 
     /*//////////////////////////////////////////////////////////////
                         EXTERNAL FUNCTIONS
     //////////////////////////////////////////////////////////////*/
+
+    /**
+     * @notice Sets the factory contract address. Can only be called once by the owner.
+     * @param _factoryAddress The address of the LendrRentalSystem factory contract.
+     */
+    function setFactory(address _factoryAddress) external onlyOwner {
+        require(address(i_factory) == address(0), 'Factory already set');
+        i_factory = _factoryAddress;
+        isAuthorized[_factoryAddress] = true;
+        emit AuthorizationSet(_factoryAddress);
+    }
 
     /**
      * @notice Creates a new delegation rental agreement.
@@ -282,7 +301,11 @@ contract DelegationRegistry is
         uint256 refundAmount = getTotalHourlyFee(rentalId);
 
         agreement.rentalState = State.CANCELLED;
-        emit RentalCancelled(rentalId);
+        emit StateChanged(
+            rentalId,
+            State.PENDING,
+            State.CANCELLED
+        );
 
         (bool success, ) = payable(agreement.renter).call{
             value: refundAmount
@@ -323,9 +346,10 @@ contract DelegationRegistry is
             revert DelegationRegistry__RentalIsOver();
         }
 
+        State oldState = agreement.rentalState;
         agreement.rentalState = State.CANCELLED;
         uint256 refundAmount = getTotalHourlyFee(rentalId);
-        emit RentalCancelled(rentalId);
+        emit StateChanged(rentalId, oldState, State.CANCELLED);
 
         (bool success, ) = payable(agreement.renter).call{
             value: refundAmount
@@ -414,7 +438,9 @@ contract DelegationRegistry is
         }
 
         agreement.rentalEndTime = delegationExpiry;
+        State oldState = agreement.rentalState;
         agreement.rentalState = State.ACTIVE_DELEGATION;
+        emit StateChanged(rentalId, oldState, State.ACTIVE_DELEGATION);
         emit RentalStarted(rentalId, delegationExpiry);
     }
 
@@ -476,7 +502,9 @@ contract DelegationRegistry is
             revert DelegationRegistry__RentalNotOver();
         }
 
+        State oldState = agreement.rentalState;
         agreement.rentalState = State.COMPLETED;
+        emit StateChanged(rentalId, oldState, State.COMPLETED);
 
         uint256 totalFee = getTotalHourlyFee(rentalId);
         (uint256 lenderPayout, uint256 platformFee) = FeeSplitter.splitFee(totalFee, agreement.platformFeeBps);
@@ -520,10 +548,7 @@ contract DelegationRegistry is
      * @dev Can only be called by the factory contract that deployed this registry.
      * @param newAuthorizedAddress The address to authorize.
      */
-    function addAuthorized(address newAuthorizedAddress) external {
-        if (msg.sender != i_factory) {
-            revert DelegationRegistry__NotAuthorized();
-        }
+    function addAuthorized(address newAuthorizedAddress) external onlyOwner {
         isAuthorized[newAuthorizedAddress] = true;
         emit AuthorizationSet(newAuthorizedAddress);
     }
@@ -533,10 +558,7 @@ contract DelegationRegistry is
      * @dev Can only be called by the factory contract that deployed this registry.
      * @param addressToRemove The address to de-authorize.
      */
-    function removeAuthorized(address addressToRemove) external {
-        if (msg.sender != i_factory) {
-            revert DelegationRegistry__NotAuthorized();
-        }
+    function removeAuthorized(address addressToRemove) external onlyOwner {
         isAuthorized[addressToRemove] = false;
         emit AuthorizationRemoved(addressToRemove);
     }
@@ -626,9 +648,11 @@ contract DelegationRegistry is
         agreement.lenderDelegationDeadline =
             block.timestamp +
             getCustomDuration(agreement.dealDuration);
+        State oldState = agreement.rentalState;
         agreement.rentalState = State.PENDING;
 
         emit RentalInitiated(rentalId, agreement.renter);
+        emit StateChanged(rentalId, oldState, State.PENDING);
     }
 
     function _setDelegation(

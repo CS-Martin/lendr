@@ -24,6 +24,7 @@ abstract contract CollateralRentalBaseTest is Test {
     ERC1155Mock internal mockERC1155;
 
     // Users
+    address internal deployer = makeAddr('deployer');
     address internal lender = makeAddr('lender');
     address internal renter = makeAddr('renter');
     address internal thirdParty = makeAddr('thirdParty');
@@ -43,9 +44,10 @@ abstract contract CollateralRentalBaseTest is Test {
     /// @notice Sets up the initial state for each test.
     function setUp() public virtual {
         // Deploy LendrRentalSystem
-        vm.startPrank(lender);
+        vm.startPrank(deployer);
         lendrRentalSystem = new LendrRentalSystem(500); // 5% fee
         collateralRegistry = lendrRentalSystem.i_collateralRegistry();
+        collateralRegistry.setFactory(address(lendrRentalSystem));
         vm.stopPrank();
 
         // Deploy and setup ERC721 mock
@@ -57,7 +59,7 @@ abstract contract CollateralRentalBaseTest is Test {
         mockERC1155.mint(lender, TOKEN_ID, 1, '');
 
         // Create a collateral rental agreement for an ERC721 token
-        vm.startPrank(lender);
+        vm.startPrank(deployer);
         lendrRentalSystem.createCollateralRentalAgreement(
             lender,
             address(mockERC721),
@@ -256,7 +258,7 @@ contract HappyPathTest is CollateralRentalBaseTest {
 
     function test_erc1155_rental_happy_path() public {
         // Arrange
-        vm.startPrank(lender);
+        vm.startPrank(deployer);
         lendrRentalSystem.createCollateralRentalAgreement(
             lender,
             address(mockERC1155),
@@ -383,7 +385,7 @@ contract FailureModesTest is CollateralRentalBaseTest {
     }
 
     function test_constructor_reverts_if_duration_is_zero() public {
-        vm.startPrank(lender);
+        vm.startPrank(deployer);
         vm.expectRevert(
             LendrRentalSystem
                 .LendrRentalSystem__RentalDurationMustBeGreaterThanZero.selector
@@ -402,7 +404,7 @@ contract FailureModesTest is CollateralRentalBaseTest {
     }
 
     function test_constructor_reverts_if_collateral_is_zero() public {
-        vm.startPrank(lender);
+        vm.startPrank(deployer);
         vm.expectRevert(
             LendrRentalSystem
                 .LendrRentalSystem__CollateralMustBeGreaterThanZero.selector
@@ -421,7 +423,7 @@ contract FailureModesTest is CollateralRentalBaseTest {
     }
 
     function test_constructor_reverts_if_nftStandard_is_ERC4907() public {
-        vm.startPrank(lender);
+        vm.startPrank(deployer);
         vm.expectRevert(
             CollateralRegistry
                 .CollateralRegistry__CollateralRentalDoesNotSupportNFTType
@@ -441,7 +443,7 @@ contract FailureModesTest is CollateralRentalBaseTest {
     }
 
     function test_constructor_reverts_if_dealDuration_is_invalid() public {
-        vm.startPrank(lender);
+        vm.startPrank(deployer);
         vm.expectRevert(
             LendrRentalSystem.LendrRentalSystem__InvalidDepositDeadline.selector
         );
@@ -734,7 +736,7 @@ contract TimeoutsAndDefaultsTest is CollateralRentalBaseTest {
 contract SecurityTest is CollateralRentalBaseTest {
     function test_reentrancy_attack_on_returnNFTToLender() public {
         // Arrange
-        vm.startPrank(lender);
+        vm.startPrank(deployer);
         lendrRentalSystem.createCollateralRentalAgreement(
             lender,
             address(mockERC721),
@@ -846,7 +848,7 @@ contract EdgeCasesTest is CollateralRentalBaseTest {
         // Arrange
         mockERC721.mint(lender, tokenId);
 
-        vm.startPrank(lender);
+        vm.startPrank(deployer);
         lendrRentalSystem.createCollateralRentalAgreement(
             lender,
             address(mockERC721),

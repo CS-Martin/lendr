@@ -29,9 +29,10 @@ contract DelegationRegistryUnitTest is Test {
         user = makeAddr('user');
 
         vm.prank(factory);
-        delegationRegistry = new DelegationRegistry(factory);
+        delegationRegistry = new DelegationRegistry();
+        delegationRegistry.setFactory(factory);
 
-        vm.prank(factory);
+        vm.prank(owner);
         delegationRegistry.addAuthorized(authorizedContract);
 
         erc721Mock = new ERC721Mock('ERC721', 'E721');
@@ -48,23 +49,23 @@ contract DelegationRegistryUnitTest is Test {
     //////////////////////////////////////////////////////////////*/
 
     function test_Fail_AddAuthorized_FromNonFactory() public {
-        vm.expectRevert(DelegationRegistry.DelegationRegistry__NotAuthorized.selector);
+        vm.expectRevert(DelegationRegistry.DelegationRegistry__NotOwner.selector);
         delegationRegistry.addAuthorized(makeAddr('newUser'));
     }
 
     function test_Fail_RemoveAuthorized_FromNonFactory() public {
-        vm.expectRevert(DelegationRegistry.DelegationRegistry__NotAuthorized.selector);
+        vm.expectRevert(DelegationRegistry.DelegationRegistry__NotOwner.selector);
         delegationRegistry.removeAuthorized(authorizedContract);
     }
 
     function test_AddAndRemove_Authorization() public {
         address newAuthorized = makeAddr('newAuthorized');
         
-        vm.prank(factory);
+        vm.prank(owner);
         delegationRegistry.addAuthorized(newAuthorized);
         assertTrue(delegationRegistry.isAuthorized(newAuthorized));
 
-        vm.prank(factory);
+        vm.prank(owner);
         delegationRegistry.removeAuthorized(newAuthorized);
         assertFalse(delegationRegistry.isAuthorized(newAuthorized));
     }
