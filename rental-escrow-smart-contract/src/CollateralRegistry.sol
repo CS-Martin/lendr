@@ -397,28 +397,6 @@ contract CollateralRegistry is ERC721Holder, ERC1155Holder, ReentrancyGuard {
     }
 
     /////////////// --- LENDER-FACING FUNCTIONS --- ////////////////
-
-    /**
-     * @notice Approves the contract to manage the NFT for collateral rentals.
-     * @dev Lender calls this to grant approval before initiating a rental process that requires escrow,
-     * such as `depositNFTByLender`. This function calls `approve` for ERC721 or `setApprovalForAll` for ERC1155 NFTs.
-     * @param _nftContract The address of the NFT contract.
-     * @param _tokenId The ID of the token to be approved.
-     * @param _nftStandard The standard of the NFT (ERC721 or ERC1155).
-     */
-    function approveNftForCollateral(
-        address _nftContract,
-        uint256 _tokenId,
-        RentalEnums.NftStandard _nftStandard
-    ) external {
-        if (_nftStandard == RentalEnums.NftStandard.ERC721) {
-            IERC721(_nftContract).approve(address(this), _tokenId);
-        } else if (_nftStandard == RentalEnums.NftStandard.ERC1155) {
-            IERC1155(_nftContract).setApprovalForAll(address(this), true);
-        } else {
-            revert CollateralRegistry__NftStandardNotSupported();
-        }
-    }
     /**
      * @notice Lender deposits the NFT to escrow start the rental process.
      * @dev For collateral rentals, this makes the NFT available for the renter to claim.
