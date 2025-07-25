@@ -104,8 +104,8 @@ contract CollateralRegistry is ERC721Holder, ERC1155Holder, ReentrancyGuard {
     /*//////////////////////////////////////////////////////////////
                             STATE VARIABLES
     //////////////////////////////////////////////////////////////*/
-    address public immutable i_owner;
-    LendrRentalSystem public immutable i_factoryContract;
+    address public i_owner;
+    LendrRentalSystem public i_factoryContract;
     mapping(uint256 => CollateralAgreement) public s_agreements;
 
     /*//////////////////////////////////////////////////////////////
@@ -165,14 +165,25 @@ contract CollateralRegistry is ERC721Holder, ERC1155Holder, ReentrancyGuard {
     /*//////////////////////////////////////////////////////////////
                              CONSTRUCTOR
     //////////////////////////////////////////////////////////////*/
-    constructor(address _factoryAddress) {
+    constructor() {
         i_owner = msg.sender;
-        i_factoryContract = LendrRentalSystem(payable(_factoryAddress));
     }
 
     /*//////////////////////////////////////////////////////////////
                         EXTERNAL FUNCTIONS
     //////////////////////////////////////////////////////////////*/
+
+    /**
+     * @notice Sets the factory contract address. Can only be called once by the owner.
+     * @param _factoryAddress The address of the LendrRentalSystem factory contract.
+     */
+    function setFactory(address _factoryAddress) external onlyOwner {
+        require(
+            address(i_factoryContract) == address(0),
+            "Factory already set"
+        );
+        i_factoryContract = LendrRentalSystem(payable(_factoryAddress));
+    }
 
     /**
      * @notice Creates a new rental agreement, called by LendrRentalSystem.

@@ -88,7 +88,8 @@ contract LendrRentalSystem {
         i_deployer = msg.sender;
         s_feeBps = initialPlatformFeePercentInBps;
         i_delegationRegistry = new DelegationRegistry(address(this));
-        i_collateralRegistry = new CollateralRegistry(address(this));
+        i_collateralRegistry = new CollateralRegistry();
+        i_collateralRegistry.setFactory(address(this));
     }
 
     /*//////////////////////////////////////////////////////////////
