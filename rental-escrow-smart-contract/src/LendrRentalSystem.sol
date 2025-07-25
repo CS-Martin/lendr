@@ -87,7 +87,6 @@ contract LendrRentalSystem {
     constructor(uint256 initialPlatformFeePercentInBps) {
         i_deployer = msg.sender;
         s_feeBps = initialPlatformFeePercentInBps;
-        // Deploy DelegationRegistry with this contract as the sole authorization manager
         i_delegationRegistry = new DelegationRegistry(address(this));
         i_collateralRegistry = new CollateralRegistry(address(this));
     }

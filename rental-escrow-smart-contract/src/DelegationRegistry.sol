@@ -338,28 +338,28 @@ contract DelegationRegistry is
     /////////////// --- LENDER-FACING FUNCTIONS --- ////////////////
 
     /**
-     * @notice Approves the contract to manage the NFT for delegation.
-     * @dev Lender calls this to grant approval before initiating a rental process that requires escrow,
-     * such as `depositNFTByLender`. This function calls `approve` for ERC721 or `setApprovalForAll` for ERC1155 NFTs.
-     * @param _nftContract The address of the NFT contract.
-     * @param _tokenId The ID of the token to be approved.
-     * @param _nftStandard The standard of the NFT (ERC721 or ERC1155).
+     * @notice Allows a user to deposit an NFT they own into the escrow.
+     * @dev This function requires the user to have approved the DelegationRegistry contract
+     * to transfer the NFT on their behalf. It supports both ERC721 and ERC1155 standards.
+     * The function determines the NFT standard, verifies ownership, and then transfers the NFT.
+     * Upon successful transfer, the corresponding ERC receiver hook (`onERC721Received` or `onERC1155Received`)
+     * is triggered, which records the deposit details.
      */
-    function approveNftForDelegation(
-        address _nftContract,
-        uint256 _tokenId,
-        RentalEnums.NftStandard _nftStandard
-    ) external {
-        if (_nftStandard == RentalEnums.NftStandard.ERC4907) {
-            revert DelegationRegistry__DelegationRentalDoesNotSupportNFTType();
-        }
+     function depositNFTtoEscrow(address contractAddress, uint256 tokenId) external {
+        IERC165 nftContract = IERC165(contractAddress);
 
-        if (_nftStandard == RentalEnums.NftStandard.ERC721) {
-            IERC721(_nftContract).approve(address(this), _tokenId);
-        } else if (_nftStandard == RentalEnums.NftStandard.ERC1155) {
-            IERC1155(_nftContract).setApprovalForAll(address(this), true);
+        if (nftContract.supportsInterface(type(IERC721).interfaceId)) {
+            if (IERC721(contractAddress).ownerOf(tokenId) != msg.sender) {
+                revert DelegationRegistry__NotOriginalOwner();
+            }
+            IERC721(contractAddress).safeTransferFrom(msg.sender, address(this), tokenId);
+        } else if (nftContract.supportsInterface(type(IERC1155).interfaceId)) {
+            if (IERC1155(contractAddress).balanceOf(msg.sender, tokenId) < 1) {
+                revert DelegationRegistry__NotOriginalOwner();
+            }
+            IERC1155(contractAddress).safeTransferFrom(msg.sender, address(this), tokenId, 1, "");
         } else {
-            revert DelegationRegistry__InvalidNftStandard();
+            revert DelegationRegistry__InvalidNftContract();
         }
     }
 
