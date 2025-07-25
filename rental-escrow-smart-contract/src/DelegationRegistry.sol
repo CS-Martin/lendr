@@ -60,6 +60,9 @@ contract DelegationRegistry is
     error DelegationRegistry__InvalidNftStandard();
     error DelegationRegistry__RentalIsOver();
     error DelegationRegistry__NftNotDeposited();
+    error DelegationRegistry__AgreementDoesNotExist();
+    error DelegationRegistry__DeadlinePassed();
+    error DelegationRegistry__DelegationRentalDoesNotSupportNFTType();
 
     /*//////////////////////////////////////////////////////////////
                                 EVENTS
@@ -95,6 +98,11 @@ contract DelegationRegistry is
         address indexed platform,
         uint256 lenderPayout,
         uint256 platformFee
+    );
+    event NftDepositedByLender(
+        address indexed nftContract,
+        uint256 indexed tokenId,
+        address indexed owner
     );
 
     /*//////////////////////////////////////////////////////////////
@@ -176,6 +184,13 @@ contract DelegationRegistry is
         _;
     }
 
+    modifier agreementExists(uint256 _rentalId) {
+        if (rentalAgreements[_rentalId].lender == address(0)) {
+            revert DelegationRegistry__AgreementDoesNotExist();
+        }
+        _;
+    }
+
     modifier onlyLender(uint256 rentalId) {
         if (msg.sender != rentalAgreements[rentalId].lender) {
             revert DelegationRegistry__InvalidUser(
@@ -230,8 +245,7 @@ contract DelegationRegistry is
         agreement.nftStandard = _nftStandard;
         agreement.dealDuration = _dealDuration;
         agreement.rentalState = State.LISTED;
-        agreement.platformFeeBps = LendrRentalSystem(payable(i_factory))
-            .s_feeBps();
+        agreement.platformFeeBps = LendrRentalSystem(payable(i_factory)).s_feeBps();
     }
 
     /////////////// --- RENTER-FACING FUNCTIONS --- ////////////////
@@ -324,6 +338,32 @@ contract DelegationRegistry is
     /////////////// --- LENDER-FACING FUNCTIONS --- ////////////////
 
     /**
+     * @notice Allows a user to deposit an NFT they own into the escrow.
+     * @dev This function requires the user to have approved the DelegationRegistry contract
+     * to transfer the NFT on their behalf. It supports both ERC721 and ERC1155 standards.
+     * The function determines the NFT standard, verifies ownership, and then transfers the NFT.
+     * Upon successful transfer, the corresponding ERC receiver hook (`onERC721Received` or `onERC1155Received`)
+     * is triggered, which records the deposit details.
+     */
+     function depositNFTtoEscrow(address contractAddress, uint256 tokenId) external {
+        IERC165 nftContract = IERC165(contractAddress);
+
+        if (nftContract.supportsInterface(type(IERC721).interfaceId)) {
+            if (IERC721(contractAddress).ownerOf(tokenId) != msg.sender) {
+                revert DelegationRegistry__NotOriginalOwner();
+            }
+            IERC721(contractAddress).safeTransferFrom(msg.sender, address(this), tokenId);
+        } else if (nftContract.supportsInterface(type(IERC1155).interfaceId)) {
+            if (IERC1155(contractAddress).balanceOf(msg.sender, tokenId) < 1) {
+                revert DelegationRegistry__NotOriginalOwner();
+            }
+            IERC1155(contractAddress).safeTransferFrom(msg.sender, address(this), tokenId, 1, "");
+        } else {
+            revert DelegationRegistry__InvalidNftContract();
+        }
+    }
+
+    /**
      * @notice Lender calls this to activate delegation for the renter.
      * @dev This function's implementation will depend on the NFT standard.
      * For ERC4907, it would call `setUser`. For others, it might be an on-chain approval.
@@ -376,6 +416,49 @@ contract DelegationRegistry is
         agreement.rentalEndTime = delegationExpiry;
         agreement.rentalState = State.ACTIVE_DELEGATION;
         emit RentalStarted(rentalId, delegationExpiry);
+    }
+
+    /**
+     * @notice Lender deposits the NFT to escrow to start the rental process.
+     * @dev For delegation rentals, this makes the NFT available for the renter to claim.
+     * Before calling, the lender MUST approve this contract to transfer the NFT.
+     * For ERC721, call `approve(address(this), tokenId)` on the NFT contract.
+     * For ERC1155, call `setApprovalForAll(address(this), true)` on the NFT contract.
+     */
+     function depositNFTByLender(uint256 _rentalId)
+        external
+        agreementExists(_rentalId)
+        onlyLender(_rentalId)
+        inState(_rentalId, State.PENDING)
+        nonReentrant
+    {
+        RentalAgreement storage agreement = rentalAgreements[_rentalId];
+        if (block.timestamp > agreement.lenderDelegationDeadline) {
+            revert DelegationRegistry__DeadlinePassed();
+        }
+
+        if (agreement.nftStandard == RentalEnums.NftStandard.ERC721) {
+            IERC721(agreement.nftContract).safeTransferFrom(
+                agreement.lender,
+                address(this),
+                agreement.tokenId
+            );
+        } else if (agreement.nftStandard == RentalEnums.NftStandard.ERC1155) {
+            IERC1155(agreement.nftContract).safeTransferFrom(
+                agreement.lender,
+                address(this),
+                agreement.tokenId,
+                1,
+                ''
+            );
+        } else {
+            revert DelegationRegistry__DelegationRentalDoesNotSupportNFTType();
+        }
+        emit NftDepositedByLender(
+            agreement.nftContract,
+            agreement.tokenId,
+            agreement.lender
+        );
     }
 
     /**

@@ -2,19 +2,24 @@
 pragma solidity ^0.8.20;
 
 import {Test} from 'forge-std/Test.sol';
-import {CollateralRentalAgreement} from '../../src/CollateralRentalAgreement.sol';
+import {CollateralRegistry} from '../../src/CollateralRegistry.sol';
 import {LendrRentalSystem} from '../../src/LendrRentalSystem.sol';
 import {RentalEnums} from '../../src/libraries/RentalEnums.sol';
 import {ERC721Mock} from '../mocks/ERC721Mock.sol';
 import {ERC1155Mock} from '../mocks/ERC1155Mock.sol';
 import {Attacker} from '../mocks/Attacker.sol';
 
-contract CollateralRentalTest is Test {
+/// @title CollateralRentalBaseTest
+/// @notice This abstract contract serves as the base for all collateral rental system tests.
+/// It sets up the testing environment, including deploying contracts, creating users,
+/// and preparing a default rental agreement. It also provides internal helper functions
+/// for common test arrangement scenarios.
+abstract contract CollateralRentalBaseTest is Test {
     /*//////////////////////////////////////////////////////////////
                             STATE VARIABLES
     //////////////////////////////////////////////////////////////*/
     LendrRentalSystem internal lendrRentalSystem;
-    CollateralRentalAgreement internal collateralRentalAgreement;
+    CollateralRegistry internal collateralRegistry;
     ERC721Mock internal mockERC721;
     ERC1155Mock internal mockERC1155;
 
@@ -25,6 +30,7 @@ contract CollateralRentalTest is Test {
 
     // NFT details
     uint256 internal constant TOKEN_ID = 1;
+    uint256 internal rentalId;
 
     // Rental terms
     uint256 internal constant HOURLY_RENTAL_FEE = 1 ether;
@@ -34,10 +40,12 @@ contract CollateralRentalTest is Test {
     /*//////////////////////////////////////////////////////////////
                                 SETUP
     //////////////////////////////////////////////////////////////*/
+    /// @notice Sets up the initial state for each test.
     function setUp() public virtual {
         // Deploy LendrRentalSystem
         vm.startPrank(lender);
-        lendrRentalSystem = new LendrRentalSystem(500); // 1% fee
+        lendrRentalSystem = new LendrRentalSystem(500); // 5% fee
+        collateralRegistry = lendrRentalSystem.i_collateralRegistry();
         vm.stopPrank();
 
         // Deploy and setup ERC721 mock
@@ -49,8 +57,8 @@ contract CollateralRentalTest is Test {
         mockERC1155.mint(lender, TOKEN_ID, 1, '');
 
         // Create a collateral rental agreement for an ERC721 token
-        vm.startPrank(address(lendrRentalSystem));
-        collateralRentalAgreement = new CollateralRentalAgreement(
+        vm.startPrank(lender);
+        lendrRentalSystem.createCollateralRentalAgreement(
             lender,
             address(mockERC721),
             TOKEN_ID,
@@ -60,128 +68,129 @@ contract CollateralRentalTest is Test {
             RentalEnums.NftStandard.ERC721,
             RentalEnums.DealDuration.ONE_DAY
         );
+        rentalId = lendrRentalSystem.s_totalRentals();
         vm.stopPrank();
 
         // Approve the rental contract to manage the lender's NFT
         vm.startPrank(lender);
-        mockERC721.setApprovalForAll(address(collateralRentalAgreement), true);
-        mockERC1155.setApprovalForAll(address(collateralRentalAgreement), true);
+        mockERC721.setApprovalForAll(address(collateralRegistry), true);
+        mockERC1155.setApprovalForAll(address(collateralRegistry), true);
         vm.stopPrank();
     }
 
+    /*//////////////////////////////////////////////////////////////
+                        INTERNAL HELPER FUNCTIONS
+    //////////////////////////////////////////////////////////////*/
+
+    /// @notice Initiates a rental agreement by the renter.
+    function _givenRentalInitiated() internal {
+        uint256 totalPayment = collateralRegistry
+            .getTotalRentalFeeWithCollateral(rentalId);
+        vm.deal(renter, totalPayment);
+
+        vm.startPrank(renter);
+        collateralRegistry.initiateRental{value: totalPayment}(rentalId);
+        vm.stopPrank();
+    }
+
+    /// @notice Deposits the NFT by the lender after the rental is initiated.
+    function _givenNftDeposited() internal {
+        _givenRentalInitiated();
+        vm.startPrank(lender);
+        collateralRegistry.depositNFTByLender(rentalId);
+        vm.stopPrank();
+    }
+
+    /// @notice Releases the NFT to the renter after it has been deposited.
+    function _givenNftReleasedToRenter() internal {
+        _givenNftDeposited();
+        vm.startPrank(renter);
+        collateralRegistry.releaseNFTToRenter(rentalId);
+        vm.stopPrank();
+    }
+}
+
+/// @title HappyPathTest
+/// @notice Tests the primary success scenarios and the "happy path" of the rental lifecycle.
+contract HappyPathTest is CollateralRentalBaseTest {
     function test_initiateRental_successfully() public {
         // Arrange
-        uint256 totalPayment = collateralRentalAgreement
-            .getTotalRentalFeeWithCollateral();
+        uint256 totalPayment = collateralRegistry
+            .getTotalRentalFeeWithCollateral(rentalId);
         vm.deal(renter, totalPayment);
 
         // Act
         vm.startPrank(renter);
-        collateralRentalAgreement.initiateRental{value: totalPayment}();
+        collateralRegistry.initiateRental{value: totalPayment}(rentalId);
         vm.stopPrank();
 
         // Assert
+        (
+            ,,,,,,,,
+            address renterAddress,
+            CollateralRegistry.State rentalState,
+            ,
+            ,
+            ,
+
+        ) = collateralRegistry.s_agreements(rentalId);
         assertEq(
-            uint(collateralRentalAgreement.s_rentalState()),
-            uint(CollateralRentalAgreement.State.READY_TO_RELEASE),
+            uint(rentalState),
+            uint(CollateralRegistry.State.READY_TO_RELEASE),
             'Rental state should be READY_TO_RELEASE'
         );
+        assertEq(renterAddress, renter, 'Renter address should be set');
         assertEq(
-            collateralRentalAgreement.s_renter(),
-            renter,
-            'Renter address should be set'
-        );
-        assertEq(
-            address(collateralRentalAgreement).balance,
+            address(collateralRegistry).balance,
             totalPayment,
             'Contract balance should match total payment'
         );
     }
 
-    function test_initiateRental_reverts_if_payment_is_incorrect() public {
-        // Arrange
-        uint256 incorrectPayment = collateralRentalAgreement
-            .getTotalRentalFeeWithCollateral() - 1;
-        vm.deal(renter, incorrectPayment);
-
-        // Act & Assert
-        vm.startPrank(renter);
-        vm.expectRevert(
-            CollateralRentalAgreement.RentalAgreement__InvalidPayment.selector
-        );
-        collateralRentalAgreement.initiateRental{value: incorrectPayment}();
-        vm.stopPrank();
-    }
-
-    function test_initiateRental_reverts_if_renter_is_lender() public {
-        // Arrange
-        uint256 totalPayment = collateralRentalAgreement
-            .getTotalRentalFeeWithCollateral();
-        vm.deal(lender, totalPayment);
-
-        // Act & Assert
-        vm.startPrank(lender);
-        vm.expectRevert(
-            CollateralRentalAgreement.RentalAgreement__RenterMustNotBeLender.selector
-        );
-        collateralRentalAgreement.initiateRental{value: totalPayment}();
-        vm.stopPrank();
-    }
-
-    function test_initiateRental_reverts_if_already_initiated() public {
-        // Arrange
-        test_initiateRental_successfully(); // First initiation
-        uint256 totalPayment = collateralRentalAgreement
-            .getTotalRentalFeeWithCollateral();
-        vm.deal(renter, totalPayment);
-
-        // Act & Assert
-        vm.startPrank(renter);
-        vm.expectRevert(
-            abi.encodeWithSelector(
-                CollateralRentalAgreement.RentalAgreement__InvalidState.selector,
-                CollateralRentalAgreement.State.LISTED,
-                CollateralRentalAgreement.State.READY_TO_RELEASE
-            )
-        );
-        collateralRentalAgreement.initiateRental{value: totalPayment}();
-        vm.stopPrank();
-    }
-
     function test_depositNFTByLender_successfully() public {
         // Arrange
-        test_initiateRental_successfully(); // Ensure rental is initiated
+        _givenRentalInitiated(); // Ensure rental is initiated
 
         // Act
         vm.startPrank(lender);
-        collateralRentalAgreement.depositNFTByLender();
+        collateralRegistry.depositNFTByLender(rentalId);
         vm.stopPrank();
 
         // Assert
         assertEq(
             mockERC721.ownerOf(TOKEN_ID),
-            address(collateralRentalAgreement),
+            address(collateralRegistry),
             'NFT should be in escrow'
         );
+        (,,,,,,,,,,,,, uint256 renterClaimDeadline) = collateralRegistry
+            .s_agreements(rentalId);
         assertTrue(
-            collateralRentalAgreement.s_renterClaimDeadline() > 0,
+            renterClaimDeadline > 0,
             'Renter claim deadline should be set'
         );
     }
 
     function test_releaseNFTToRenter_successfully() public {
         // Arrange
-        test_depositNFTByLender_successfully(); // Ensure NFT is in escrow
+        _givenNftDeposited(); // Ensure NFT is in escrow
 
         // Act
         vm.startPrank(renter);
-        collateralRentalAgreement.releaseNFTToRenter();
+        collateralRegistry.releaseNFTToRenter(rentalId);
         vm.stopPrank();
 
         // Assert
+        (
+            ,,,,,,,,,
+            CollateralRegistry.State rentalState,
+            uint256 rentalEndTime,
+            ,
+            uint256 returnDeadline,
+
+        ) = collateralRegistry.s_agreements(rentalId);
         assertEq(
-            uint(collateralRentalAgreement.s_rentalState()),
-            uint(CollateralRentalAgreement.State.ACTIVE_RENTAL),
+            uint(rentalState),
+            uint(CollateralRegistry.State.ACTIVE_RENTAL),
             'Rental state should be ACTIVE_RENTAL'
         );
         assertEq(
@@ -189,21 +198,15 @@ contract CollateralRentalTest is Test {
             renter,
             'Renter should own the NFT'
         );
-        assertTrue(
-            collateralRentalAgreement.s_rentalEndTime() > 0,
-            'Rental end time should be set'
-        );
-        assertTrue(
-            collateralRentalAgreement.s_returnDeadline() > 0,
-            'Return deadline should be set'
-        );
+        assertTrue(rentalEndTime > 0, 'Rental end time should be set');
+        assertTrue(returnDeadline > 0, 'Return deadline should be set');
     }
 
     function test_returnNFTToLender_successfully() public {
         // Arrange
-        test_releaseNFTToRenter_successfully(); // Ensure rental is active
+        _givenNftReleasedToRenter(); // Ensure rental is active
         vm.startPrank(renter);
-        mockERC721.setApprovalForAll(address(collateralRentalAgreement), true);
+        mockERC721.setApprovalForAll(address(collateralRegistry), true);
         vm.stopPrank();
 
         uint256 lenderInitialBalance = lender.balance;
@@ -212,13 +215,15 @@ contract CollateralRentalTest is Test {
 
         // Act
         vm.startPrank(renter);
-        collateralRentalAgreement.returnNFTToLender();
+        collateralRegistry.returnNFTToLender(rentalId);
         vm.stopPrank();
 
         // Assert
+        (,,,,,,,,, CollateralRegistry.State rentalState,,,,) = collateralRegistry
+            .s_agreements(rentalId);
         assertEq(
-            uint(collateralRentalAgreement.s_rentalState()),
-            uint(CollateralRentalAgreement.State.COMPLETED),
+            uint(rentalState),
+            uint(CollateralRegistry.State.COMPLETED),
             'Rental state should be COMPLETED'
         );
         assertEq(
@@ -228,7 +233,7 @@ contract CollateralRentalTest is Test {
         );
 
         // Check payouts
-        uint256 totalRentalFee = collateralRentalAgreement.getTotalHourlyFee();
+        uint256 totalRentalFee = collateralRegistry.getTotalHourlyFee(rentalId);
         uint256 platformFee = (totalRentalFee * 500) / 10000;
         uint256 lenderPayout = totalRentalFee - platformFee;
 
@@ -249,32 +254,260 @@ contract CollateralRentalTest is Test {
         );
     }
 
+    function test_erc1155_rental_happy_path() public {
+        // Arrange
+        vm.startPrank(lender);
+        lendrRentalSystem.createCollateralRentalAgreement(
+            lender,
+            address(mockERC1155),
+            TOKEN_ID,
+            HOURLY_RENTAL_FEE,
+            COLLATERAL_AMOUNT,
+            RENTAL_DURATION_IN_HOURS,
+            RentalEnums.NftStandard.ERC1155,
+            RentalEnums.DealDuration.ONE_DAY
+        );
+        uint256 erc1155RentalId = lendrRentalSystem.s_totalRentals();
+        vm.stopPrank();
+
+        vm.startPrank(lender);
+        mockERC1155.setApprovalForAll(address(collateralRegistry), true);
+        vm.stopPrank();
+
+        uint256 totalPayment = collateralRegistry
+            .getTotalRentalFeeWithCollateral(erc1155RentalId);
+        vm.deal(renter, totalPayment);
+
+        // Act 1: Initiate Rental
+        vm.startPrank(renter);
+        collateralRegistry.initiateRental{value: totalPayment}(erc1155RentalId);
+        vm.stopPrank();
+
+        // Act 2: Deposit NFT
+        vm.startPrank(lender);
+        collateralRegistry.depositNFTByLender(erc1155RentalId);
+        vm.stopPrank();
+
+        // Act 3: Release NFT
+        vm.startPrank(renter);
+        collateralRegistry.releaseNFTToRenter(erc1155RentalId);
+        vm.stopPrank();
+
+        // Act 4: Return NFT
+        vm.startPrank(renter);
+        mockERC1155.setApprovalForAll(address(collateralRegistry), true);
+        collateralRegistry.returnNFTToLender(erc1155RentalId);
+        vm.stopPrank();
+
+        // Assert
+        (,,,,,,,,, CollateralRegistry.State rentalState,,,,) = collateralRegistry
+            .s_agreements(erc1155RentalId);
+        assertEq(
+            uint(rentalState),
+            uint(CollateralRegistry.State.COMPLETED),
+            'ERC1155 rental should be COMPLETED'
+        );
+        assertEq(
+            mockERC1155.balanceOf(lender, TOKEN_ID),
+            1, // Lender gets their token back
+            'Lender should have the ERC1155 token back'
+        );
+    }
+}
+
+/// @title FailureModesTest
+/// @notice Tests various failure modes, revert conditions, and invalid inputs.
+contract FailureModesTest is CollateralRentalBaseTest {
+    function test_initiateRental_reverts_if_payment_is_incorrect() public {
+        // Arrange
+        uint256 incorrectPayment = collateralRegistry
+            .getTotalRentalFeeWithCollateral(rentalId) - 1;
+        vm.deal(renter, incorrectPayment);
+
+        // Act & Assert
+        vm.startPrank(renter);
+        vm.expectRevert(
+            CollateralRegistry.CollateralRegistry__InvalidPayment.selector
+        );
+        collateralRegistry.initiateRental{value: incorrectPayment}(rentalId);
+        vm.stopPrank();
+    }
+
+    function test_initiateRental_reverts_if_renter_is_lender() public {
+        // Arrange
+        uint256 totalPayment = collateralRegistry
+            .getTotalRentalFeeWithCollateral(rentalId);
+        vm.deal(lender, totalPayment);
+
+        // Act & Assert
+        vm.startPrank(lender);
+        vm.expectRevert(
+            CollateralRegistry.CollateralRegistry__RenterMustNotBeLender
+                .selector
+        );
+        collateralRegistry.initiateRental{value: totalPayment}(rentalId);
+        vm.stopPrank();
+    }
+
+    function test_initiateRental_reverts_if_already_initiated() public {
+        // Arrange
+        _givenRentalInitiated(); // First initiation
+        uint256 totalPayment = collateralRegistry
+            .getTotalRentalFeeWithCollateral(rentalId);
+        vm.deal(renter, totalPayment);
+
+        // Act & Assert
+        vm.startPrank(renter);
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                CollateralRegistry.CollateralRegistry__InvalidState.selector,
+                CollateralRegistry.State.LISTED,
+                CollateralRegistry.State.READY_TO_RELEASE
+            )
+        );
+        collateralRegistry.initiateRental{value: totalPayment}(rentalId);
+        vm.stopPrank();
+    }
+
+    function test_releaseNFTToRenter_reverts_if_not_in_escrow() public {
+        // Arrange
+        _givenRentalInitiated(); // Rental initiated, but NFT not deposited
+
+        // Act & Assert
+        vm.startPrank(renter);
+        vm.expectRevert(
+            CollateralRegistry.CollateralRegistry__NftNotInEscrow.selector
+        );
+        collateralRegistry.releaseNFTToRenter(rentalId);
+        vm.stopPrank();
+    }
+
+    function test_constructor_reverts_if_duration_is_zero() public {
+        vm.startPrank(lender);
+        vm.expectRevert(
+            LendrRentalSystem
+                .LendrRentalSystem__RentalDurationMustBeGreaterThanZero.selector
+        );
+        lendrRentalSystem.createCollateralRentalAgreement(
+            lender,
+            address(mockERC721),
+            TOKEN_ID,
+            HOURLY_RENTAL_FEE,
+            COLLATERAL_AMOUNT,
+            0, // Zero duration
+            RentalEnums.NftStandard.ERC721,
+            RentalEnums.DealDuration.ONE_DAY
+        );
+        vm.stopPrank();
+    }
+
+    function test_constructor_reverts_if_collateral_is_zero() public {
+        vm.startPrank(lender);
+        vm.expectRevert(
+            LendrRentalSystem
+                .LendrRentalSystem__CollateralMustBeGreaterThanZero.selector
+        );
+        lendrRentalSystem.createCollateralRentalAgreement(
+            lender,
+            address(mockERC721),
+            TOKEN_ID,
+            HOURLY_RENTAL_FEE,
+            0, // Zero collateral
+            RENTAL_DURATION_IN_HOURS,
+            RentalEnums.NftStandard.ERC721,
+            RentalEnums.DealDuration.ONE_DAY
+        );
+        vm.stopPrank();
+    }
+
+    function test_constructor_reverts_if_nftStandard_is_ERC4907() public {
+        vm.startPrank(lender);
+        vm.expectRevert(
+            CollateralRegistry
+                .CollateralRegistry__CollateralRentalDoesNotSupportNFTType
+                .selector
+        );
+        lendrRentalSystem.createCollateralRentalAgreement(
+            lender,
+            address(mockERC721),
+            TOKEN_ID,
+            HOURLY_RENTAL_FEE,
+            COLLATERAL_AMOUNT,
+            RENTAL_DURATION_IN_HOURS,
+            RentalEnums.NftStandard.ERC4907, // Unsupported type
+            RentalEnums.DealDuration.ONE_DAY
+        );
+        vm.stopPrank();
+    }
+
+    function test_constructor_reverts_if_dealDuration_is_invalid() public {
+        vm.startPrank(lender);
+        vm.expectRevert(
+            LendrRentalSystem.LendrRentalSystem__InvalidDepositDeadline.selector
+        );
+        lendrRentalSystem.createCollateralRentalAgreement(
+            lender,
+            address(mockERC721),
+            TOKEN_ID,
+            HOURLY_RENTAL_FEE,
+            COLLATERAL_AMOUNT,
+            RENTAL_DURATION_IN_HOURS,
+            RentalEnums.NftStandard.ERC721,
+            RentalEnums.DealDuration._MAX // Invalid duration
+        );
+        vm.stopPrank();
+    }
+
+    function test_claimCollateralWhenDefaulted_reverts_if_invalid_state()
+        public
+    {
+        // Arrange - rental is in LISTED state, not ACTIVE or DEFAULTED
+        // Act & Assert
+        vm.startPrank(lender);
+        vm.expectRevert(
+            CollateralRegistry.CollateralRegistry__InvalidStateForDefault
+                .selector
+        );
+        collateralRegistry.claimCollateralWhenDefaulted(rentalId);
+        vm.stopPrank();
+    }
+}
+
+/// @title TimeoutsAndDefaultsTest
+/// @notice Tests scenarios related to deadlines, timeouts, and rental defaults.
+contract TimeoutsAndDefaultsTest is CollateralRentalBaseTest {
     function test_claimCollateralWhenDefaulted_successfully() public {
         // Arrange
-        test_releaseNFTToRenter_successfully(); // Ensure rental is active
+        _givenNftReleasedToRenter(); // Ensure rental is active
 
         uint256 lenderInitialBalance = lender.balance;
         uint256 factoryInitialBalance = address(lendrRentalSystem).balance;
 
         // Warp time to after the return deadline
-        vm.warp(collateralRentalAgreement.s_returnDeadline() + 1);
+        (,,,,,,,,,,,, uint256 returnDeadline,) = collateralRegistry
+            .s_agreements(rentalId);
+        vm.warp(returnDeadline + 1);
 
         // Act
         vm.startPrank(lender);
-        collateralRentalAgreement.claimCollateralWhenDefaulted();
+        collateralRegistry.claimCollateralWhenDefaulted(rentalId);
         vm.stopPrank();
 
         // Assert
+        (,,,,,,,,, CollateralRegistry.State rentalState,,,,) = collateralRegistry
+            .s_agreements(rentalId);
         assertEq(
-            uint(collateralRentalAgreement.s_rentalState()),
-            uint(CollateralRentalAgreement.State.DEFAULTED),
+            uint(rentalState),
+            uint(CollateralRegistry.State.DEFAULTED),
             'Rental state should be DEFAULTED'
         );
 
         // Check payouts
-        uint256 totalRentalFee = collateralRentalAgreement.getTotalHourlyFee();
+        uint256 totalRentalFee = collateralRegistry.getTotalHourlyFee(rentalId);
         uint256 platformFee = (totalRentalFee * 500) / 10000;
-        uint256 lenderPayout = totalRentalFee - platformFee + COLLATERAL_AMOUNT;
+        uint256 lenderPayout = totalRentalFee -
+            platformFee +
+            COLLATERAL_AMOUNT;
 
         assertEq(
             lender.balance,
@@ -290,24 +523,31 @@ contract CollateralRentalTest is Test {
 
     function test_reclaimFundsOnLenderTimeout_successfully() public {
         // Arrange
-        test_initiateRental_successfully(); // Ensure rental is initiated
+        _givenRentalInitiated(); // Ensure rental is initiated
 
         uint256 renterInitialBalance = renter.balance;
-        uint256 totalPayment = collateralRentalAgreement
-            .getTotalRentalFeeWithCollateral();
+        uint256 totalPayment = collateralRegistry
+            .getTotalRentalFeeWithCollateral(rentalId);
 
         // Warp time to after the lender deposit deadline
-        vm.warp(collateralRentalAgreement.s_lenderDepositDeadline() + 1);
+        (
+            ,,,,,,,,,,,
+            uint256 lenderDepositDeadline,,
+
+        ) = collateralRegistry.s_agreements(rentalId);
+        vm.warp(lenderDepositDeadline + 1);
 
         // Act
         vm.startPrank(renter);
-        collateralRentalAgreement.reclaimFundsOnLenderTimeout();
+        collateralRegistry.reclaimFundsOnLenderTimeout(rentalId);
         vm.stopPrank();
 
         // Assert
+        (,,,,,,,,, CollateralRegistry.State rentalState,,,,) = collateralRegistry
+            .s_agreements(rentalId);
         assertEq(
-            uint(collateralRentalAgreement.s_rentalState()),
-            uint(CollateralRentalAgreement.State.CANCELLED),
+            uint(rentalState),
+            uint(CollateralRegistry.State.CANCELLED),
             'Rental state should be CANCELLED'
         );
         assertEq(
@@ -319,24 +559,28 @@ contract CollateralRentalTest is Test {
 
     function test_cancelRentalAfterClaimTimeout_successfully() public {
         // Arrange
-        test_depositNFTByLender_successfully(); // Ensure NFT is in escrow
+        _givenNftDeposited(); // Ensure NFT is in escrow
 
         uint256 renterInitialBalance = renter.balance;
-        uint256 totalPayment = collateralRentalAgreement
-            .getTotalRentalFeeWithCollateral();
+        uint256 totalPayment = collateralRegistry
+            .getTotalRentalFeeWithCollateral(rentalId);
 
         // Warp time to after the renter claim deadline
-        vm.warp(collateralRentalAgreement.s_renterClaimDeadline() + 1);
+        (,,,,,,,,,,,,, uint256 renterClaimDeadline) = collateralRegistry
+            .s_agreements(rentalId);
+        vm.warp(renterClaimDeadline + 1);
 
         // Act
         vm.startPrank(renter);
-        collateralRentalAgreement.cancelRentalAfterClaimTimeout();
+        collateralRegistry.cancelRentalAfterClaimTimeout(rentalId);
         vm.stopPrank();
 
         // Assert
+        (,,,,,,,,, CollateralRegistry.State rentalState,,,,) = collateralRegistry
+            .s_agreements(rentalId);
         assertEq(
-            uint(collateralRentalAgreement.s_rentalState()),
-            uint(CollateralRentalAgreement.State.CANCELLED),
+            uint(rentalState),
+            uint(CollateralRegistry.State.CANCELLED),
             'Rental state should be CANCELLED'
         );
         assertEq(
@@ -355,44 +599,35 @@ contract CollateralRentalTest is Test {
         public
     {
         // Arrange
-        test_depositNFTByLender_successfully();
+        _givenNftDeposited();
 
         // Act & Assert
         vm.startPrank(lender);
         vm.expectRevert(
-            CollateralRentalAgreement.RentalAgreement__RenterStillHasTime.selector
+            CollateralRegistry.CollateralRegistry__RenterStillHasTime.selector
         );
-        collateralRentalAgreement.claimNFTWhenRenterUnableToClaim();
-        vm.stopPrank();
-    }
-
-    function test_releaseNFTToRenter_reverts_if_not_in_escrow() public {
-        // Arrange
-        test_initiateRental_successfully(); // Rental initiated, but NFT not deposited
-
-        // Act & Assert
-        vm.startPrank(renter);
-        vm.expectRevert(
-            CollateralRentalAgreement.RentalAgreement__NftNotInEscrow.selector
-        );
-        collateralRentalAgreement.releaseNFTToRenter();
+        collateralRegistry.claimNFTWhenRenterUnableToClaim(rentalId);
         vm.stopPrank();
     }
 
     function test_lender_can_reclaim_nft_if_renter_times_out() public {
         // Arrange
-        test_depositNFTByLender_successfully();
-        vm.warp(collateralRentalAgreement.s_renterClaimDeadline() + 1);
+        _givenNftDeposited();
+        (,,,,,,,,,,,,, uint256 renterClaimDeadline) = collateralRegistry
+            .s_agreements(rentalId);
+        vm.warp(renterClaimDeadline + 1);
 
         // Act
         vm.startPrank(lender);
-        collateralRentalAgreement.claimNFTWhenRenterUnableToClaim();
+        collateralRegistry.claimNFTWhenRenterUnableToClaim(rentalId);
         vm.stopPrank();
 
         // Assert
+        (,,,,,,,,, CollateralRegistry.State rentalState,,,,) = collateralRegistry
+            .s_agreements(rentalId);
         assertEq(
-            uint(collateralRentalAgreement.s_rentalState()),
-            uint(CollateralRentalAgreement.State.CANCELLED),
+            uint(rentalState),
+            uint(CollateralRegistry.State.CANCELLED),
             'Rental should be CANCELLED'
         );
         assertEq(
@@ -402,11 +637,105 @@ contract CollateralRentalTest is Test {
         );
     }
 
+    function test_depositNFTByLender_reverts_if_deadline_passed() public {
+        // Arrange
+        _givenRentalInitiated();
+        (,,,,,,,,,,, uint256 lenderDepositDeadline,,) = collateralRegistry
+            .s_agreements(rentalId);
+        vm.warp(lenderDepositDeadline + 1);
+
+        // Act & Assert
+        vm.startPrank(lender);
+        vm.expectRevert(
+            CollateralRegistry.CollateralRegistry__DeadlinePassed.selector
+        );
+        collateralRegistry.depositNFTByLender(rentalId);
+        vm.stopPrank();
+    }
+
+    function test_releaseNFTToRenter_reverts_if_deadline_passed() public {
+        // Arrange
+        _givenNftDeposited();
+        (,,,,,,,,,,,,, uint256 renterClaimDeadline) = collateralRegistry
+            .s_agreements(rentalId);
+        vm.warp(renterClaimDeadline + 1);
+
+        // Act & Assert
+        vm.startPrank(renter);
+        vm.expectRevert(
+            CollateralRegistry.CollateralRegistry__DeadlinePassed.selector
+        );
+        collateralRegistry.releaseNFTToRenter(rentalId);
+        vm.stopPrank();
+    }
+
+    function test_returnNFTToLender_reverts_if_deadline_missed() public {
+        // Arrange
+        _givenNftReleasedToRenter();
+        (,,,,,,,,,,,, uint256 returnDeadline,) = collateralRegistry
+            .s_agreements(rentalId);
+        vm.warp(returnDeadline + 1);
+
+        // Act & Assert
+        vm.startPrank(renter);
+        vm.expectRevert(
+            CollateralRegistry.CollateralRegistry__ReturnDeadlineMissed.selector
+        );
+        collateralRegistry.returnNFTToLender(rentalId);
+        vm.stopPrank();
+    }
+
+    function test_claimCollateralWhenDefaulted_reverts_if_not_ended() public {
+        // Arrange
+        _givenNftReleasedToRenter();
+
+        // Act & Assert
+        vm.startPrank(lender);
+        vm.expectRevert(
+            CollateralRegistry.CollateralRegistry__RentalNotEnded.selector
+        );
+        collateralRegistry.claimCollateralWhenDefaulted(rentalId);
+        vm.stopPrank();
+    }
+
+    function test_reclaimFundsOnLenderTimeout_reverts_if_lender_has_time()
+        public
+    {
+        // Arrange
+        _givenRentalInitiated();
+
+        // Act & Assert
+        vm.startPrank(renter);
+        vm.expectRevert(
+            CollateralRegistry.CollateralRegistry__LenderStillHasTime.selector
+        );
+        collateralRegistry.reclaimFundsOnLenderTimeout(rentalId);
+        vm.stopPrank();
+    }
+
+    function test_cancelRentalAfterClaimTimeout_reverts_if_renter_has_time()
+        public
+    {
+        // Arrange
+        _givenNftDeposited();
+
+        // Act & Assert
+        vm.startPrank(renter);
+        vm.expectRevert(
+            CollateralRegistry.CollateralRegistry__RenterStillHasTime.selector
+        );
+        collateralRegistry.cancelRentalAfterClaimTimeout(rentalId);
+        vm.stopPrank();
+    }
+}
+
+/// @title SecurityTest
+/// @notice Contains security-related tests, such as reentrancy and access control.
+contract SecurityTest is CollateralRentalBaseTest {
     function test_reentrancy_attack_on_returnNFTToLender() public {
         // Arrange
-        CollateralRentalAgreement newRental;
-        vm.startPrank(address(lendrRentalSystem));
-        newRental = new CollateralRentalAgreement(
+        vm.startPrank(lender);
+        lendrRentalSystem.createCollateralRentalAgreement(
             lender,
             address(mockERC721),
             TOKEN_ID + 1, // Use a new token ID
@@ -416,30 +745,33 @@ contract CollateralRentalTest is Test {
             RentalEnums.NftStandard.ERC721,
             RentalEnums.DealDuration.ONE_DAY
         );
+        uint256 newRentalId = lendrRentalSystem.s_totalRentals();
         vm.stopPrank();
 
-        Attacker attacker = new Attacker(address(newRental));
+        Attacker attacker = new Attacker(address(collateralRegistry));
         address attackerAddress = address(attacker);
+        attacker.setRentalId(newRentalId);
 
         mockERC721.mint(lender, TOKEN_ID + 1);
         vm.startPrank(lender);
-        mockERC721.setApprovalForAll(address(newRental), true);
+        mockERC721.setApprovalForAll(address(collateralRegistry), true);
         vm.stopPrank();
 
-        uint256 totalPayment = newRental.getTotalRentalFeeWithCollateral();
+        uint256 totalPayment = collateralRegistry
+            .getTotalRentalFeeWithCollateral(newRentalId);
         vm.deal(attackerAddress, totalPayment);
 
         vm.startPrank(attackerAddress);
-        newRental.initiateRental{value: totalPayment}();
+        collateralRegistry.initiateRental{value: totalPayment}(newRentalId);
         vm.stopPrank();
 
         vm.startPrank(lender);
-        newRental.depositNFTByLender();
+        collateralRegistry.depositNFTByLender(newRentalId);
         vm.stopPrank();
 
         vm.startPrank(attackerAddress);
-        newRental.releaseNFTToRenter();
-        mockERC721.setApprovalForAll(address(newRental), true);
+        collateralRegistry.releaseNFTToRenter(newRentalId);
+        mockERC721.setApprovalForAll(address(collateralRegistry), true);
         vm.stopPrank();
 
         // Act & Assert
@@ -451,172 +783,59 @@ contract CollateralRentalTest is Test {
 
     function test_onlyLender_modifier_prevents_third_party_deposit() public {
         // Arrange
-        test_initiateRental_successfully();
+        _givenRentalInitiated();
 
         // Act & Assert
         vm.startPrank(thirdParty);
         vm.expectRevert(
             abi.encodeWithSelector(
-                CollateralRentalAgreement.RentalAgreement__InvalidUser.selector,
+                CollateralRegistry.CollateralRegistry__InvalidUser.selector,
                 lender,
                 thirdParty
             )
         );
-        collateralRentalAgreement.depositNFTByLender();
+        collateralRegistry.depositNFTByLender(rentalId);
         vm.stopPrank();
     }
 
     function test_onlyRenter_modifier_prevents_third_party_return() public {
         // Arrange
-        test_releaseNFTToRenter_successfully();
+        _givenNftReleasedToRenter();
 
         // Act & Assert
         vm.startPrank(thirdParty);
         vm.expectRevert(
             abi.encodeWithSelector(
-                CollateralRentalAgreement.RentalAgreement__InvalidUser.selector,
+                CollateralRegistry.CollateralRegistry__InvalidUser.selector,
                 renter,
                 thirdParty
             )
         );
-        collateralRentalAgreement.returnNFTToLender();
+        collateralRegistry.returnNFTToLender(rentalId);
         vm.stopPrank();
     }
+}
 
-    function test_erc1155_rental_happy_path() public {
-        // Arrange
-        CollateralRentalAgreement erc1155Rental;
-        vm.startPrank(address(lendrRentalSystem));
-        erc1155Rental = new CollateralRentalAgreement(
-            lender,
-            address(mockERC1155),
-            TOKEN_ID,
-            HOURLY_RENTAL_FEE,
-            COLLATERAL_AMOUNT,
-            RENTAL_DURATION_IN_HOURS,
-            RentalEnums.NftStandard.ERC1155,
-            RentalEnums.DealDuration.ONE_DAY
-        );
-        vm.stopPrank();
-
-        vm.startPrank(lender);
-        mockERC1155.setApprovalForAll(address(erc1155Rental), true);
-        vm.stopPrank();
-
-        uint256 totalPayment = erc1155Rental.getTotalRentalFeeWithCollateral();
-        vm.deal(renter, totalPayment);
-
-        // Act 1: Initiate Rental
-        vm.startPrank(renter);
-        erc1155Rental.initiateRental{value: totalPayment}();
-        vm.stopPrank();
-
-        // Act 2: Deposit NFT
-        vm.startPrank(lender);
-        erc1155Rental.depositNFTByLender();
-        vm.stopPrank();
-
-        // Act 3: Release NFT
-        vm.startPrank(renter);
-        erc1155Rental.releaseNFTToRenter();
-        vm.stopPrank();
-
-        // Act 4: Return NFT
-        vm.startPrank(renter);
-        mockERC1155.setApprovalForAll(address(erc1155Rental), true);
-        erc1155Rental.returnNFTToLender();
-        vm.stopPrank();
-
-        // Assert
-        assertEq(
-            uint(erc1155Rental.s_rentalState()),
-            uint(CollateralRentalAgreement.State.COMPLETED),
-            'ERC1155 rental should be COMPLETED'
-        );
-        assertEq(
-            mockERC1155.balanceOf(lender, TOKEN_ID),
-            1,
-            'Lender should have the ERC1155 token back'
-        );
-    }
-
-    function test_depositNFTByLender_reverts_if_deadline_passed() public {
-        // Arrange
-        test_initiateRental_successfully();
-        vm.warp(collateralRentalAgreement.s_lenderDepositDeadline() + 1);
-
-        // Act & Assert
-        vm.startPrank(lender);
-        vm.expectRevert(
-            CollateralRentalAgreement.RentalAgreement__DeadlinePassed.selector
-        );
-        collateralRentalAgreement.depositNFTByLender();
-        vm.stopPrank();
-    }
-
-    function test_releaseNFTToRenter_reverts_if_deadline_passed() public {
-        // Arrange
-        test_depositNFTByLender_successfully();
-        vm.warp(collateralRentalAgreement.s_renterClaimDeadline() + 1);
-
-        // Act & Assert
-        vm.startPrank(renter);
-        vm.expectRevert(
-            CollateralRentalAgreement.RentalAgreement__DeadlinePassed.selector
-        );
-        collateralRentalAgreement.releaseNFTToRenter();
-        vm.stopPrank();
-    }
-
-    function test_returnNFTToLender_reverts_if_deadline_missed() public {
-        // Arrange
-        test_releaseNFTToRenter_successfully();
-        vm.warp(collateralRentalAgreement.s_returnDeadline() + 1);
-
-        // Act & Assert
-        vm.startPrank(renter);
-        vm.expectRevert(
-            CollateralRentalAgreement.RentalAgreement__ReturnDeadlineMissed.selector
-        );
-        collateralRentalAgreement.returnNFTToLender();
-        vm.stopPrank();
-    }
-
+/// @title EdgeCasesTest
+/// @notice Covers various edge cases, such as fee calculations with low values.
+contract EdgeCasesTest is CollateralRentalBaseTest {
     /*//////////////////////////////////////////////////////////////
                             EDGE CASE TESTS
     //////////////////////////////////////////////////////////////*/
 
     function test_platform_fee_with_low_rental_rates() public {
-        // This test checks the platform fee calculation for small rental amounts
-        // to ensure the basis point calculation is correct and handles rounding as expected.
-
-        // Scenario 1: Hourly rate of 1 wei.
-        // Total rental fee = 1 wei/hr * 24 hrs = 24 wei
-        // Platform fee = (24 * 500) / 10000 = 1.2 wei, which rounds down to 1 wei.
         _executeFeeTest(1, 2);
-
-        // Scenario 2: Hourly rate of 8 wei.
-        // Total rental fee = 8 wei/hr * 24 hrs = 192 wei
-        // Platform fee = (192 * 500) / 10000 = 9.6 wei, which rounds down to 9 wei.
         _executeFeeTest(8, 3);
-
-        // Scenario 3: Hourly rate where platform fee would round down to 0.
-        // Total rental fee = 0.4 wei/hr * 24 hrs = 9.6 wei -> let's use 1 wei/hr * 1hr to make it simple.
-        // Let's use a duration of 1 hour for a simple case.
-        // Total rental fee = 1 wei/hr * 1 hr = 1 wei
-        // Platform fee = (1 * 500) / 10000 = 0.05 wei -> 0 wei
         _executeFeeTestWithDuration(1, 1, 4);
-
-        // Scenario 4: A rate just high enough to generate a 1 wei fee.
-        // To get a 1 wei fee, (total fee * 500) / 10000 >= 1
-        // total fee * 500 >= 10000 -> total fee >= 20
-        // With a 1-hour duration, an hourly rate of 20 wei should result in a 1 wei fee.
-        // Platform fee = (20 * 500) / 10000 = 1 wei.
         _executeFeeTestWithDuration(20, 1, 5);
     }
 
     function _executeFeeTest(uint256 hourlyFee, uint256 tokenId) internal {
-        _executeFeeTestWithDuration(hourlyFee, RENTAL_DURATION_IN_HOURS, tokenId);
+        _executeFeeTestWithDuration(
+            hourlyFee,
+            RENTAL_DURATION_IN_HOURS,
+            tokenId
+        );
     }
 
     function _executeFeeTestWithDuration(
@@ -626,9 +845,9 @@ contract CollateralRentalTest is Test {
     ) internal {
         // Arrange
         mockERC721.mint(lender, tokenId);
-        CollateralRentalAgreement newRental;
-        vm.startPrank(address(lendrRentalSystem));
-        newRental = new CollateralRentalAgreement(
+
+        vm.startPrank(lender);
+        lendrRentalSystem.createCollateralRentalAgreement(
             lender,
             address(mockERC721),
             tokenId,
@@ -638,29 +857,31 @@ contract CollateralRentalTest is Test {
             RentalEnums.NftStandard.ERC721,
             RentalEnums.DealDuration.ONE_DAY
         );
+        uint256 newRentalId = lendrRentalSystem.s_totalRentals();
         vm.stopPrank();
 
         vm.startPrank(lender);
-        mockERC721.setApprovalForAll(address(newRental), true);
+        mockERC721.setApprovalForAll(address(collateralRegistry), true);
         vm.stopPrank();
 
-        uint256 totalPayment = newRental.getTotalRentalFeeWithCollateral();
+        uint256 totalPayment = collateralRegistry
+            .getTotalRentalFeeWithCollateral(newRentalId);
         vm.deal(renter, totalPayment);
 
         vm.startPrank(renter);
-        newRental.initiateRental{value: totalPayment}();
+        collateralRegistry.initiateRental{value: totalPayment}(newRentalId);
         vm.stopPrank();
 
         vm.startPrank(lender);
-        newRental.depositNFTByLender();
+        collateralRegistry.depositNFTByLender(newRentalId);
         vm.stopPrank();
 
         vm.startPrank(renter);
-        newRental.releaseNFTToRenter();
+        collateralRegistry.releaseNFTToRenter(newRentalId);
         vm.stopPrank();
 
         vm.startPrank(renter);
-        mockERC721.setApprovalForAll(address(newRental), true);
+        mockERC721.setApprovalForAll(address(collateralRegistry), true);
         vm.stopPrank();
 
         uint256 lenderInitialBalance = lender.balance;
@@ -668,156 +889,27 @@ contract CollateralRentalTest is Test {
 
         // Act
         vm.startPrank(renter);
-        newRental.returnNFTToLender();
+        collateralRegistry.returnNFTToLender(newRentalId);
         vm.stopPrank();
 
         // Assert
-        uint256 totalRentalFee = newRental.getTotalHourlyFee();
+        uint256 totalRentalFee = collateralRegistry.getTotalHourlyFee(
+            newRentalId
+        );
         uint256 platformFeeBasisPoints = lendrRentalSystem.s_feeBps();
-        uint256 expectedPlatformFee = (totalRentalFee * platformFeeBasisPoints) / 10000;
+        uint256 expectedPlatformFee = (totalRentalFee *
+            platformFeeBasisPoints) / 10000;
         uint256 expectedLenderPayout = totalRentalFee - expectedPlatformFee;
 
         assertEq(
             lender.balance,
             lenderInitialBalance + expectedLenderPayout,
-            "Lender payout is incorrect"
+            'Lender payout is incorrect'
         );
         assertEq(
             address(lendrRentalSystem).balance,
             factoryInitialBalance + expectedPlatformFee,
-            "Platform fee is incorrect"
+            'Platform fee is incorrect'
         );
-    }
-
-    function test_constructor_reverts_if_duration_is_zero() public {
-        vm.startPrank(address(lendrRentalSystem));
-        vm.expectRevert(
-            CollateralRentalAgreement.RentalAgreement__DurationCannotBeZero.selector
-        );
-        new CollateralRentalAgreement(
-            lender,
-            address(mockERC721),
-            TOKEN_ID,
-            HOURLY_RENTAL_FEE,
-            COLLATERAL_AMOUNT,
-            0, // Zero duration
-            RentalEnums.NftStandard.ERC721,
-            RentalEnums.DealDuration.ONE_DAY
-        );
-        vm.stopPrank();
-    }
-
-    function test_constructor_reverts_if_collateral_is_zero() public {
-        vm.startPrank(address(lendrRentalSystem));
-        vm.expectRevert(
-            CollateralRentalAgreement
-                .RentalAgreement__CollateralCannotBeZeroForCollateralType
-                .selector
-        );
-        new CollateralRentalAgreement(
-            lender,
-            address(mockERC721),
-            TOKEN_ID,
-            HOURLY_RENTAL_FEE,
-            0, // Zero collateral
-            RENTAL_DURATION_IN_HOURS,
-            RentalEnums.NftStandard.ERC721,
-            RentalEnums.DealDuration.ONE_DAY
-        );
-        vm.stopPrank();
-    }
-
-    function test_constructor_reverts_if_nftStandard_is_ERC4907() public {
-        vm.startPrank(address(lendrRentalSystem));
-        vm.expectRevert(
-            CollateralRentalAgreement
-                .RentalAgreement__CollateralRentalDoesNotSupportNFTType
-                .selector
-        );
-        new CollateralRentalAgreement(
-            lender,
-            address(mockERC721),
-            TOKEN_ID,
-            HOURLY_RENTAL_FEE,
-            COLLATERAL_AMOUNT,
-            RENTAL_DURATION_IN_HOURS,
-            RentalEnums.NftStandard.ERC4907, // Unsupported type
-            RentalEnums.DealDuration.ONE_DAY
-        );
-        vm.stopPrank();
-    }
-
-    function test_constructor_reverts_if_dealDuration_is_invalid() public {
-        vm.startPrank(address(lendrRentalSystem));
-        vm.expectRevert(
-            CollateralRentalAgreement.RentalAgreement__InvalidDealDuration.selector
-        );
-        new CollateralRentalAgreement(
-            lender,
-            address(mockERC721),
-            TOKEN_ID,
-            HOURLY_RENTAL_FEE,
-            COLLATERAL_AMOUNT,
-            RENTAL_DURATION_IN_HOURS,
-            RentalEnums.NftStandard.ERC721,
-            RentalEnums.DealDuration._MAX // Invalid duration
-        );
-        vm.stopPrank();
-    }
-
-    function test_claimCollateralWhenDefaulted_reverts_if_not_ended() public {
-        // Arrange
-        test_releaseNFTToRenter_successfully();
-
-        // Act & Assert
-        vm.startPrank(lender);
-        vm.expectRevert(
-            CollateralRentalAgreement.RentalAgreement__RentalNotEnded.selector
-        );
-        collateralRentalAgreement.claimCollateralWhenDefaulted();
-        vm.stopPrank();
-    }
-
-    function test_claimCollateralWhenDefaulted_reverts_if_invalid_state()
-        public
-    {
-        // Arrange - rental is in LISTED state, not ACTIVE or DEFAULTED
-        // Act & Assert
-        vm.startPrank(lender);
-        vm.expectRevert(
-            CollateralRentalAgreement.RentalAgreement__InvalidStateForDefault.selector
-        );
-        collateralRentalAgreement.claimCollateralWhenDefaulted();
-        vm.stopPrank();
-    }
-
-    function test_reclaimFundsOnLenderTimeout_reverts_if_lender_has_time()
-        public
-    {
-        // Arrange
-        test_initiateRental_successfully();
-
-        // Act & Assert
-        vm.startPrank(renter);
-        vm.expectRevert(
-            CollateralRentalAgreement.RentalAgreement__LenderStillHasTime.selector
-        );
-        collateralRentalAgreement.reclaimFundsOnLenderTimeout();
-        vm.stopPrank();
-    }
-
-    function test_cancelRentalAfterClaimTimeout_reverts_if_renter_has_time()
-        public
-    {
-        // Arrange
-        test_depositNFTByLender_successfully();
-
-        // Act & Assert
-        vm.startPrank(renter);
-        vm.expectRevert(
-            CollateralRentalAgreement.RentalAgreement__RenterStillHasTime.selector
-        );
-        collateralRentalAgreement.cancelRentalAfterClaimTimeout();
-        vm.stopPrank();
     }
 }
