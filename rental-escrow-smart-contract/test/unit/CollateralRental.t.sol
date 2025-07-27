@@ -134,7 +134,7 @@ contract HappyPathTest is CollateralRentalBaseTest {
             ,
             ,
             ,
-
+            ,
         ) = collateralRegistry.s_agreements(rentalId);
         assertEq(
             uint(rentalState),
@@ -164,7 +164,7 @@ contract HappyPathTest is CollateralRentalBaseTest {
             address(collateralRegistry),
             'NFT should be in escrow'
         );
-        (,,,,,,,,,,,,, uint256 renterClaimDeadline) = collateralRegistry
+        (,,,,,,,,,,,,, uint256 renterClaimDeadline,) = collateralRegistry
             .s_agreements(rentalId);
         assertTrue(
             renterClaimDeadline > 0,
@@ -188,7 +188,7 @@ contract HappyPathTest is CollateralRentalBaseTest {
             uint256 rentalEndTime,
             ,
             uint256 returnDeadline,
-
+            ,
         ) = collateralRegistry.s_agreements(rentalId);
         assertEq(
             uint(rentalState),
@@ -221,7 +221,7 @@ contract HappyPathTest is CollateralRentalBaseTest {
         vm.stopPrank();
 
         // Assert
-        (,,,,,,,,, CollateralRegistry.State rentalState,,,,) = collateralRegistry
+        (,,,,,,,,, CollateralRegistry.State rentalState,,,,,) = collateralRegistry
             .s_agreements(rentalId);
         assertEq(
             uint(rentalState),
@@ -302,7 +302,7 @@ contract HappyPathTest is CollateralRentalBaseTest {
         vm.stopPrank();
 
         // Assert
-        (,,,,,,,,, CollateralRegistry.State rentalState,,,,) = collateralRegistry
+        (,,,,,,,,, CollateralRegistry.State rentalState,,,,,) = collateralRegistry
             .s_agreements(erc1155RentalId);
         assertEq(
             uint(rentalState),
@@ -486,7 +486,7 @@ contract TimeoutsAndDefaultsTest is CollateralRentalBaseTest {
         uint256 factoryInitialBalance = address(lendrRentalSystem).balance;
 
         // Warp time to after the return deadline
-        (,,,,,,,,,,,, uint256 returnDeadline,) = collateralRegistry
+        (,,,,,,,,,,,, uint256 returnDeadline,,) = collateralRegistry
             .s_agreements(rentalId);
         vm.warp(returnDeadline + 1);
 
@@ -496,7 +496,7 @@ contract TimeoutsAndDefaultsTest is CollateralRentalBaseTest {
         vm.stopPrank();
 
         // Assert
-        (,,,,,,,,, CollateralRegistry.State rentalState,,,,) = collateralRegistry
+        (,,,,,,,,, CollateralRegistry.State rentalState,,,,,) = collateralRegistry
             .s_agreements(rentalId);
         assertEq(
             uint(rentalState),
@@ -534,7 +534,7 @@ contract TimeoutsAndDefaultsTest is CollateralRentalBaseTest {
         // Warp time to after the lender deposit deadline
         (
             ,,,,,,,,,,,
-            uint256 lenderDepositDeadline,,
+            uint256 lenderDepositDeadline,,,
 
         ) = collateralRegistry.s_agreements(rentalId);
         vm.warp(lenderDepositDeadline + 1);
@@ -545,7 +545,7 @@ contract TimeoutsAndDefaultsTest is CollateralRentalBaseTest {
         vm.stopPrank();
 
         // Assert
-        (,,,,,,,,, CollateralRegistry.State rentalState,,,,) = collateralRegistry
+        (,,,,,,,,, CollateralRegistry.State rentalState,,,,,) = collateralRegistry
             .s_agreements(rentalId);
         assertEq(
             uint(rentalState),
@@ -568,7 +568,7 @@ contract TimeoutsAndDefaultsTest is CollateralRentalBaseTest {
             .getTotalRentalFeeWithCollateral(rentalId);
 
         // Warp time to after the renter claim deadline
-        (,,,,,,,,,,,,, uint256 renterClaimDeadline) = collateralRegistry
+        (,,,,,,,,,,,,, uint256 renterClaimDeadline,) = collateralRegistry
             .s_agreements(rentalId);
         vm.warp(renterClaimDeadline + 1);
 
@@ -578,7 +578,7 @@ contract TimeoutsAndDefaultsTest is CollateralRentalBaseTest {
         vm.stopPrank();
 
         // Assert
-        (,,,,,,,,, CollateralRegistry.State rentalState,,,,) = collateralRegistry
+        (,,,,,,,,, CollateralRegistry.State rentalState,,,,,) = collateralRegistry
             .s_agreements(rentalId);
         assertEq(
             uint(rentalState),
@@ -615,7 +615,7 @@ contract TimeoutsAndDefaultsTest is CollateralRentalBaseTest {
     function test_lender_can_reclaim_nft_if_renter_times_out() public {
         // Arrange
         _givenNftDeposited();
-        (,,,,,,,,,,,,, uint256 renterClaimDeadline) = collateralRegistry
+        (,,,,,,,,,,,,, uint256 renterClaimDeadline,) = collateralRegistry
             .s_agreements(rentalId);
         vm.warp(renterClaimDeadline + 1);
 
@@ -625,7 +625,7 @@ contract TimeoutsAndDefaultsTest is CollateralRentalBaseTest {
         vm.stopPrank();
 
         // Assert
-        (,,,,,,,,, CollateralRegistry.State rentalState,,,,) = collateralRegistry
+        (,,,,,,,,, CollateralRegistry.State rentalState,,,,,) = collateralRegistry
             .s_agreements(rentalId);
         assertEq(
             uint(rentalState),
@@ -642,7 +642,7 @@ contract TimeoutsAndDefaultsTest is CollateralRentalBaseTest {
     function test_depositNFTByLender_reverts_if_deadline_passed() public {
         // Arrange
         _givenRentalInitiated();
-        (,,,,,,,,,,, uint256 lenderDepositDeadline,,) = collateralRegistry
+        (,,,,,,,,,,, uint256 lenderDepositDeadline,,,) = collateralRegistry
             .s_agreements(rentalId);
         vm.warp(lenderDepositDeadline + 1);
 
@@ -658,7 +658,7 @@ contract TimeoutsAndDefaultsTest is CollateralRentalBaseTest {
     function test_releaseNFTToRenter_reverts_if_deadline_passed() public {
         // Arrange
         _givenNftDeposited();
-        (,,,,,,,,,,,,, uint256 renterClaimDeadline) = collateralRegistry
+        (,,,,,,,,,,,,, uint256 renterClaimDeadline,) = collateralRegistry
             .s_agreements(rentalId);
         vm.warp(renterClaimDeadline + 1);
 
@@ -674,7 +674,7 @@ contract TimeoutsAndDefaultsTest is CollateralRentalBaseTest {
     function test_returnNFTToLender_reverts_if_deadline_missed() public {
         // Arrange
         _givenNftReleasedToRenter();
-        (,,,,,,,,,,,, uint256 returnDeadline,) = collateralRegistry
+        (,,,,,,,,,,,, uint256 returnDeadline,,) = collateralRegistry
             .s_agreements(rentalId);
         vm.warp(returnDeadline + 1);
 
