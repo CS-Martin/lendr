@@ -28,10 +28,11 @@ contract DelegationRegistryUnitTest is Test {
         owner = makeAddr('owner');
         user = makeAddr('user');
 
-        vm.prank(factory);
+        vm.prank(owner);
         delegationRegistry = new DelegationRegistry();
-        delegationRegistry.setFactory(factory);
 
+        vm.prank(owner);
+        delegationRegistry.addAuthorized(factory);
         vm.prank(owner);
         delegationRegistry.addAuthorized(authorizedContract);
 

@@ -100,13 +100,13 @@ contract CollateralRegistry is ERC721Holder, ERC1155Holder, ReentrancyGuard {
         uint256 returnDeadline;
         uint256 renterClaimDeadline;
         uint256 platformFeeBps;
+        address factoryAddress;
     }
 
     /*//////////////////////////////////////////////////////////////
                             STATE VARIABLES
     //////////////////////////////////////////////////////////////*/
     address public i_owner;
-    LendrRentalSystem public i_factory;
     mapping(uint256 => CollateralAgreement) public s_agreements;
     mapping(address => bool) public s_isAuthorized;
 
@@ -116,6 +116,13 @@ contract CollateralRegistry is ERC721Holder, ERC1155Holder, ReentrancyGuard {
     modifier onlyOwner() {
         if (msg.sender != i_owner) {
             revert CollateralRegistry__NotOwner();
+        }
+        _;
+    }
+
+    modifier onlyAuthorized() {
+        if (!s_isAuthorized[msg.sender]) {
+            revert CollateralRegistry__NotOwner(); 
         }
         _;
     }
@@ -179,11 +186,7 @@ contract CollateralRegistry is ERC721Holder, ERC1155Holder, ReentrancyGuard {
      * @notice Sets the factory contract address. Can only be called once by the owner.
      * @param _factoryAddress The address of the LendrRentalSystem factory contract.
      */
-    function setFactory(address _factoryAddress) external onlyOwner {
-        if (address(i_factory) != address(0)) {
-            revert CollateralRegistry__FactoryAlreadySet();
-        }
-        i_factory = LendrRentalSystem(payable(_factoryAddress));
+    function addAuthorized(address _factoryAddress) external onlyOwner {
         s_isAuthorized[_factoryAddress] = true;
         emit AuthorizationSet(_factoryAddress);
     }
@@ -201,7 +204,7 @@ contract CollateralRegistry is ERC721Holder, ERC1155Holder, ReentrancyGuard {
         uint256 _rentalDurationInHours,
         RentalEnums.NftStandard _nftStandard,
         RentalEnums.DealDuration _dealDuration
-    ) external onlyOwner onlyAuthorized {
+    ) external onlyAuthorized {
         if (s_agreements[_rentalId].lender != address(0)) {
             revert CollateralRegistry__AgreementAlreadyExists();
         }
@@ -227,7 +230,8 @@ contract CollateralRegistry is ERC721Holder, ERC1155Holder, ReentrancyGuard {
             lenderDepositDeadline: 0,
             returnDeadline: 0,
             renterClaimDeadline: 0,
-            platformFeeBps: LendrRentalSystem(payable(i_factory)).s_feeBps()
+            platformFeeBps: LendrRentalSystem(payable(msg.sender)).s_feeBps(),
+            factoryAddress: msg.sender
         });
     }
 
@@ -638,7 +642,7 @@ contract CollateralRegistry is ERC721Holder, ERC1155Holder, ReentrancyGuard {
             if (!success) revert CollateralRegistry__PaymentFailed();
         }
         if (platformFee > 0) {
-            (bool success, ) = payable(address(i_factory)).call{
+            (bool success, ) = payable(agreement.factoryAddress).call{
                 value: platformFee
             }('');
             if (!success) revert CollateralRegistry__PaymentFailed();
@@ -647,7 +651,7 @@ contract CollateralRegistry is ERC721Holder, ERC1155Holder, ReentrancyGuard {
         emit PayoutsDistributed(
             _rentalId,
             agreement.lender,
-            address(i_factory),
+            agreement.factoryAddress,
             lenderPayout,
             platformFee
         );

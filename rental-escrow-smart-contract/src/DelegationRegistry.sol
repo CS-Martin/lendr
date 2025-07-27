@@ -138,6 +138,7 @@ contract DelegationRegistry is
         uint256 rentalEndTime;
         uint256 lenderDelegationDeadline;
         uint256 platformFeeBps;
+        address factoryAddress;
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -146,7 +147,6 @@ contract DelegationRegistry is
     mapping(address => mapping(uint256 => Delegation)) private _delegations;
     mapping(address => mapping(uint256 => address)) public originalOwnerOf;
     address public i_owner;
-    address public i_factory;
     mapping(address => bool) public isAuthorized;
     mapping(address => RentalEnums.NftStandard) public nftStandard;
     mapping(uint256 => RentalAgreement) public rentalAgreements;
@@ -227,12 +227,7 @@ contract DelegationRegistry is
      * @notice Sets the factory contract address. Can only be called once by the owner.
      * @param _factoryAddress The address of the LendrRentalSystem factory contract.
      */
-    function setFactory(address _factoryAddress) external onlyOwner {
-        if (address(i_factory) != address(0)) {
-            revert DelegationRegistry__FactoryAlreadySet();
-        }
-        
-        i_factory = _factoryAddress;
+    function addAuthorized(address _factoryAddress) external onlyOwner {
         isAuthorized[_factoryAddress] = true;
         emit AuthorizationSet(_factoryAddress);
     }
@@ -269,7 +264,8 @@ contract DelegationRegistry is
         agreement.nftStandard = _nftStandard;
         agreement.dealDuration = _dealDuration;
         agreement.rentalState = State.LISTED;
-        agreement.platformFeeBps = LendrRentalSystem(payable(i_factory)).s_feeBps();
+        agreement.platformFeeBps = LendrRentalSystem(payable(msg.sender)).s_feeBps();
+        agreement.factoryAddress = msg.sender;
     }
 
     /////////////// --- RENTER-FACING FUNCTIONS --- ////////////////
@@ -527,7 +523,7 @@ contract DelegationRegistry is
         emit PayoutsDistributed(
             rentalId,
             agreement.lender,
-            i_factory,
+            agreement.factoryAddress,
             lenderPayout,
             platformFee
         );
@@ -541,21 +537,11 @@ contract DelegationRegistry is
             }
         }
         if (platformFee > 0) {
-            (bool success, ) = payable(i_factory).call{value: platformFee}("");
+            (bool success, ) = payable(agreement.factoryAddress).call{value: platformFee}("");
             if (!success) {
                 revert DelegationRegistry__PaymentFailed();
             }
         }
-    }
-
-    /**
-     * @notice Authorizes a contract to set and revoke delegations.
-     * @dev Can only be called by the factory contract that deployed this registry.
-     * @param newAuthorizedAddress The address to authorize.
-     */
-    function addAuthorized(address newAuthorizedAddress) external onlyOwner {
-        isAuthorized[newAuthorizedAddress] = true;
-        emit AuthorizationSet(newAuthorizedAddress);
     }
 
     /**
