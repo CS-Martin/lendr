@@ -64,6 +64,8 @@ contract DelegationRegistry is
     error DelegationRegistry__DeadlinePassed();
     error DelegationRegistry__DelegationRentalDoesNotSupportNFTType();
     error DelegationRegistry__NotOwner();
+    error DelegationRegistry__NotFactory();
+    error DelegationRegistry__FactoryAlreadySet();
 
     /*//////////////////////////////////////////////////////////////
                                 EVENTS
@@ -226,7 +228,10 @@ contract DelegationRegistry is
      * @param _factoryAddress The address of the LendrRentalSystem factory contract.
      */
     function setFactory(address _factoryAddress) external onlyOwner {
-        require(address(i_factory) == address(0), 'Factory already set');
+        if (address(i_factory) != address(0)) {
+            revert DelegationRegistry__FactoryAlreadySet();
+        }
+        
         i_factory = _factoryAddress;
         isAuthorized[_factoryAddress] = true;
         emit AuthorizationSet(_factoryAddress);
