@@ -38,6 +38,7 @@ contract CollateralRegistry is ERC721Holder, ERC1155Holder, ReentrancyGuard {
     error CollateralRegistry__AgreementAlreadyExists();
     error CollateralRegistry__AgreementDoesNotExist();
     error CollateralRegistry__NftStandardNotSupported();
+    error CollateralRegistry__FactoryAlreadySet();
 
     /*//////////////////////////////////////////////////////////////
                                 EVENTS
@@ -69,6 +70,7 @@ contract CollateralRegistry is ERC721Holder, ERC1155Holder, ReentrancyGuard {
         uint256 platformFee
     );
     event StateChanged(uint256 indexed rentalId, State oldState, State newState);
+    event AuthorizationSet(address indexed factory);
 
     /*//////////////////////////////////////////////////////////////
                             TYPE DECLARATIONS
@@ -97,14 +99,16 @@ contract CollateralRegistry is ERC721Holder, ERC1155Holder, ReentrancyGuard {
         uint256 lenderDepositDeadline;
         uint256 returnDeadline;
         uint256 renterClaimDeadline;
+        uint256 platformFeeBps;
     }
 
     /*//////////////////////////////////////////////////////////////
                             STATE VARIABLES
     //////////////////////////////////////////////////////////////*/
     address public i_owner;
-    LendrRentalSystem public i_factoryContract;
+    LendrRentalSystem public i_factory;
     mapping(uint256 => CollateralAgreement) public s_agreements;
+    mapping(address => bool) public s_isAuthorized;
 
     /*//////////////////////////////////////////////////////////////
                               MODIFIERS
@@ -176,11 +180,12 @@ contract CollateralRegistry is ERC721Holder, ERC1155Holder, ReentrancyGuard {
      * @param _factoryAddress The address of the LendrRentalSystem factory contract.
      */
     function setFactory(address _factoryAddress) external onlyOwner {
-        require(
-            address(i_factoryContract) == address(0),
-            "Factory already set"
-        );
-        i_factoryContract = LendrRentalSystem(payable(_factoryAddress));
+        if (address(i_factory) != address(0)) {
+            revert CollateralRegistry__FactoryAlreadySet();
+        }
+        i_factory = LendrRentalSystem(payable(_factoryAddress));
+        s_isAuthorized[_factoryAddress] = true;
+        emit AuthorizationSet(_factoryAddress);
     }
 
     /**
@@ -221,7 +226,8 @@ contract CollateralRegistry is ERC721Holder, ERC1155Holder, ReentrancyGuard {
             rentalEndTime: 0,
             lenderDepositDeadline: 0,
             returnDeadline: 0,
-            renterClaimDeadline: 0
+            renterClaimDeadline: 0,
+            platformFeeBps: LendrRentalSystem(payable(i_factory)).s_feeBps()
         });
     }
 
@@ -609,7 +615,7 @@ contract CollateralRegistry is ERC721Holder, ERC1155Holder, ReentrancyGuard {
         uint256 totalRentalFee = getTotalHourlyFee(_rentalId);
         (uint256 lenderPayout, uint256 platformFee) = FeeSplitter.splitFee(
             totalRentalFee,
-            i_factoryContract.s_feeBps()
+            agreement.platformFeeBps
         );
 
         if (agreement.rentalState == State.COMPLETED) {
@@ -632,7 +638,7 @@ contract CollateralRegistry is ERC721Holder, ERC1155Holder, ReentrancyGuard {
             if (!success) revert CollateralRegistry__PaymentFailed();
         }
         if (platformFee > 0) {
-            (bool success, ) = payable(address(i_factoryContract)).call{
+            (bool success, ) = payable(address(i_factory)).call{
                 value: platformFee
             }('');
             if (!success) revert CollateralRegistry__PaymentFailed();
@@ -641,7 +647,7 @@ contract CollateralRegistry is ERC721Holder, ERC1155Holder, ReentrancyGuard {
         emit PayoutsDistributed(
             _rentalId,
             agreement.lender,
-            address(i_factoryContract),
+            address(i_factory),
             lenderPayout,
             platformFee
         );
