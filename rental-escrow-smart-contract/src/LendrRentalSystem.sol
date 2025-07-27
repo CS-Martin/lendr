@@ -63,6 +63,7 @@ contract LendrRentalSystem {
     );
     event FeeUpdated(uint256 newFeePercent);
     event Withdrawn(address indexed recipient, uint256 amount);
+    event RegistriesDeployed(address indexed delegationRegistry, address indexed collateralRegistry);
 
     /*//////////////////////////////////////////////////////////////
                               MODIFIERS
@@ -87,9 +88,11 @@ contract LendrRentalSystem {
     constructor(uint256 initialPlatformFeePercentInBps) {
         i_deployer = msg.sender;
         s_feeBps = initialPlatformFeePercentInBps;
-        i_delegationRegistry = new DelegationRegistry(address(this));
+        i_delegationRegistry = new DelegationRegistry();
         i_collateralRegistry = new CollateralRegistry();
-        i_collateralRegistry.setFactory(address(this));
+        i_delegationRegistry.addAuthorized(address(this));
+        i_collateralRegistry.addAuthorized(address(this));
+        emit RegistriesDeployed(address(i_delegationRegistry), address(i_collateralRegistry));
     }
 
     /*//////////////////////////////////////////////////////////////
