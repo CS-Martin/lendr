@@ -28,10 +28,12 @@ contract DelegationRegistryUnitTest is Test {
         owner = makeAddr('owner');
         user = makeAddr('user');
 
-        vm.prank(factory);
-        delegationRegistry = new DelegationRegistry(factory);
+        vm.prank(owner);
+        delegationRegistry = new DelegationRegistry();
 
-        vm.prank(factory);
+        vm.prank(owner);
+        delegationRegistry.addAuthorized(factory);
+        vm.prank(owner);
         delegationRegistry.addAuthorized(authorizedContract);
 
         erc721Mock = new ERC721Mock('ERC721', 'E721');
@@ -48,25 +50,25 @@ contract DelegationRegistryUnitTest is Test {
     //////////////////////////////////////////////////////////////*/
 
     function test_Fail_AddAuthorized_FromNonFactory() public {
-        vm.expectRevert(DelegationRegistry.DelegationRegistry__NotAuthorized.selector);
+        vm.expectRevert(DelegationRegistry.DelegationRegistry__NotOwner.selector);
         delegationRegistry.addAuthorized(makeAddr('newUser'));
     }
 
     function test_Fail_RemoveAuthorized_FromNonFactory() public {
-        vm.expectRevert(DelegationRegistry.DelegationRegistry__NotAuthorized.selector);
+        vm.expectRevert(DelegationRegistry.DelegationRegistry__NotOwner.selector);
         delegationRegistry.removeAuthorized(authorizedContract);
     }
 
     function test_AddAndRemove_Authorization() public {
         address newAuthorized = makeAddr('newAuthorized');
         
-        vm.prank(factory);
+        vm.prank(owner);
         delegationRegistry.addAuthorized(newAuthorized);
-        assertTrue(delegationRegistry.isAuthorized(newAuthorized));
+        assertTrue(delegationRegistry.s_isAuthorized(newAuthorized));
 
-        vm.prank(factory);
+        vm.prank(owner);
         delegationRegistry.removeAuthorized(newAuthorized);
-        assertFalse(delegationRegistry.isAuthorized(newAuthorized));
+        assertFalse(delegationRegistry.s_isAuthorized(newAuthorized));
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -122,7 +124,7 @@ contract DelegationRegistryUnitTest is Test {
         erc721Mock.safeTransferFrom(owner, address(delegationRegistry), TOKEN_ID);
 
         assertEq(delegationRegistry.originalOwnerOf(address(erc721Mock), TOKEN_ID), owner);
-        assertEq(uint8(delegationRegistry.nftStandard(address(erc721Mock))), uint8(RentalEnums.NftStandard.ERC721));
+        assertEq(uint8(delegationRegistry.s_nftStandard(address(erc721Mock))), uint8(RentalEnums.NftStandard.ERC721));
     }
 
     function test_Receive_ERC1155() public {
@@ -130,7 +132,7 @@ contract DelegationRegistryUnitTest is Test {
         erc1155Mock.safeTransferFrom(owner, address(delegationRegistry), TOKEN_ID, 1, "");
 
         assertEq(delegationRegistry.originalOwnerOf(address(erc1155Mock), TOKEN_ID), owner);
-        assertEq(uint8(delegationRegistry.nftStandard(address(erc1155Mock))), uint8(RentalEnums.NftStandard.ERC1155));
+        assertEq(uint8(delegationRegistry.s_nftStandard(address(erc1155Mock))), uint8(RentalEnums.NftStandard.ERC1155));
     }
 
     function test_Fail_Receive_ERC1155_InvalidAmount() public {

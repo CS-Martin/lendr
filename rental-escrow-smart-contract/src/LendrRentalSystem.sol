@@ -2,11 +2,11 @@
 pragma solidity ^0.8.20;
 
 import {RentalEnums} from './libraries/RentalEnums.sol';
-import {CollateralAgreementFactory} from './CollateralAgreementFactory.sol';
 import {DelegationRegistry} from './DelegationRegistry.sol';
+import {CollateralRegistry} from './CollateralRegistry.sol';
 
 /**
- * @title Rental System
+ * @title Lendr Rental System
  * @author Selwyn John G. Guiruela
  * @dev This is the main factory contract for the rental platform.
  * It allows lenders to create new rental agreements and allows the platform
@@ -35,27 +35,35 @@ contract LendrRentalSystem {
     mapping(uint256 => address) public s_collateralRentalAgreementById;
     uint256 public s_totalRentals;
     DelegationRegistry public immutable i_delegationRegistry;
-    CollateralAgreementFactory public immutable i_collateralAgreementFactory;
+    CollateralRegistry public immutable i_collateralRegistry;
 
     /*//////////////////////////////////////////////////////////////
                                 EVENTS
     //////////////////////////////////////////////////////////////*/
     event CollateralRentalAgreementCreated(
         uint256 indexed rentalId,
-        address indexed agreementAddress,
         address indexed lender,
         address nftContract,
-        uint256 tokenId
+        uint256 tokenId,
+        uint256 hourlyRentalFee,
+        uint256 collateral,
+        uint256 rentalDurationInHours,
+        RentalEnums.NftStandard nftStandard,
+        RentalEnums.DealDuration dealDuration
     );
     event DelegationRentalAgreementCreated(
         uint256 indexed rentalId,
-        address indexed agreementAddress,
-        address indexed lender,
+        address lender,
         address nftContract,
-        uint256 tokenId
+        uint256 tokenId,
+        uint256 hourlyRentalFee,
+        uint256 rentalDurationInHours,
+        RentalEnums.NftStandard nftStandard,
+        RentalEnums.DealDuration dealDuration
     );
     event FeeUpdated(uint256 newFeePercent);
     event Withdrawn(address indexed recipient, uint256 amount);
+    event RegistriesDeployed(address indexed delegationRegistry, address indexed collateralRegistry);
 
     /*//////////////////////////////////////////////////////////////
                               MODIFIERS
@@ -80,9 +88,11 @@ contract LendrRentalSystem {
     constructor(uint256 initialPlatformFeePercentInBps) {
         i_deployer = msg.sender;
         s_feeBps = initialPlatformFeePercentInBps;
-        // Deploy DelegationRegistry with this contract as the sole authorization manager
-        i_delegationRegistry = new DelegationRegistry(address(this));
-        i_collateralAgreementFactory = new CollateralAgreementFactory();
+        i_delegationRegistry = new DelegationRegistry();
+        i_collateralRegistry = new CollateralRegistry();
+        i_delegationRegistry.addAuthorized(address(this));
+        i_collateralRegistry.addAuthorized(address(this));
+        emit RegistriesDeployed(address(i_delegationRegistry), address(i_collateralRegistry));
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -151,26 +161,31 @@ contract LendrRentalSystem {
         s_totalRentals++;
         uint256 rentalId = s_totalRentals;
 
-        address agreementAddress = i_collateralAgreementFactory
-            .createCollateralRentalAgreement(
-                _lender,
-                _nftContract,
-                _tokenId,
-                _hourlyRentalFee,
-                _collateral,
-                _rentalDurationInHours,
-                _nftStandard,
-                _dealDuration
-            );
+        i_collateralRegistry.createAgreement(
+            rentalId,
+            _lender,
+            _nftContract,
+            _tokenId,
+            _hourlyRentalFee,
+            _collateral,
+            _rentalDurationInHours,
+            _nftStandard,
+            _dealDuration
+        );
 
+        address agreementAddress = address(i_collateralRegistry);
         s_collateralRentalAgreementById[rentalId] = agreementAddress;
 
         emit CollateralRentalAgreementCreated(
             rentalId,
-            agreementAddress,
             _lender,
             _nftContract,
-            _tokenId
+            _tokenId,
+            _hourlyRentalFee,
+            _collateral,
+            _rentalDurationInHours,
+            _nftStandard,
+            _dealDuration
         );
 
         return agreementAddress;
@@ -223,10 +238,13 @@ contract LendrRentalSystem {
 
         emit DelegationRentalAgreementCreated(
             rentalId,
-            address(i_delegationRegistry),
             _lender,
             _nftContract,
-            _tokenId
+            _tokenId,
+            _hourlyRentalFee,
+            _rentalDurationInHours,
+            _nftStandard,
+            _dealDuration
         );
 
         return address(i_delegationRegistry);

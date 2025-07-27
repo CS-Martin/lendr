@@ -5,7 +5,7 @@ pragma solidity ^0.8.18;
 import {Script} from "forge-std/Script.sol";
 import {LendrRentalSystem} from "../src/LendrRentalSystem.sol";
 import {DelegationRegistry} from "../src/DelegationRegistry.sol";
-import {CollateralAgreementFactory} from "../src/CollateralAgreementFactory.sol";
+import {CollateralRegistry} from "../src/CollateralRegistry.sol";
 import {console} from "forge-std/console.sol";
 
 contract DeployLendrRentalSystem is Script {
@@ -14,7 +14,7 @@ contract DeployLendrRentalSystem is Script {
         returns (
             LendrRentalSystem,
             DelegationRegistry,
-            CollateralAgreementFactory
+            CollateralRegistry
         )
     {
         vm.startBroadcast();
@@ -22,16 +22,16 @@ contract DeployLendrRentalSystem is Script {
         vm.stopBroadcast();
 
         DelegationRegistry delegationRegistry = lendrRentalSystem.i_delegationRegistry();
-        CollateralAgreementFactory collateralAgreementFactory = lendrRentalSystem.i_collateralAgreementFactory();
+        CollateralRegistry collateralRegistry = lendrRentalSystem.i_collateralRegistry();
 
         console.log("LendrRentalSystem deployed at:", address(lendrRentalSystem));
         console.log("DelegationRegistry deployed at:", address(delegationRegistry));
-        console.log("CollateralAgreementFactory deployed at:", address(collateralAgreementFactory));
+        console.log("CollateralRegistry deployed at:", address(collateralRegistry));
 
         return (
             lendrRentalSystem,
             delegationRegistry,
-            collateralAgreementFactory
+            collateralRegistry
         );
     }
 }

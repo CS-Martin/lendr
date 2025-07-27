@@ -27,7 +27,6 @@ contract DelegationRegistryLifecycleTest is Test {
 
     event RentalInitiated(uint256 indexed rentalId, address indexed renter);
     event RentalStarted(uint256 indexed rentalId, uint256 endTime);
-    event RentalCancelled(uint256 indexed rentalId);
     event PayoutsDistributed(
         uint256 indexed rentalId,
         address indexed lender,
@@ -235,8 +234,12 @@ contract DelegationRegistryLifecycleTest is Test {
 
         uint256 renterInitialBalance = renter.balance;
         vm.prank(renter);
-        vm.expectEmit(true, true, true, true);
-        emit RentalCancelled(rentalId);
+        vm.expectEmit(true, false, false, true);
+        emit DelegationRegistry.StateChanged(
+            rentalId,
+            DelegationRegistry.State.PENDING,
+            DelegationRegistry.State.CANCELLED
+        );
         delegationRegistry.cancelDelegationRental(rentalId);
 
         agreement = delegationRegistry.getRentalAgreement(rentalId);
@@ -263,8 +266,12 @@ contract DelegationRegistryLifecycleTest is Test {
         // Renter reports breach
         uint256 renterInitialBalance = renter.balance;
         vm.prank(renter);
-        vm.expectEmit(true, true, true, true);
-        emit RentalCancelled(rentalId);
+        vm.expectEmit(true, false, false, true);
+        emit DelegationRegistry.StateChanged(
+            rentalId,
+            DelegationRegistry.State.ACTIVE_DELEGATION,
+            DelegationRegistry.State.CANCELLED
+        );
         delegationRegistry.reportBreach(rentalId);
 
         DelegationRegistry.RentalAgreement memory agreement = delegationRegistry.getRentalAgreement(rentalId);
