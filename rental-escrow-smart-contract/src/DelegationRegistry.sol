@@ -225,11 +225,17 @@ contract DelegationRegistry is
 
     /**
      * @notice Sets the factory contract address. Can only be called once by the owner.
-     * @param _factoryAddress The address of the LendrRentalSystem factory contract.
      */
     function addAuthorized(address _factoryAddress) external onlyOwner {
         isAuthorized[_factoryAddress] = true;
         emit AuthorizationSet(_factoryAddress);
+    }
+
+    /**
+     * @notice Removes authorization from a contract.
+     */
+    function removeAuthorized(address _factoryAddress) external onlyOwner {
+        isAuthorized[_factoryAddress] = false;
     }
 
     /**
