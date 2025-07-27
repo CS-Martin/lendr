@@ -201,7 +201,7 @@ contract CollateralRegistry is ERC721Holder, ERC1155Holder, ReentrancyGuard {
         uint256 _rentalDurationInHours,
         RentalEnums.NftStandard _nftStandard,
         RentalEnums.DealDuration _dealDuration
-    ) external onlyOwner {
+    ) external onlyOwner onlyAuthorized {
         if (s_agreements[_rentalId].lender != address(0)) {
             revert CollateralRegistry__AgreementAlreadyExists();
         }
