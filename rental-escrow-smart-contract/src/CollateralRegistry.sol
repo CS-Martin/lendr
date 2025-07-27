@@ -394,6 +394,7 @@ contract CollateralRegistry is ERC721Holder, ERC1155Holder, ReentrancyGuard {
             revert CollateralRegistry__RenterStillHasTime();
         }
 
+        uint256 refundAmount = getTotalRentalFeeWithCollateral(_rentalId);
         State oldState = agreement.rentalState;
         agreement.rentalState = State.CANCELLED;
         emit StateChanged(_rentalId, oldState, State.CANCELLED);
@@ -405,7 +406,6 @@ contract CollateralRegistry is ERC721Holder, ERC1155Holder, ReentrancyGuard {
             agreement.nftStandard
         );
 
-        uint256 refundAmount = getTotalRentalFeeWithCollateral(_rentalId);
         if (refundAmount > 0) {
             (bool success, ) = payable(agreement.renter).call{
                 value: refundAmount
@@ -481,6 +481,7 @@ contract CollateralRegistry is ERC721Holder, ERC1155Holder, ReentrancyGuard {
             revert CollateralRegistry__RenterStillHasTime();
         }
 
+        uint256 refundAmount = getTotalRentalFeeWithCollateral(_rentalId);
         State oldState = agreement.rentalState;
         agreement.rentalState = State.CANCELLED;
         emit StateChanged(_rentalId, oldState, State.CANCELLED);
@@ -491,7 +492,6 @@ contract CollateralRegistry is ERC721Holder, ERC1155Holder, ReentrancyGuard {
             agreement.nftStandard
         );
 
-        uint256 refundAmount = getTotalRentalFeeWithCollateral(_rentalId);
         if (refundAmount > 0) {
             (bool success, ) = payable(agreement.renter).call{
                 value: refundAmount
@@ -551,11 +551,11 @@ contract CollateralRegistry is ERC721Holder, ERC1155Holder, ReentrancyGuard {
             revert CollateralRegistry__LenderStillHasTime();
         }
 
+        uint256 refundAmount = getTotalRentalFeeWithCollateral(_rentalId);
         State oldState = agreement.rentalState;
         agreement.rentalState = State.CANCELLED;
         emit StateChanged(_rentalId, oldState, State.CANCELLED);
 
-        uint256 refundAmount = getTotalRentalFeeWithCollateral(_rentalId);
         if (refundAmount > 0) {
             (bool success, ) = payable(agreement.renter).call{
                 value: refundAmount

@@ -307,12 +307,9 @@ contract DelegationRegistry is
 
         uint256 refundAmount = getTotalHourlyFee(rentalId);
 
+        State oldState = agreement.rentalState;
         agreement.rentalState = State.CANCELLED;
-        emit StateChanged(
-            rentalId,
-            State.PENDING,
-            State.CANCELLED
-        );
+        emit StateChanged(rentalId, oldState, State.CANCELLED);
 
         (bool success, ) = payable(agreement.renter).call{
             value: refundAmount
@@ -353,9 +350,9 @@ contract DelegationRegistry is
             revert DelegationRegistry__RentalIsOver();
         }
 
+        uint256 refundAmount = getTotalHourlyFee(rentalId);
         State oldState = agreement.rentalState;
         agreement.rentalState = State.CANCELLED;
-        uint256 refundAmount = getTotalHourlyFee(rentalId);
         emit StateChanged(rentalId, oldState, State.CANCELLED);
 
         (bool success, ) = payable(agreement.renter).call{
@@ -648,8 +645,8 @@ contract DelegationRegistry is
         State oldState = agreement.rentalState;
         agreement.rentalState = State.PENDING;
 
-        emit RentalInitiated(rentalId, agreement.renter);
         emit StateChanged(rentalId, oldState, State.PENDING);
+        emit RentalInitiated(rentalId, agreement.renter);
     }
 
     function _setDelegation(
