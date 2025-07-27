@@ -37,8 +37,6 @@ contract CollateralRegistry is ERC721Holder, ERC1155Holder, ReentrancyGuard {
     error CollateralRegistry__NotOwner();
     error CollateralRegistry__AgreementAlreadyExists();
     error CollateralRegistry__AgreementDoesNotExist();
-    error CollateralRegistry__NftStandardNotSupported();
-    error CollateralRegistry__FactoryAlreadySet();
     error CollateralRegistry__NotAuthorized();
 
     /*//////////////////////////////////////////////////////////////
@@ -196,7 +194,7 @@ contract CollateralRegistry is ERC721Holder, ERC1155Holder, ReentrancyGuard {
      * @notice Removes authorization from a contract.
      */
      function removeAuthorized(address _factoryAddress) external onlyOwner {
-        isAuthorized[_factoryAddress] = false;
+        s_isAuthorized[_factoryAddress] = false;
     }
 
     /**

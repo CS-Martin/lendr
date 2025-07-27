@@ -57,15 +57,12 @@ contract DelegationRegistry is
     error DelegationRegistry__DelegationDeadlineNotPassed();
     error DelegationRegistry__NoBreachDetected();
     error DelegationRegistry__RentalNotOver();
-    error DelegationRegistry__InvalidNftStandard();
     error DelegationRegistry__RentalIsOver();
     error DelegationRegistry__NftNotDeposited();
     error DelegationRegistry__AgreementDoesNotExist();
     error DelegationRegistry__DeadlinePassed();
     error DelegationRegistry__DelegationRentalDoesNotSupportNFTType();
     error DelegationRegistry__NotOwner();
-    error DelegationRegistry__NotFactory();
-    error DelegationRegistry__FactoryAlreadySet();
 
     /*//////////////////////////////////////////////////////////////
                                 EVENTS
@@ -131,7 +128,7 @@ contract DelegationRegistry is
         uint256 tokenId;
         uint256 hourlyRentalFee;
         uint256 rentalDurationInHours;
-        RentalEnums.NftStandard nftStandard;
+        RentalEnums.NftStandard s_nftStandard;
         RentalEnums.DealDuration dealDuration;
         address renter;
         State rentalState;
@@ -147,15 +144,15 @@ contract DelegationRegistry is
     mapping(address => mapping(uint256 => Delegation)) private _delegations;
     mapping(address => mapping(uint256 => address)) public originalOwnerOf;
     address public i_owner;
-    mapping(address => bool) public isAuthorized;
-    mapping(address => RentalEnums.NftStandard) public nftStandard;
-    mapping(uint256 => RentalAgreement) public rentalAgreements;
+    mapping(address => bool) public s_isAuthorized;
+    mapping(address => RentalEnums.NftStandard) public s_nftStandard;
+    mapping(uint256 => RentalAgreement) public s_rentalAgreements;
 
     /*//////////////////////////////////////////////////////////////
                                 MODIFIERS
     //////////////////////////////////////////////////////////////*/
     modifier onlyAuthorized() {
-        if (!isAuthorized[msg.sender]) {
+        if (!s_isAuthorized[msg.sender]) {
             revert DelegationRegistry__NotAuthorized();
         }
         _;
@@ -169,26 +166,26 @@ contract DelegationRegistry is
     }
 
     modifier renterNotLender(uint256 rentalId) {
-        if (msg.sender == rentalAgreements[rentalId].lender) {
+        if (msg.sender == s_rentalAgreements[rentalId].lender) {
             revert DelegationRegistry__RenterMustNotBeLender();
         }
         _;
     }
 
     modifier inState(uint256 rentalId, State _expected) {
-        if (rentalAgreements[rentalId].rentalState != _expected) {
+        if (s_rentalAgreements[rentalId].rentalState != _expected) {
             revert DelegationRegistry__InvalidState(
                 _expected,
-                rentalAgreements[rentalId].rentalState
+                s_rentalAgreements[rentalId].rentalState
             );
         }
         _;
     }
 
     modifier onlyRenter(uint256 rentalId) {
-        if (msg.sender != rentalAgreements[rentalId].renter) {
+        if (msg.sender != s_rentalAgreements[rentalId].renter) {
             revert DelegationRegistry__InvalidUser(
-                rentalAgreements[rentalId].renter,
+                s_rentalAgreements[rentalId].renter,
                 msg.sender
             );
         }
@@ -196,16 +193,16 @@ contract DelegationRegistry is
     }
 
     modifier agreementExists(uint256 _rentalId) {
-        if (rentalAgreements[_rentalId].lender == address(0)) {
+        if (s_rentalAgreements[_rentalId].lender == address(0)) {
             revert DelegationRegistry__AgreementDoesNotExist();
         }
         _;
     }
 
     modifier onlyLender(uint256 rentalId) {
-        if (msg.sender != rentalAgreements[rentalId].lender) {
+        if (msg.sender != s_rentalAgreements[rentalId].lender) {
             revert DelegationRegistry__InvalidUser(
-                rentalAgreements[rentalId].lender,
+                s_rentalAgreements[rentalId].lender,
                 msg.sender
             );
         }
@@ -227,7 +224,7 @@ contract DelegationRegistry is
      * @notice Sets the factory contract address. Can only be called once by the owner.
      */
     function addAuthorized(address _factoryAddress) external onlyOwner {
-        isAuthorized[_factoryAddress] = true;
+        s_isAuthorized[_factoryAddress] = true;
         emit AuthorizationSet(_factoryAddress);
     }
 
@@ -235,7 +232,7 @@ contract DelegationRegistry is
      * @notice Removes authorization from a contract.
      */
     function removeAuthorized(address _factoryAddress) external onlyOwner {
-        isAuthorized[_factoryAddress] = false;
+        s_isAuthorized[_factoryAddress] = false;
     }
 
     /**
@@ -261,13 +258,13 @@ contract DelegationRegistry is
             revert DelegationRegistry__InvalidDealDuration();
         }
 
-        RentalAgreement storage agreement = rentalAgreements[rentalId];
+        RentalAgreement storage agreement = s_rentalAgreements[rentalId];
         agreement.lender = _lender;
         agreement.nftContract = _nftContract;
         agreement.tokenId = _tokenId;
         agreement.hourlyRentalFee = _hourlyRentalFee;
         agreement.rentalDurationInHours = _rentalDurationInHours;
-        agreement.nftStandard = _nftStandard;
+        agreement.s_nftStandard = _nftStandard;
         agreement.dealDuration = _dealDuration;
         agreement.rentalState = State.LISTED;
         agreement.platformFeeBps = LendrRentalSystem(payable(msg.sender)).s_feeBps();
@@ -300,7 +297,7 @@ contract DelegationRegistry is
         onlyRenter(rentalId)
         inState(rentalId, State.PENDING)
     {
-        RentalAgreement storage agreement = rentalAgreements[rentalId];
+        RentalAgreement storage agreement = s_rentalAgreements[rentalId];
         if (block.timestamp <= agreement.lenderDelegationDeadline) {
             revert DelegationRegistry__DelegationDeadlineNotPassed();
         }
@@ -330,8 +327,8 @@ contract DelegationRegistry is
         inState(rentalId, State.ACTIVE_DELEGATION)
         nonReentrant
     {
-        RentalAgreement storage agreement = rentalAgreements[rentalId];
-        if (agreement.nftStandard == RentalEnums.NftStandard.ERC4907) {
+        RentalAgreement storage agreement = s_rentalAgreements[rentalId];
+        if (agreement.s_nftStandard == RentalEnums.NftStandard.ERC4907) {
             if (
                 IERC4907(agreement.nftContract).userOf(agreement.tokenId) ==
                 agreement.renter
@@ -401,8 +398,8 @@ contract DelegationRegistry is
         onlyLender(rentalId)
         inState(rentalId, State.PENDING)
     {
-        RentalAgreement storage agreement = rentalAgreements[rentalId];
-        if (agreement.nftStandard == RentalEnums.NftStandard.ERC4907) {
+        RentalAgreement storage agreement = s_rentalAgreements[rentalId];
+        if (agreement.s_nftStandard == RentalEnums.NftStandard.ERC4907) {
             if (
                 IERC721(agreement.nftContract).ownerOf(agreement.tokenId) !=
                 agreement.lender
@@ -426,7 +423,7 @@ contract DelegationRegistry is
                 TimeConverter.hoursToSeconds(agreement.rentalDurationInHours)
         );
 
-        if (agreement.nftStandard == RentalEnums.NftStandard.ERC4907) {
+        if (agreement.s_nftStandard == RentalEnums.NftStandard.ERC4907) {
             IERC4907(agreement.nftContract).setUser(
                 agreement.tokenId,
                 agreement.renter,
@@ -462,18 +459,18 @@ contract DelegationRegistry is
         inState(_rentalId, State.PENDING)
         nonReentrant
     {
-        RentalAgreement storage agreement = rentalAgreements[_rentalId];
+        RentalAgreement storage agreement = s_rentalAgreements[_rentalId];
         if (block.timestamp > agreement.lenderDelegationDeadline) {
             revert DelegationRegistry__DeadlinePassed();
         }
 
-        if (agreement.nftStandard == RentalEnums.NftStandard.ERC721) {
+        if (agreement.s_nftStandard == RentalEnums.NftStandard.ERC721) {
             IERC721(agreement.nftContract).safeTransferFrom(
                 agreement.lender,
                 address(this),
                 agreement.tokenId
             );
-        } else if (agreement.nftStandard == RentalEnums.NftStandard.ERC1155) {
+        } else if (agreement.s_nftStandard == RentalEnums.NftStandard.ERC1155) {
             IERC1155(agreement.nftContract).safeTransferFrom(
                 agreement.lender,
                 address(this),
@@ -501,7 +498,7 @@ contract DelegationRegistry is
         inState(rentalId, State.ACTIVE_DELEGATION)
         nonReentrant
     {
-        RentalAgreement storage agreement = rentalAgreements[rentalId];
+        RentalAgreement storage agreement = s_rentalAgreements[rentalId];
         if (block.timestamp < agreement.rentalEndTime) {
             revert DelegationRegistry__RentalNotOver();
         }
@@ -513,7 +510,7 @@ contract DelegationRegistry is
         uint256 totalFee = getTotalHourlyFee(rentalId);
         (uint256 lenderPayout, uint256 platformFee) = FeeSplitter.splitFee(totalFee, agreement.platformFeeBps);
 
-        if (agreement.nftStandard == RentalEnums.NftStandard.ERC4907) {
+        if (agreement.s_nftStandard == RentalEnums.NftStandard.ERC4907) {
             IERC4907(agreement.nftContract).setUser(
                 agreement.tokenId,
                 address(0),
@@ -545,16 +542,6 @@ contract DelegationRegistry is
                 revert DelegationRegistry__PaymentFailed();
             }
         }
-    }
-
-    /**
-     * @notice Removes authorization from a contract.
-     * @dev Can only be called by the factory contract that deployed this registry.
-     * @param addressToRemove The address to de-authorize.
-     */
-    function removeAuthorized(address addressToRemove) external onlyOwner {
-        isAuthorized[addressToRemove] = false;
-        emit AuthorizationRemoved(addressToRemove);
     }
 
     /**
@@ -607,7 +594,7 @@ contract DelegationRegistry is
         delete originalOwnerOf[nftContract][tokenId];
         emit NftWithdrawn(nftContract, tokenId, originalOwner);
 
-        RentalEnums.NftStandard standard = nftStandard[nftContract];
+        RentalEnums.NftStandard standard = s_nftStandard[nftContract];
         if (standard == RentalEnums.NftStandard.ERC721) {
             IERC721(nftContract).safeTransferFrom(
                 address(this),
@@ -637,7 +624,7 @@ contract DelegationRegistry is
         if (msg.value != _requiredPayment) {
             revert DelegationRegistry__InvalidPayment();
         }
-        RentalAgreement storage agreement = rentalAgreements[rentalId];
+        RentalAgreement storage agreement = s_rentalAgreements[rentalId];
         agreement.renter = msg.sender;
         agreement.lenderDelegationDeadline =
             block.timestamp +
@@ -704,7 +691,7 @@ contract DelegationRegistry is
         view
         returns (uint256)
     {
-        RentalAgreement storage agreement = rentalAgreements[rentalId];
+        RentalAgreement storage agreement = s_rentalAgreements[rentalId];
         return agreement.hourlyRentalFee * agreement.rentalDurationInHours;
     }
 
@@ -713,7 +700,7 @@ contract DelegationRegistry is
         view
         returns (RentalAgreement memory)
     {
-        return rentalAgreements[rentalId];
+        return s_rentalAgreements[rentalId];
     }
 
     /**
@@ -769,7 +756,7 @@ contract DelegationRegistry is
         uint256 tokenId,
         bytes calldata
     ) external override returns (bytes4) {
-        nftStandard[msg.sender] = RentalEnums.NftStandard.ERC721;
+        s_nftStandard[msg.sender] = RentalEnums.NftStandard.ERC721;
         originalOwnerOf[msg.sender][tokenId] = from;
         emit NftDeposited(msg.sender, tokenId, from);
         return this.onERC721Received.selector;
@@ -788,7 +775,7 @@ contract DelegationRegistry is
         if (amount != 1) {
             revert DelegationRegistry__InvalidAmount();
         }
-        nftStandard[msg.sender] = RentalEnums.NftStandard.ERC1155;
+        s_nftStandard[msg.sender] = RentalEnums.NftStandard.ERC1155;
         originalOwnerOf[msg.sender][id] = from;
         emit NftDeposited(msg.sender, id, from);
         return this.onERC1155Received.selector;

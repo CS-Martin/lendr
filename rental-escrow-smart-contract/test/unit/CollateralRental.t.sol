@@ -736,7 +736,7 @@ contract TimeoutsAndDefaultsTest is CollateralRentalBaseTest {
 contract SecurityTest is CollateralRentalBaseTest {
     function test_reentrancy_attack_on_returnNFTToLender() public {
         // Arrange
-        vm.startPrank(deployer);
+        vm.startPrank(lender);
         lendrRentalSystem.createCollateralRentalAgreement(
             lender,
             address(mockERC721),
