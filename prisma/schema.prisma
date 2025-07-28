@@ -20,22 +20,33 @@ model User {
     bids        Bid[]        @relation("Bidder")
     rentals     Rental[]     @relation("Renter")
     rentalPosts RentalPost[]
+
+    @@index([address])
 }
 
 model NFT {
-    address        String   @id
-    userAddress    String
-    title          String
-    imageUrl       String
-    description    String?
-    category       String?
-    floorPrice     Float?
-    collectionName String?
-    createdAt      DateTime @default(now())
-    updatedAt      DateTime @updatedAt
+    id              String  @id @default(cuid())
+    contractAddress String // Alchemy's nft.contract.address
+    tokenId         String // Alchemy's nft.tokenId
+    title           String
+    description     String?
+    imageUrl        String
+    collectionName  String?
+    floorPrice      Float?
+    category        String?
+    metadata        Json // Raw Alchemy NFT metadata
+    isListable      Boolean @default(false)
 
-    owner     User             @relation(fields: [userAddress], references: [address])
-    postItems RentalPostItem[]
+    ownerAddress String
+    owner        User             @relation(fields: [ownerAddress], references: [address])
+    postItems    RentalPostItem[]
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@unique([contractAddress, tokenId])
+    @@index([ownerAddress])
+    @@index([collectionName])
 }
 
 enum RentalListingStatus {
@@ -58,7 +69,7 @@ model RentalPost {
     biddingStarttime DateTime?
     biddingEndtime   DateTime?
     isActive         Boolean
-    statusCode       RentalListingStatus @default(AVAILABLE)
+    status           RentalListingStatus @default(AVAILABLE)
     createdAt        DateTime            @default(now())
     updatedAt        DateTime?           @updatedAt
 
@@ -66,6 +77,10 @@ model RentalPost {
     items   RentalPostItem[]
     bids    Bid[]
     rentals Rental[]
+
+    @@index([posterAddress])
+    @@index([status])
+    @@index([createdAt])
 }
 
 model RentalPostItem {
@@ -75,7 +90,7 @@ model RentalPostItem {
     updatedAt    DateTime @updatedAt
 
     post RentalPost @relation(fields: [rentalPostId], references: [rentalPostId])
-    nft  NFT        @relation(fields: [nftAddress], references: [address])
+    nft  NFT        @relation(fields: [nftAddress], references: [id])
 
     @@id([rentalPostId, nftAddress])
 }
