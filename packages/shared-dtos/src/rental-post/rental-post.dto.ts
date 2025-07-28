@@ -62,7 +62,7 @@ export class RentalPostDto {
   @ApiProperty({
     description: 'The rental post description',
     example: 'This is a rental post',
-    required: true,
+    required: false,
     type: String,
   })
   @IsString()

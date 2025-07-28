@@ -53,11 +53,11 @@ export class NFTApiService {
     }
   }
 
-  public async findOne(address: string): Promise<ResponseDto<NftDto>> {
-    logger.info('Fetching NFT by address:', address);
+  public async findOne(id: number): Promise<ResponseDto<NftDto>> {
+    logger.info('Fetching NFT by id:', id);
 
     try {
-      const response = await fetch(`${this.API_BASE_URL}/${address}`);
+      const response = await fetch(`${this.API_BASE_URL}/${id}`);
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);

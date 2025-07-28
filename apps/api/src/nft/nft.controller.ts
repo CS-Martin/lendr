@@ -27,23 +27,23 @@ export class NftController {
   @ApiOperation({ summary: 'Get an NFT by its id' })
   @ApiResponse({ status: 200, description: 'NFT found' })
   @ApiResponse({ status: 404, description: 'NFT not found' })
-  findOne(@Param('id') id: number) {
-    return this.nftService.findOne(id);
+  findOne(@Param('id') id: string) {
+    return this.nftService.findOne(+id);
   }
 
   @Patch(':id')
   @ApiOperation({ summary: 'Update an NFT by its id' })
   @ApiResponse({ status: 200, description: 'NFT updated successfully' })
   @ApiResponse({ status: 404, description: 'NFT not found' })
-  update(@Param('id') id: number, @Body() updateNftDto: UpdateNftDto) {
-    return this.nftService.update(id, updateNftDto);
+  update(@Param('id') id: string, @Body() updateNftDto: UpdateNftDto) {
+    return this.nftService.update(+id, updateNftDto);
   }
 
   @Delete(':id')
   @ApiOperation({ summary: 'Delete an NFT by its id' })
   @ApiResponse({ status: 200, description: 'NFT deleted successfully' })
   @ApiResponse({ status: 404, description: 'NFT not found' })
-  remove(@Param('id') id: number) {
-    return this.nftService.remove(id);
+  remove(@Param('id') id: string) {
+    return this.nftService.remove(+id);
   }
 }
