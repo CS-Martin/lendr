@@ -17,9 +17,12 @@ import { useSession } from 'next-auth/react';
 import { RentalPostCardSkeleton } from '@/components/shared/skeletons/rental-post-card.skeleton';
 import { useViewMode, useSetViewMode } from '@/stores/card-view-mode.store';
 import dynamic from 'next/dynamic';
-const RentalPostCard = dynamic(() => import('@/components/shared/rental-post/rental-post-card').then((mod) => mod.RentalPostCard), {
-    ssr: true,
-});
+const RentalPostCard = dynamic(
+    () => import('@/components/shared/rental-post/rental-post-card').then((mod) => mod.RentalPostCard),
+    {
+        ssr: true,
+    },
+);
 
 // Register GSAP plugins
 if (typeof window !== 'undefined') {
@@ -28,18 +31,21 @@ if (typeof window !== 'undefined') {
 
 // Filter options matching the reference image
 const statusFilters = [
-    { id: 'buy-now', label: 'Buy now', count: 156 },
-    { id: 'on-auction', label: 'On auction', count: 87 },
-    { id: 'new', label: 'New', count: 23 },
-    { id: 'featured', label: 'Featured', count: 12 },
+    { id: 'AVAILABLE', label: 'Available', count: 156 },
+    { id: 'RENTED', label: 'Rented', count: 87 },
+    { id: 'DELISTED', label: 'Delisted', count: 87 },
 ];
 
 const collectionFilters = [
-    { id: 'digital-art', label: 'Digital Art', count: 234 },
     { id: 'gaming', label: 'Gaming', count: 189 },
+    { id: 'art', label: 'Art', count: 234 },
     { id: 'music', label: 'Music', count: 98 },
-    { id: 'photography', label: 'Photography', count: 76 },
-    { id: 'crypto', label: 'Crypto', count: 123 },
+    { id: 'sports', label: 'Sports', count: 76 },
+    { id: 'collectibles', label: 'Collectibles', count: 123 },
+    { id: 'virtual-worlds', label: 'Virtual Worlds', count: 123 },
+    { id: 'photography', label: 'Photography', count: 123 },
+    { id: 'utility', label: 'Utility', count: 123 },
+    { id: 'memes', label: 'Memes', count: 123 },
 ];
 
 const priceFilters = [
@@ -114,21 +120,19 @@ export default function MarketplacePage() {
         const matchesFilters =
             selectedFilters.length === 0 ||
             selectedFilters.some((filter) => {
-                if (filter === 'buy-now') return !post.isBiddable;
-                if (filter === 'on-auction') return post.isBiddable;
-                if (filter === 'digital-art') return post.category === 'Digital Art';
-                if (filter === 'gaming') return post.category === 'Gaming';
-                if (filter === 'music') return post.category === 'Music';
-                if (filter === 'photography') return post.category === 'Photography';
-                if (filter === 'crypto') return post.category === 'Crypto';
+                if (filter === 'available') return post.status === 'AVAILABLE';
+                if (filter === 'rented') return post.status === 'RENTED';
+                if (filter === 'delisted') return post.status === 'DELISTED';
 
-                // New categories from sample
-                if (filter === 'collectibles') return post.category === 'Collectibles';
-                if (filter === 'virtual-real-estate') return post.category === 'Virtual Real Estate';
-                if (filter === 'sports') return post.category === 'Sports';
-                if (filter === 'metaverse') return post.category === 'Metaverse';
-                if (filter === 'domain-names') return post.category === 'Domain Names';
-                if (filter === 'utility') return post.category === 'Utility';
+                if (filter === 'art') return post.category === 'art';
+                if (filter === 'gaming') return post.category === 'gaming';
+                if (filter === 'music') return post.category === 'music';
+                if (filter === 'photography') return post.category === 'photography';
+                if (filter === 'crypto') return post.category === 'crypto';
+                if (filter === 'virtual-worlds') return post.category === 'virtual worlds';
+                if (filter === 'sports') return post.category === 'sports';
+                if (filter === 'memes') return post.category === 'memes';
+                if (filter === 'utility') return post.category === 'utility';
 
                 return false;
             });
@@ -228,8 +232,7 @@ export default function MarketplacePage() {
                     {/* NFT Grid */}
                     <motion.div
                         className={`grid gap-4 ${viewMode === 'grid' ? 'grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-5' : 'grid-cols-1 xl:grid-cols-2'}`}
-                        layout
-                    >
+                        layout>
                         <AnimatePresence mode='popLayout'>
                             {filteredRentalPosts.map((post, index) => (
                                 <motion.div
@@ -242,8 +245,7 @@ export default function MarketplacePage() {
                                         duration: 0.5,
                                         delay: isInView ? index * 0.1 : 0,
                                     }}
-                                    whileHover={{ y: -5 }}
-                                >
+                                    whileHover={{ y: -5 }}>
                                     <Suspense fallback={<RentalPostCardSkeleton viewMode={viewMode} />}>
                                         <RentalPostCard
                                             post={post}

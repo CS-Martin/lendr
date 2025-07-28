@@ -7,7 +7,6 @@ import { Suspense, useRef, useState } from 'react';
 import { OwnedNft } from 'alchemy-sdk';
 import { useParams } from 'next/navigation';
 import { NFTCardSkeleton } from '@/components/shared/skeletons/nft-card';
-import { EmptyState } from '../marketplace/_components/empty-state';
 import { NFTCard } from '@/components/shared/nft/nft-card';
 import dynamic from 'next/dynamic';
 import { ListNFTDrawer } from './_components/list-nft-drawer';
@@ -63,11 +62,12 @@ export default function UserProfilePage() {
             <ProfileHeader userDto={fetchedUser} />
 
             <div className='max-w-7xl min-h-screen mx-auto py-20'>
-
                 <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 min-h-[calc(100vh-20rem)]'>
                     {nfts.map((nft, index) =>
                         nft.name ? (
-                            <Suspense key={index} fallback={<NFTCardSkeleton />}>
+                            <Suspense
+                                key={index}
+                                fallback={<NFTCardSkeleton />}>
                                 <NFTCard
                                     key={index}
                                     nft={nft}
