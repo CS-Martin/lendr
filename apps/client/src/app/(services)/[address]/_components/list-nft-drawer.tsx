@@ -23,8 +23,11 @@ import z from 'zod';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useCreateRentalPost } from '@/hooks/useRentalPost';
-import { CreateRentalPostDto } from '@repo/shared-dtos';
+import { CreateNftDto, CreateRentalPostDto, NftDto } from '@repo/shared-dtos';
 import { Session } from 'next-auth';
+import { nftApiService, NFTApiService } from '@/services/nft.api';
+import { AlchemyNFTMetadata } from '@/types/nft-metadata';
+import { toast } from 'sonner';
 
 interface ListNFTDrawerProps {
     nft: OwnedNft | null;
@@ -83,8 +86,6 @@ export const ListNFTDrawer = ({ nft, isOpen, onClose, session, profileAddress }:
     const onSubmit = async (data: ListNftFormInputs) => {
         setIsSubmitting(true);
 
-        console.log(session);
-
         if (!session) {
             console.error('User is not authenticated');
             return null;
@@ -93,14 +94,38 @@ export const ListNFTDrawer = ({ nft, isOpen, onClose, session, profileAddress }:
         console.log('NFT Listing Data:', data);
 
         try {
-            const post = await createRentalPost(data as CreateRentalPostDto);
+            // Store the NFT to database
+            const createdNft = await nftApiService.create({
+                contractAddress: nft?.contract.address || '',
+                tokenId: nft?.tokenId || '',
+                ownerAddress: session.user.address || '',
+                title: nft?.name || '',
+                imageUrl: nft?.image.thumbnailUrl || nft?.image.cachedUrl || '/placeholder.svg',
+                description: data.description || '',
+                category: data.category || '',
+                floorPrice: 0,
+                collectionName: nft?.collection?.name || '',
+                metadata: nft ? JSON.parse(JSON.stringify(nft)) : null,
+            });
 
-            console.log('NFT rental listing created:', post);
+            toast.success('NFT rental listing created successfully');
+
+            if (createdNft) {
+                // Create the rental post
+                const post = await createRentalPost(data as CreateRentalPostDto);
+
+                console.log('NFT rental listing created:', post);
+            }
         } catch (error) {
             console.error('Error creating NFT rental listing:', error);
+
+            toast.error('Failed to create rental post', {
+                description: `${error}`,
+            });
         } finally {
             setIsSubmitting(false);
             onClose();
+            toast.success('Rental post created successfully');
         }
     };
 
