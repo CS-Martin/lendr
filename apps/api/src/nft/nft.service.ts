@@ -17,7 +17,7 @@ export class NftService implements NftServiceAbstractClass {
   async create(createNftDto: CreateNftDto): Promise<ResponseDto<NftDto>> {
     this.logger.log('Creating NFT', createNftDto);
 
-    const user = await this.userDbService.findOne(createNftDto.ownerAddress as string);
+    const user = await this.userDbService.findOne(createNftDto.ownerAddress);
 
     if (!user) {
       this.logger.error('User not found', createNftDto.ownerAddress);
@@ -38,21 +38,21 @@ export class NftService implements NftServiceAbstractClass {
     }
   }
 
-  async update(address: string, updateNftDto: UpdateNftDto): Promise<ResponseDto<NftDto>> {
-    this.logger.log('Updating NFT by address', address);
+  async update(id: number, updateNftDto: UpdateNftDto): Promise<ResponseDto<NftDto>> {
+    this.logger.log('Updating NFT by id', id);
 
-    const nft = await this.nftDbService.findOne(address);
+    const nft = await this.nftDbService.findOne(id);
 
     if (!nft) {
-      this.logger.error('NFT not found', address);
+      this.logger.error('NFT not found', id);
       throw new NotFoundException('NFT not found');
     }
 
     try {
-      const updatedNft = await this.nftDbService.update(address, updateNftDto);
+      const updatedNft = await this.nftDbService.update(id, updateNftDto);
 
       if (!updatedNft) {
-        this.logger.error('Failed to update NFT', address);
+        this.logger.error('Failed to update NFT', id);
         throw new BadRequestException('Failed to update NFT');
       }
 
@@ -85,11 +85,11 @@ export class NftService implements NftServiceAbstractClass {
     }
   }
 
-  async findOne(address: string): Promise<ResponseDto<NftDto>> {
-    this.logger.log(`Fetching NFT with address: ${address}`);
+  async findOne(id: number): Promise<ResponseDto<NftDto>> {
+    this.logger.log(`Fetching NFT with id: ${id}`);
 
     try {
-      const nft = await this.nftDbService.findOne(address);
+      const nft = await this.nftDbService.findOne(id);
 
       const nftDto = this.convertToNftDto(nft);
 
@@ -99,16 +99,16 @@ export class NftService implements NftServiceAbstractClass {
         message: 'NFT fetched successfully',
       };
     } catch (error) {
-      this.logger.error(`Failed to fetch NFT with address: ${address}`, error);
+      this.logger.error(`Failed to fetch NFT with id: ${id}`, error);
       throw new BadRequestException('Failed to fetch NFT');
     }
   }
 
-  async remove(address: string): Promise<ResponseDto<null>> {
-    this.logger.log(`Removing NFT with address: ${address}`);
+  async remove(id: number): Promise<ResponseDto<null>> {
+    this.logger.log(`Removing NFT with id: ${id}`);
 
     try {
-      await this.nftDbService.delete(address);
+      await this.nftDbService.delete(id);
 
       return {
         statusCode: 200,
@@ -116,7 +116,7 @@ export class NftService implements NftServiceAbstractClass {
         message: 'NFT deleted successfully',
       };
     } catch (error) {
-      this.logger.error(`Failed to delete NFT with address: ${address}`, error);
+      this.logger.error(`Failed to delete NFT with id: ${id}`, error);
       throw new BadRequestException('Failed to delete NFT');
     }
   }

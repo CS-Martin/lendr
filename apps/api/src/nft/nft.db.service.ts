@@ -9,24 +9,30 @@ export class NftDbService {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(createNftDto: CreateNftDto): Promise<NFT> {
+    // Omit ownerAddress since we're using the relation
+    const { ownerAddress, ...nftData } = createNftDto;
+
     const nft = await this.prisma.nFT.create({
       data: {
-        ...createNftDto,
-        metadata: JSON.stringify(createNftDto.metadata),
+        ...nftData,
+        metadata: createNftDto.metadata as Prisma.InputJsonValue,
+        owner: {
+          connect: { address: ownerAddress },
+        },
       },
     });
 
     return nft;
   }
 
-  async update(id: string, updateNftDto: UpdateNftDto): Promise<NFT> {
+  async update(id: number, updateNftDto: UpdateNftDto): Promise<NFT> {
     const nft = await this.prisma.nFT.update({
       where: {
         id,
       },
       data: {
         ...updateNftDto,
-        metadata: updateNftDto.metadata ? JSON.stringify(updateNftDto.metadata) : undefined,
+        metadata: updateNftDto.metadata as Prisma.InputJsonValue,
       },
     });
 
@@ -37,7 +43,7 @@ export class NftDbService {
     const where: Prisma.NFTWhereInput = {};
 
     if (filters?.ownerAddress) {
-      where.ownerAddress = filters.ownerAddress as string;
+      where.ownerAddress = filters.ownerAddress;
     }
 
     if (filters?.title) {
@@ -58,7 +64,7 @@ export class NftDbService {
     });
   }
 
-  async findOne(id: string): Promise<NFT | null> {
+  async findOne(id: number): Promise<NFT | null> {
     return this.prisma.nFT.findUnique({
       where: {
         id,
@@ -66,7 +72,7 @@ export class NftDbService {
     });
   }
 
-  async delete(id: string): Promise<NFT> {
+  async delete(id: number): Promise<NFT> {
     return this.prisma.nFT.delete({
       where: { id },
     });
