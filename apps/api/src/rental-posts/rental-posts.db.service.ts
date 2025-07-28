@@ -8,8 +8,25 @@ export class RentalPostsDbService {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(createRentalPostDto: CreateRentalPostDto): Promise<RentalPost> {
+    const { posterAddress, nftId, ...createRentalPostData } = createRentalPostDto;
     const rentalPost = await this.prisma.rentalPost.create({
-      data: createRentalPostDto,
+      data: {
+        ...createRentalPostData,
+
+        // Establish the poster relationship
+        poster: {
+          connect: {
+            address: posterAddress,
+          },
+        },
+
+        // Establish the nft relationship
+        nft: {
+          connect: {
+            id: nftId,
+          },
+        },
+      },
     });
 
     return rentalPost;
