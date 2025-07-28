@@ -41,8 +41,9 @@ model NFT {
     owner        User             @relation(fields: [ownerAddress], references: [address])
     postItems    RentalPostItem[]
 
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+    createdAt  DateTime     @default(now())
+    updatedAt  DateTime     @updatedAt
+    RentalPost RentalPost[]
 
     @@unique([contractAddress, tokenId])
     @@index([ownerAddress])
@@ -60,6 +61,7 @@ enum RentalListingStatus {
 model RentalPost {
     rentalPostId     Int                 @id @default(autoincrement())
     posterAddress    String
+    nftId            Int
     name             String
     imageUrl         String
     tokenType        String
@@ -77,6 +79,7 @@ model RentalPost {
     updatedAt        DateTime?           @updatedAt
 
     poster  User             @relation(fields: [posterAddress], references: [address])
+    nft     NFT              @relation(fields: [nftId], references: [id])
     items   RentalPostItem[]
     bids    Bid[]
     rentals Rental[]
