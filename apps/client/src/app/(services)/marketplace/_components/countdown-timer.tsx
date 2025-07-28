@@ -1,28 +1,29 @@
-import { memo, useEffect, useState } from "react";
+import { NumberTicker } from '@/components/magicui/number-ticker';
+import { memo, useEffect, useState } from 'react';
 
 // Memoized countdown component to prevent unnecessary re-renders
-export const CountdownDisplay = memo(({ timeRemaining }: {
-    timeRemaining: { days: number, hours: number, minutes: number, seconds: number }
-}) => (
-    <div className="grid grid-cols-4 gap-4">
-        <div>
-            <div className="text-3xl font-bold text-orange-400">{timeRemaining.days}</div>
-            <div className="text-sm text-slate-400">Days</div>
+export const CountdownDisplay = memo(
+    ({ timeRemaining }: { timeRemaining: { days: number; hours: number; minutes: number; seconds: number } }) => (
+        <div className='grid grid-cols-4 gap-4'>
+            <div>
+                <NumberTicker value={timeRemaining.days} className='text-3xl font-bold text-orange-400' />
+                <div className='text-sm text-slate-400'>Days</div>
+            </div>
+            <div>
+                <NumberTicker value={timeRemaining.hours} className='text-3xl font-bold text-orange-400' />
+                <div className='text-sm text-slate-400'>Hours</div>
+            </div>
+            <div>
+                <NumberTicker value={timeRemaining.minutes} className='text-3xl font-bold text-orange-400' />
+                <div className='text-sm text-slate-400'>Minutes</div>
+            </div>
+            <div>
+                <NumberTicker value={timeRemaining.seconds} className='text-3xl font-bold text-orange-400' />
+                <div className='text-sm text-slate-400'>Seconds</div>
+            </div>
         </div>
-        <div>
-            <div className="text-3xl font-bold text-orange-400">{timeRemaining.hours}</div>
-            <div className="text-sm text-slate-400">Hours</div>
-        </div>
-        <div>
-            <div className="text-3xl font-bold text-orange-400">{timeRemaining.minutes}</div>
-            <div className="text-sm text-slate-400">Minutes</div>
-        </div>
-        <div>
-            <div className="text-3xl font-bold text-orange-400">{timeRemaining.seconds}</div>
-            <div className="text-sm text-slate-400">Seconds</div>
-        </div>
-    </div>
-));
+    ),
+);
 CountdownDisplay.displayName = 'CountdownDisplay';
 
 // Self-contained countdown timer component
