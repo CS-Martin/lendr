@@ -23,6 +23,15 @@ export class RentalPostDto {
   posterAddress!: string;
 
   @ApiProperty({
+    description: 'The nft id',
+    example: 1,
+    required: true,
+    type: Number,
+  })
+  @IsNumber()
+  nftId!: number;
+
+  @ApiProperty({
     description: 'The rental post name',
     example: 'Rental Post 1',
     required: true,

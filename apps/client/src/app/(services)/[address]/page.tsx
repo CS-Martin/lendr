@@ -27,8 +27,8 @@ export default function UserProfilePage() {
   console.log('Session:', session);
 
   const [selectedNFTForListing, setSelectedNFTForListing] = useState<OwnedNft | null>(null);
-  const [selectedNFTForDetails, setSelectedNFTForDetails] = useState<OwnedNft | null>(null);
   const [isListDrawerOpen, setIsListDrawerOpen] = useState(false);
+  const [selectedNFTForDetails, setSelectedNFTForDetails] = useState<OwnedNft | null>(null);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
 
   // Create a ref for the container that holds all NFTs

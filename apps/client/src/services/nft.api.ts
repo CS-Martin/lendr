@@ -27,7 +27,7 @@ export class NFTApiService {
 
       const data = await response.json();
 
-      return data.data;
+      return data;
     } catch (error) {
       console.error('Error creating NFT:', error);
       throw error;

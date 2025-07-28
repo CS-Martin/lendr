@@ -1,28 +1,68 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
-import { useState } from 'react';
+import { memo, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Separator } from '@/components/ui/separator';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ExternalLink, Copy, Hash, FileText, ImageIcon, Link, Clock, Loader2, AlertTriangle } from 'lucide-react';
+import {
+  ExternalLink,
+  Copy,
+  Hash,
+  FileText,
+  ImageIcon,
+  Link,
+  Clock,
+  Loader2,
+  AlertTriangle,
+  Timer,
+} from 'lucide-react';
 import Image from 'next/image';
-import { OwnedNft } from 'alchemy-sdk';
 import { formatDate } from '@/lib/utils';
 import { Session } from 'next-auth';
+import { RentalPostDto } from '@repo/shared-dtos';
+import { nftApiService } from '@/services/nft.api';
+import { toast } from 'sonner';
+import { useProgress } from '@bprogress/next';
+import { Card, CardContent } from '@/components/ui/card';
+import { CountdownTimer } from './countdown-timer';
+import LendrButton from '@/components/shared/lendr-btn';
 
-interface NFTDetailsModalProps {
-  nft: OwnedNft | null;
+interface RentalPostDetailsModalProps {
   isOpen: boolean;
   onClose: () => void;
   session: Session | null;
-  profileAddress: string;
+  selectedRentalPost: RentalPostDto | null;
 }
 
-export const NFTDetailsModal = ({ nft, isOpen, onClose, session, profileAddress }: NFTDetailsModalProps) => {
+export const RentalPostDetailsModal = ({
+  isOpen,
+  onClose,
+  session,
+  selectedRentalPost,
+}: RentalPostDetailsModalProps) => {
+  const { start, stop } = useProgress();
   const [imageLoading, setImageLoading] = useState(true);
   const [copiedAddress, setCopiedAddress] = useState(false);
+  const [nft, setNft] = useState<any | null>(null);
+
+  useEffect(() => {
+    const fetchNft = async () => {
+      start();
+
+      if (!selectedRentalPost) {
+        console.error('No rental post selected');
+        return null;
+      }
+
+      const nft = await nftApiService.findOne(selectedRentalPost.nftId);
+      setNft(nft.data || null);
+      stop();
+    };
+    fetchNft();
+  }, [selectedRentalPost, start, stop]);
 
   const copyToClipboard = async (text: string) => {
     try {
@@ -40,6 +80,10 @@ export const NFTDetailsModal = ({ nft, isOpen, onClose, session, profileAddress 
     const i = Math.floor(Math.log(bytes) / Math.log(1024));
     return Math.round((bytes / Math.pow(1024, i)) * 100) / 100 + ' ' + sizes[i];
   };
+
+  if (!nft) {
+    return null;
+  }
 
   return (
     <Dialog
@@ -59,13 +103,14 @@ export const NFTDetailsModal = ({ nft, isOpen, onClose, session, profileAddress 
                   animate={{ y: 0, opacity: 1 }}
                   transition={{ delay: 0.1 }}>
                   <DialogTitle className='text-2xl font-bold bg-gradient-to-r from-lendr-400 to-cyan-400 bg-clip-text text-transparent'>
-                    {nft.name || 'Unnamed NFT'}
+                    {nft.metadata.name || 'Unnamed NFT'}
                   </DialogTitle>
-                  <p className='text-gray-400 mt-2'>{nft.collection?.name || 'No collection name'}</p>
+
+                  <p className='text-gray-400 mt-2'>{nft.metadata.collection?.name || 'No collection name'}</p>
                 </motion.div>
               </DialogHeader>
 
-              {nft.contract.isSpam && (
+              {nft.metadata?.contract.isSpam && (
                 <motion.div
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -77,11 +122,11 @@ export const NFTDetailsModal = ({ nft, isOpen, onClose, session, profileAddress 
                     <p className='text-red-400 text-sm mt-1'>
                       This NFT has been flagged as potential spam. Be cautious when interacting with it.
                     </p>
-                    {nft.contract.spamClassifications?.length > 0 && (
+                    {nft.metadata?.contract.spamClassifications?.length > 0 && (
                       <div className='mt-2'>
                         <span className='text-xs text-red-400'>Classifications:</span>
                         <div className='flex flex-wrap gap-1 mt-1'>
-                          {nft.contract.spamClassifications.map((classification, index) => (
+                          {nft.metadata?.contract.spamClassifications.map((classification: string, index: number) => (
                             <Badge
                               key={index}
                               variant='outline'
@@ -111,10 +156,10 @@ export const NFTDetailsModal = ({ nft, isOpen, onClose, session, profileAddress 
                     )}
                     <Image
                       src={
-                        nft.image.cachedUrl ||
-                        nft.image.originalUrl ||
-                        nft.image.pngUrl ||
-                        nft.contract.openSeaMetadata?.imageUrl ||
+                        nft.metadata?.image.cachedUrl ||
+                        nft.metadata?.image.originalUrl ||
+                        nft.metadata?.image.pngUrl ||
+                        nft.metadata?.contract.openSeaMetadata?.imageUrl ||
                         '/placeholder.svg'
                       }
                       alt={nft.name || 'NFT image'}
@@ -135,26 +180,26 @@ export const NFTDetailsModal = ({ nft, isOpen, onClose, session, profileAddress 
                     <div className='grid grid-cols-2 gap-4 text-sm'>
                       <div>
                         <span className='text-gray-400'>Type:</span>
-                        <span className='ml-2 text-white'>{nft.image.contentType || 'Unknown'}</span>
+                        <span className='ml-2 text-white'>{nft.metadata?.image.contentType || 'Unknown'}</span>
                       </div>
                       <div>
                         <span className='text-gray-400'>Size:</span>
-                        <span className='ml-2 text-white'>{formatFileSize(nft.image.size)}</span>
+                        <span className='ml-2 text-white'>{formatFileSize(nft.metadata?.image.size)}</span>
                       </div>
                       <div>
                         <span className='text-gray-400'>Original URL:</span>
                         <div className='flex items-center gap-1 mt-1'>
                           <code className='text-xs text-gray-300 truncate'>
-                            {nft.image.originalUrl?.slice(0, 30)}
+                            {nft.metadata?.image.originalUrl?.slice(0, 30)}
                             ...
-                            {nft.image.originalUrl?.slice(-10)}
+                            {nft.metadata?.image.originalUrl?.slice(-10)}
                           </code>
-                          {nft.image.originalUrl && (
+                          {nft.metadata?.image.originalUrl && (
                             <Button
                               size='sm'
                               variant='ghost'
                               className='h-6 w-6 p-0 text-gray-400 hover:text-white'
-                              onClick={() => window.open(nft.image.originalUrl, '_blank')}>
+                              onClick={() => window.open(nft.metadata?.image.originalUrl, '_blank')}>
                               <ExternalLink className='h-3 w-3' />
                             </Button>
                           )}
@@ -164,7 +209,7 @@ export const NFTDetailsModal = ({ nft, isOpen, onClose, session, profileAddress 
                   </div>
 
                   {/* OpenSea Metadata */}
-                  {nft.contract.openSeaMetadata && (
+                  {nft.metadata?.contract.openSeaMetadata && (
                     <div className='bg-gray-800/30 rounded-lg p-4 border border-gray-700/50'>
                       <div className='flex items-center gap-2 mb-3'>
                         <ImageIcon className='h-4 w-4 text-purple-400' />
@@ -173,21 +218,25 @@ export const NFTDetailsModal = ({ nft, isOpen, onClose, session, profileAddress 
                       <div className='space-y-2 text-sm'>
                         <div>
                           <span className='text-gray-400'>Collection:</span>
-                          <span className='ml-2 text-white'>{nft.contract.openSeaMetadata.collectionName}</span>
+                          <span className='ml-2 text-white'>
+                            {nft.metadata?.contract.openSeaMetadata.collectionName}
+                          </span>
                         </div>
                         <div>
                           <span className='text-gray-400'>Slug:</span>
-                          <span className='ml-2 text-white'>{nft.contract.openSeaMetadata.collectionSlug}</span>
+                          <span className='ml-2 text-white'>
+                            {nft.metadata?.contract.openSeaMetadata.collectionSlug}
+                          </span>
                         </div>
                         <div>
                           <span className='text-gray-400'>Description:</span>
-                          <p className='text-gray-300 mt-1'>{nft.contract.openSeaMetadata.description}</p>
+                          <p className='text-gray-300 mt-1'>{nft.metadata?.contract.openSeaMetadata.description}</p>
                         </div>
-                        {nft.contract.openSeaMetadata.lastIngestedAt && (
+                        {nft.metadata?.contract.openSeaMetadata.lastIngestedAt && (
                           <div>
                             <span className='text-gray-400'>Last Updated:</span>
                             <span className='ml-2 text-white'>
-                              {formatDate(nft.contract.openSeaMetadata.lastIngestedAt)}
+                              {formatDate(nft.metadata?.contract.openSeaMetadata.lastIngestedAt)}
                             </span>
                           </div>
                         )}
@@ -202,6 +251,18 @@ export const NFTDetailsModal = ({ nft, isOpen, onClose, session, profileAddress 
                   animate={{ x: 0, opacity: 1 }}
                   transition={{ delay: 0.3 }}
                   className='space-y-6'>
+                  {selectedRentalPost?.isBiddable && selectedRentalPost.biddingEndtime && (
+                    <Card className='bg-gradient-to-r from-orange-900/50 to-red-900/50 border-orange-800'>
+                      <CardContent className='p-1 text-center'>
+                        <h3 className='text-xl font-semibold text-white mb-4 flex items-center justify-center space-x-2'>
+                          <Timer className='w-5 h-5 text-orange-400' />
+                          <span>Bidding Ends In</span>
+                        </h3>
+                        <CountdownTimer biddingEndtime={selectedRentalPost.biddingEndtime} />
+                        <LendrButton className='w-[90%] mt-5 rounded-lg'>Bid now!</LendrButton>
+                      </CardContent>
+                    </Card>
+                  )}
                   {/* Description */}
                   <div>
                     <div className='flex items-center gap-2 mb-3'>
@@ -209,7 +270,7 @@ export const NFTDetailsModal = ({ nft, isOpen, onClose, session, profileAddress 
                       <span className='font-medium text-white'>Description</span>
                     </div>
                     <p className='text-gray-300 leading-relaxed'>
-                      {nft.description || nft.contract.openSeaMetadata?.description || 'No description available'}
+                      {nft.metadata?.description || 'No description available'}
                     </p>
                   </div>
 
@@ -235,12 +296,12 @@ export const NFTDetailsModal = ({ nft, isOpen, onClose, session, profileAddress 
                         <Badge
                           variant='outline'
                           className='border-gray-600 text-gray-300'>
-                          {nft.tokenType}
+                          {nft.metadata?.tokenType}
                         </Badge>
                       </div>
                       <div className='flex justify-between items-center'>
                         <span className='text-gray-400'>Balance:</span>
-                        <span className='text-white'>{nft.balance || '1'}</span>
+                        <span className='text-white'>{nft.metadata?.balance || '1'}</span>
                       </div>
                     </div>
                   </div>
@@ -258,14 +319,14 @@ export const NFTDetailsModal = ({ nft, isOpen, onClose, session, profileAddress 
                         <span className='text-gray-400 block mb-1'>Contract Address:</span>
                         <div className='flex items-center gap-2'>
                           <code className='bg-gray-800/50 px-2 py-1 rounded text-sm font-mono text-gray-300'>
-                            {nft.contract.address.slice(0, 10)}
+                            {nft.metadata?.contract.address.slice(0, 10)}
                             ...
-                            {nft.contract.address.slice(-8)}
+                            {nft.metadata?.contract.address.slice(-8)}
                           </code>
                           <Button
                             size='sm'
                             variant='ghost'
-                            onClick={() => copyToClipboard(nft.contract.address)}
+                            onClick={() => copyToClipboard(nft.metadata?.contract.address)}
                             className='h-8 w-8 p-0 text-gray-400 hover:text-white'>
                             <Copy className='h-3 w-3' />
                           </Button>
@@ -300,33 +361,36 @@ export const NFTDetailsModal = ({ nft, isOpen, onClose, session, profileAddress 
                       </div>
                       <div className='flex justify-between items-center'>
                         <span className='text-gray-400'>Contract Name:</span>
-                        <span className='text-white'>{nft.contract.name || 'Unnamed contract'}</span>
+                        <span className='text-white'>{nft.metadata?.contract.name || 'Unnamed contract'}</span>
                       </div>
                       <div className='flex justify-between items-center'>
                         <span className='text-gray-400'>Symbol:</span>
-                        <span className='text-white'>{nft.contract.symbol || 'No symbol'}</span>
+                        <span className='text-white'>{nft.metadata?.contract.symbol || 'No symbol'}</span>
                       </div>
-                      {nft.contract.totalSupply && (
+                      {nft.metadata?.contract.totalSupply && (
                         <div className='flex justify-between items-center'>
                           <span className='text-gray-400'>Total Supply:</span>
-                          <span className='text-white'>{nft.contract.totalSupply}</span>
+                          <span className='text-white'>{nft.metadata?.contract.totalSupply}</span>
                         </div>
                       )}
                       <div className='flex justify-between items-center'>
                         <span className='text-gray-400'>Deployer:</span>
                         <div className='flex items-center gap-1'>
                           <code className='text-xs text-gray-300'>
-                            {nft.contract.contractDeployer?.slice(0, 6)}
+                            {nft.metadata?.contract.contractDeployer?.slice(0, 6)}
                             ...
-                            {nft.contract.contractDeployer?.slice(-4)}
+                            {nft.metadata?.contract.contractDeployer?.slice(-4)}
                           </code>
-                          {nft.contract.contractDeployer && (
+                          {nft.metadata?.contract.contractDeployer && (
                             <Button
                               size='sm'
                               variant='ghost'
                               className='h-6 w-6 p-0 text-gray-400 hover:text-white'
                               onClick={() =>
-                                window.open(`https://etherscan.io/address/${nft.contract.contractDeployer}`, '_blank')
+                                window.open(
+                                  `https://etherscan.io/address/${nft.metadata?.contract.contractDeployer}`,
+                                  '_blank',
+                                )
                               }>
                               <ExternalLink className='h-3 w-3' />
                             </Button>
@@ -336,13 +400,13 @@ export const NFTDetailsModal = ({ nft, isOpen, onClose, session, profileAddress 
                       <div className='flex justify-between items-center'>
                         <span className='text-gray-400'>Deployed Block:</span>
                         <span className='text-white'>
-                          {nft.contract.deployedBlockNumber ? (
+                          {nft.metadata?.contract.deployedBlockNumber ? (
                             <a
-                              href={`https://etherscan.io/block/${nft.contract.deployedBlockNumber}`}
+                              href={`https://etherscan.io/block/${nft.metadata?.contract.deployedBlockNumber}`}
                               target='_blank'
                               rel='noopener noreferrer'
                               className='text-lendr-400 hover:underline'>
-                              #{nft.contract.deployedBlockNumber}
+                              #{nft.metadata?.contract.deployedBlockNumber}
                             </a>
                           ) : (
                             'Unknown'
@@ -363,20 +427,20 @@ export const NFTDetailsModal = ({ nft, isOpen, onClose, session, profileAddress 
                     <div className='space-y-3'>
                       <div className='flex justify-between items-center'>
                         <span className='text-gray-400'>Last Updated:</span>
-                        <span className='text-white'>{formatDate(nft.timeLastUpdated)}</span>
+                        <span className='text-white'>{formatDate(nft.metadata?.timeLastUpdated)}</span>
                       </div>
                       {/* Not "unknown" */}
-                      {nft.acquiredAt && nft.acquiredAt.blockTimestamp && (
+                      {nft.metadata?.acquiredAt && nft.metadata?.acquiredAt.blockTimestamp && (
                         <div className='flex justify-between items-center'>
                           <span className='text-gray-400'>Acquired:</span>
-                          <span className='text-white'>{formatDate(nft.acquiredAt.blockTimestamp)}</span>
+                          <span className='text-white'>{formatDate(nft.metadata?.acquiredAt.blockTimestamp)}</span>
                         </div>
                       )}
                     </div>
                   </div>
 
                   {/* Metadata URI */}
-                  {nft.tokenUri && (
+                  {nft.metadata?.tokenUri && (
                     <>
                       <Separator className='bg-gray-700/50' />
                       <div>
@@ -386,13 +450,13 @@ export const NFTDetailsModal = ({ nft, isOpen, onClose, session, profileAddress 
                         </div>
                         <div className='flex items-center gap-2'>
                           <code className='bg-gray-800/50 px-2 py-1 rounded text-sm font-mono text-gray-300 flex-1 truncate'>
-                            {nft.tokenUri}
+                            {nft.metadata?.tokenUri}
                           </code>
                           <Button
                             size='sm'
                             variant='ghost'
                             className='h-8 w-8 p-0 text-gray-400 hover:text-white'
-                            onClick={() => window.open(nft.tokenUri, '_blank')}>
+                            onClick={() => window.open(nft.metadata?.tokenUri, '_blank')}>
                             <ExternalLink className='h-3 w-3' />
                           </Button>
                         </div>
@@ -401,7 +465,7 @@ export const NFTDetailsModal = ({ nft, isOpen, onClose, session, profileAddress 
                   )}
 
                   {/* Raw Metadata URI */}
-                  {nft.raw.tokenUri && (
+                  {nft.metadata?.raw.tokenUri && (
                     <>
                       <Separator className='bg-gray-700/50' />
                       <div>
@@ -411,13 +475,13 @@ export const NFTDetailsModal = ({ nft, isOpen, onClose, session, profileAddress 
                         </div>
                         <div className='flex items-center gap-2'>
                           <code className='bg-gray-800/50 px-2 py-1 rounded text-sm font-mono text-gray-300 flex-1 truncate'>
-                            {nft.raw.tokenUri}
+                            {nft.metadata?.raw?.tokenUri}
                           </code>
                           <Button
                             size='sm'
                             variant='ghost'
                             className='h-8 w-8 p-0 text-gray-400 hover:text-white'
-                            onClick={() => window.open(nft.raw.tokenUri, '_blank')}>
+                            onClick={() => window.open(nft.metadata?.raw?.tokenUri, '_blank')}>
                             <ExternalLink className='h-3 w-3' />
                           </Button>
                         </div>
@@ -426,7 +490,7 @@ export const NFTDetailsModal = ({ nft, isOpen, onClose, session, profileAddress 
                   )}
 
                   {/* Attributes */}
-                  {nft.raw.metadata?.attributes && nft.raw.metadata.attributes.length > 0 && (
+                  {nft.metadata?.raw?.metadata?.attributes && nft.metadata?.raw?.metadata.attributes.length > 0 && (
                     <>
                       <Separator className='bg-gray-700/50' />
                       <div>
@@ -435,30 +499,27 @@ export const NFTDetailsModal = ({ nft, isOpen, onClose, session, profileAddress 
                           <span className='font-medium text-white'>Attributes</span>
                         </div>
                         <div className='grid grid-cols-2 gap-3'>
-                          {nft.raw.metadata.attributes.map(
-                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                            (attr: any, index: number) => (
-                              <motion.div
-                                key={index}
-                                initial={{
-                                  opacity: 0,
-                                  y: 10,
-                                }}
-                                animate={{
-                                  opacity: 1,
-                                  y: 0,
-                                }}
-                                transition={{
-                                  delay: 0.1 * index,
-                                }}
-                                className='bg-gray-800/30 rounded-lg p-3 border border-gray-700/50'>
-                                <div className='text-xs text-gray-400 uppercase tracking-wider mb-1'>
-                                  {attr.trait_type}
-                                </div>
-                                <div className='text-white font-medium'>{attr.value}</div>
-                              </motion.div>
-                            ),
-                          )}
+                          {nft.metadata?.raw?.metadata?.attributes.map((attr: any, index: number) => (
+                            <motion.div
+                              key={index}
+                              initial={{
+                                opacity: 0,
+                                y: 10,
+                              }}
+                              animate={{
+                                opacity: 1,
+                                y: 0,
+                              }}
+                              transition={{
+                                delay: 0.1 * index,
+                              }}
+                              className='bg-gray-800/30 rounded-lg p-3 border border-gray-700/50'>
+                              <div className='text-xs text-gray-400 uppercase tracking-wider mb-1'>
+                                {attr.trait_type}
+                              </div>
+                              <div className='text-white font-medium'>{attr.value}</div>
+                            </motion.div>
+                          ))}
                         </div>
                       </div>
                     </>
@@ -467,28 +528,28 @@ export const NFTDetailsModal = ({ nft, isOpen, onClose, session, profileAddress 
               </div>
 
               {/* Action Buttons */}
-              {session?.user?.address === profileAddress && (
-                <motion.div
-                  initial={{ y: 20, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: 0.4 }}
-                  className='flex gap-4 mt-8 pt-6 border-t border-gray-700/50'>
-                  <Button
-                    variant='outline'
-                    onClick={onClose}
-                    className='flex-1 border-gray-600 text-gray-300 hover:bg-gray-700 hover:text-white bg-transparent'>
-                    Close
-                  </Button>
-                  <Button
-                    className='flex-1 bg-gradient-to-r from-lendr-400 to-lendr-500 hover:from-lendr-500 hover:to-lendr-600 text-slate-950 font-semibold'
-                    onClick={() => {
-                      // Handle list NFT action
-                      onClose();
-                    }}>
-                    List for Rent
-                  </Button>
-                </motion.div>
-              )}
+              {/* {session?.user?.address === profileAddress && (
+                                <motion.div
+                                    initial={{ y: 20, opacity: 0 }}
+                                    animate={{ y: 0, opacity: 1 }}
+                                    transition={{ delay: 0.4 }}
+                                    className='flex gap-4 mt-8 pt-6 border-t border-gray-700/50'>
+                                    <Button
+                                        variant='outline'
+                                        onClick={onClose}
+                                        className='flex-1 border-gray-600 text-gray-300 hover:bg-gray-700 hover:text-white bg-transparent'>
+                                        Close
+                                    </Button>
+                                    <Button
+                                        className='flex-1 bg-gradient-to-r from-lendr-400 to-lendr-500 hover:from-lendr-500 hover:to-lendr-600 text-slate-950 font-semibold'
+                                        onClick={() => {
+                                            // Handle list NFT action
+                                            onClose();
+                                        }}>
+                                        List for Rent
+                                    </Button>
+                                </motion.div>
+                            )} */}
             </motion.div>
           )}
         </AnimatePresence>

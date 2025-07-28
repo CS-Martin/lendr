@@ -4,14 +4,17 @@ import { useState, useRef } from 'react';
 import { motion, AnimatePresence, useInView } from 'framer-motion';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { NFTGrid } from '@/app/(services)/marketplace/_components/nft-grid';
 import { ViewModeToggle } from '@/app/(services)/marketplace/_components/view-mode-toggle';
 import { SearchBar } from '@/app/(services)/marketplace/_components/search-bar';
-import { ActiveFilters } from '@/app/(services)/marketplace/_components/ActiveFilters';
 import { FilterHeader } from '@/app/(services)/marketplace/_components/filter-header';
 import { FilterSection } from '@/app/(services)/marketplace/_components/filter-section';
 import { EmptyState } from './_components/empty-state';
 import { useFindAllRentalPost } from '@/hooks/useRentalPost';
+import { RentalPostDetailsModal } from './_components/rental-post-details-modal';
+import { ActiveFilters } from './_components/active-filters';
+import { RentalPostCard } from '@/components/shared/rental-post/rental-post-card';
+import { RentalPostDto } from '@repo/shared-dtos';
+import { useSession } from 'next-auth/react';
 
 // Register GSAP plugins
 if (typeof window !== 'undefined') {
@@ -53,14 +56,17 @@ const chainFilters = [
 ];
 
 export default function MarketplacePage() {
+  const { data: session } = useSession();
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedRentalPost, setSelectedRentalPost] = useState<RentalPostDto | null>(null);
+
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedFilters, setSelectedFilters] = useState<string[]>([]);
-  // const [isLoading, setIsLoading] = useState(true)
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const sidebarRef = useRef<HTMLDivElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
-  // const headerRef = useRef<HTMLDivElement>(null)
   const isInView = useInView(gridRef, { once: true, margin: '-100px' });
 
   const toggleFilter = (filterId: string) => {
@@ -71,9 +77,7 @@ export default function MarketplacePage() {
     }
   };
 
-  const { rentalPosts, error } = useFindAllRentalPost();
-
-  console.log(rentalPosts, error);
+  const { rentalPosts } = useFindAllRentalPost();
 
   const clearAllFilters = () => {
     setSelectedFilters([]);
@@ -89,6 +93,11 @@ export default function MarketplacePage() {
         setSelectedFilters([]);
       },
     });
+  };
+
+  const handleViewRentalPost = (post: RentalPostDto) => {
+    setSelectedRentalPost(post);
+    setIsModalOpen(true);
   };
 
   const filteredRentalPosts = rentalPosts.filter((post) => {
@@ -211,17 +220,46 @@ export default function MarketplacePage() {
           </div>
 
           {/* NFT Grid */}
-          <NFTGrid
-            posts={filteredRentalPosts}
-            viewMode={viewMode}
-            isInView={isInView}
-          />
+          <motion.div
+            className={`grid gap-4 ${viewMode === 'grid' ? 'grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-5' : 'grid-cols-1 xl:grid-cols-2'}`}
+            layout>
+            <AnimatePresence mode='popLayout'>
+              {filteredRentalPosts.map((post, index) => (
+                <motion.div
+                  key={index}
+                  className='nft-card'
+                  initial={{ opacity: 0, y: 50, scale: 0.9 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -50, scale: 0.9 }}
+                  transition={{
+                    duration: 0.5,
+                    delay: isInView ? index * 0.1 : 0,
+                  }}
+                  whileHover={{ y: -5 }}>
+                  <RentalPostCard
+                    post={post}
+                    viewMode={viewMode}
+                    onViewRentalPost={() => handleViewRentalPost(post)}
+                  />
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </motion.div>
 
           {/* Empty State */}
           {filteredRentalPosts.length === 0 && <EmptyState onClearFilters={clearAllFilters} />}
         </div>
       </div>
 
+      {/* Rental Post Details Modal */}
+      {selectedRentalPost && isModalOpen && (
+        <RentalPostDetailsModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          session={session}
+          selectedRentalPost={selectedRentalPost}
+        />
+      )}
       {/* Mobile Overlay */}
       <AnimatePresence>
         {sidebarOpen && (
