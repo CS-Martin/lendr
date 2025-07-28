@@ -23,11 +23,10 @@ import z from 'zod';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useCreateRentalPost } from '@/hooks/useRentalPost';
-import { CreateNftDto, CreateRentalPostDto, NftDto } from '@repo/shared-dtos';
+import { CreateRentalPostDto } from '@repo/shared-dtos';
 import { Session } from 'next-auth';
-import { nftApiService, NFTApiService } from '@/services/nft.api';
-import { AlchemyNFTMetadata } from '@/types/nft-metadata';
 import { toast } from 'sonner';
+import { nftApiService } from '@/services/nft.api';
 
 interface ListNFTDrawerProps {
     nft: OwnedNft | null;
@@ -41,6 +40,9 @@ interface ListNFTDrawerProps {
 const listNftFormSchema = z.object({
     posterAddress: z.string().min(1, 'Poster address is required'),
     name: z.string().min(1, 'Name is required').max(100, 'Name must be less than 100 characters'),
+    imageUrl: z.string().url(),
+    tokenType: z.string().min(1, 'Token type is required'),
+    collectionName: z.string().optional(),
     description: z.string().max(255, 'Description must be less than 500 characters').optional(),
     category: z.string().optional(),
     hourlyRate: z.number().min(0, 'Hourly rate must be greater than 0').positive('Hourly rate must be a positive number'),
@@ -71,6 +73,9 @@ export const ListNFTDrawer = ({ nft, isOpen, onClose, session, profileAddress }:
         defaultValues: {
             posterAddress: session?.user?.address,
             name: '',
+            imageUrl: nft?.image.thumbnailUrl || nft?.image.cachedUrl || '/placeholder.svg',
+            tokenType: nft?.tokenType || '',
+            collectionName: nft?.collection?.name || '',
             description: '',
             hourlyRate: 0,
             collateral: 0,

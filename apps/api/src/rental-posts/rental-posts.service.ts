@@ -133,6 +133,9 @@ export class RentalPostsService implements RentalPostsServiceAbstractClass {
     rentalPostDto.rentalPostId = rentalPost.rentalPostId;
     rentalPostDto.posterAddress = rentalPost.posterAddress;
     rentalPostDto.name = rentalPost.name;
+    rentalPostDto.imageUrl = rentalPost.imageUrl;
+    rentalPostDto.tokenType = rentalPost.tokenType;
+    rentalPostDto.collectionName = rentalPost.collectionName ?? undefined;
     rentalPostDto.description = rentalPost.description ?? '';
 
     rentalPostDto.category = rentalPost.category ?? undefined;
