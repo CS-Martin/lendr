@@ -17,14 +17,10 @@ export class NftService implements NftServiceAbstractClass {
   async create(createNftDto: CreateNftDto): Promise<ResponseDto<NftDto>> {
     this.logger.log('Creating NFT', createNftDto);
 
-    const nft = await this.nftDbService.findOne(createNftDto.address);
-    const user = await this.userDbService.findOne(createNftDto.userAddress);
+    const user = await this.userDbService.findOne(createNftDto.ownerAddress);
 
-    if (nft) {
-      this.logger.error('NFT already exists', createNftDto.address);
-      throw new BadRequestException('NFT already exists');
-    } else if (!user) {
-      this.logger.error('User not found', createNftDto.userAddress);
+    if (!user) {
+      this.logger.error('User not found', createNftDto.ownerAddress);
       throw new NotFoundException('User not found');
     }
 
@@ -42,21 +38,21 @@ export class NftService implements NftServiceAbstractClass {
     }
   }
 
-  async update(address: string, updateNftDto: UpdateNftDto): Promise<ResponseDto<NftDto>> {
-    this.logger.log('Updating NFT by address', address);
+  async update(id: number, updateNftDto: UpdateNftDto): Promise<ResponseDto<NftDto>> {
+    this.logger.log('Updating NFT by id', id);
 
-    const nft = await this.nftDbService.findOne(address);
+    const nft = await this.nftDbService.findOne(id);
 
     if (!nft) {
-      this.logger.error('NFT not found', address);
+      this.logger.error('NFT not found', id);
       throw new NotFoundException('NFT not found');
     }
 
     try {
-      const updatedNft = await this.nftDbService.update(address, updateNftDto);
+      const updatedNft = await this.nftDbService.update(id, updateNftDto);
 
       if (!updatedNft) {
-        this.logger.error('Failed to update NFT', address);
+        this.logger.error('Failed to update NFT', id);
         throw new BadRequestException('Failed to update NFT');
       }
 
@@ -89,11 +85,11 @@ export class NftService implements NftServiceAbstractClass {
     }
   }
 
-  async findOne(address: string): Promise<ResponseDto<NftDto>> {
-    this.logger.log(`Fetching NFT with address: ${address}`);
+  async findOne(id: number): Promise<ResponseDto<NftDto>> {
+    this.logger.log(`Fetching NFT with id: ${id}`);
 
     try {
-      const nft = await this.nftDbService.findOne(address);
+      const nft = await this.nftDbService.findOne(id);
 
       const nftDto = this.convertToNftDto(nft);
 
@@ -103,16 +99,16 @@ export class NftService implements NftServiceAbstractClass {
         message: 'NFT fetched successfully',
       };
     } catch (error) {
-      this.logger.error(`Failed to fetch NFT with address: ${address}`, error);
+      this.logger.error(`Failed to fetch NFT with id: ${id}`, error);
       throw new BadRequestException('Failed to fetch NFT');
     }
   }
 
-  async remove(address: string): Promise<ResponseDto<null>> {
-    this.logger.log(`Removing NFT with address: ${address}`);
+  async remove(id: number): Promise<ResponseDto<null>> {
+    this.logger.log(`Removing NFT with id: ${id}`);
 
     try {
-      await this.nftDbService.delete(address);
+      await this.nftDbService.delete(id);
 
       return {
         statusCode: 200,
@@ -120,7 +116,7 @@ export class NftService implements NftServiceAbstractClass {
         message: 'NFT deleted successfully',
       };
     } catch (error) {
-      this.logger.error(`Failed to delete NFT with address: ${address}`, error);
+      this.logger.error(`Failed to delete NFT with id: ${id}`, error);
       throw new BadRequestException('Failed to delete NFT');
     }
   }
@@ -131,21 +127,21 @@ export class NftService implements NftServiceAbstractClass {
    * @returns The NftDto.
    */
   private convertToNftDto(nft: NFT | null): NftDto {
-    if (!nft) {
-      throw new NotFoundException('NFT not found');
-    }
-
     const dto = new NftDto();
-    dto.address = nft.address;
-    dto.userAddress = nft.userAddress;
-    dto.title = nft.title;
-    dto.imageUrl = nft.imageUrl;
-    dto.description = nft.description ?? '';
-    dto.category = nft.category ?? '';
-    dto.floorPrice = nft.floorPrice ?? 0;
-    dto.collectionName = nft.collectionName ?? '';
-    dto.createdAt = nft.createdAt;
-    dto.updatedAt = nft.updatedAt;
+
+    dto.id = nft?.id ?? 0;
+    dto.contractAddress = nft?.contractAddress ?? '';
+    dto.tokenId = nft?.tokenId ?? '';
+    dto.ownerAddress = nft?.ownerAddress ?? '';
+    dto.title = nft?.title ?? '';
+    dto.imageUrl = nft?.imageUrl ?? '';
+    dto.description = nft?.description ?? '';
+    dto.category = nft?.category ?? '';
+    dto.floorPrice = nft?.floorPrice ?? 0;
+    dto.collectionName = nft?.collectionName ?? '';
+    dto.metadata = nft?.metadata;
+    dto.isListable = nft?.isListable ?? false;
+    dto.createdAt = nft?.createdAt ?? new Date();
 
     return dto;
   }

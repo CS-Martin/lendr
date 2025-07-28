@@ -100,25 +100,25 @@ export const NFTCard = ({ nft, onViewNFT, onListNFT, session, profileAddress }: 
             {nft.description}
           </motion.p>
 
-          {session?.user?.address === profileAddress && (
-            <motion.div
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.9 }}
-              className='absolute w-[90%] -bottom-10 group-hover:-translate-y-13 left-1/2 -translate-x-1/2 transition-all duration-500'>
-              <LendrButton
-                onClick={(e) => {
-                  e.stopPropagation();
+          {/* {session?.user?.address === profileAddress && ( */}
+          <motion.div
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.9 }}
+            className='absolute w-[90%] -bottom-10 group-hover:-translate-y-13 left-1/2 -translate-x-1/2 transition-all duration-500'>
+            <LendrButton
+              onClick={(e) => {
+                e.stopPropagation();
 
-                  onListNFT?.();
-                }}
-                className='w-full rounded-md bg-gradient-to-r from-lendr-400 to-lendr-500 hover:from-lendr-500 hover:to-lendr-600 text-slate-950 border-0 font-bold shadow-md shadow-lendr-400/30 hover:shadow-lendr-400/50 transition-all duration-500 overflow-hidden'>
-                List NFT
-              </LendrButton>
-            </motion.div>
-          )}
+                onListNFT?.();
+              }}
+              className='w-full rounded-md bg-gradient-to-r from-lendr-400 to-lendr-500 hover:from-lendr-500 hover:to-lendr-600 text-slate-950 border-0 font-bold shadow-md shadow-lendr-400/30 hover:shadow-lendr-400/50 transition-all duration-500 overflow-hidden'>
+              List NFT
+            </LendrButton>
+          </motion.div>
+          {/* )} */}
         </div>
       </motion.div>
     </Card3D>

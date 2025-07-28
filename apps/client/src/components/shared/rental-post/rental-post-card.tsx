@@ -8,29 +8,10 @@ import { Star, Heart, Share2 } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import { gsap } from 'gsap';
 import { Card3D } from '../card-3d';
+import { RentalPostDto } from '@repo/shared-dtos';
 
 interface RentalPostProps {
-  post: {
-    rentalPostId: number;
-    posterAddress: string;
-    name: string;
-    description: string;
-    hourlyRate: number;
-    collateral: number;
-    isBiddable: boolean;
-    biddingStarttime: Date | null;
-    biddingEndtime: Date | null;
-    isActive: boolean;
-    statusCode: string;
-    createdAt: Date;
-    updatedAt: Date;
-    image: string;
-    category: string;
-    rating: number;
-    currentBids: number;
-    highestBid: number | null;
-    duration: string;
-  };
+  post: RentalPostDto;
 }
 
 export const RentalPostCard = ({ post }: RentalPostProps) => {
@@ -38,6 +19,8 @@ export const RentalPostCard = ({ post }: RentalPostProps) => {
   const cardRef = useRef<HTMLDivElement>(null);
   const imageRef = useRef<HTMLDivElement>(null);
   const apyRef = useRef<HTMLDivElement>(null);
+
+  console.log(post);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -89,7 +72,7 @@ export const RentalPostCard = ({ post }: RentalPostProps) => {
     <Card3D className='group'>
       <motion.div
         ref={cardRef}
-        className='bg-gradient-to-br from-slate-900/90 to-slate-800/90 backdrop-blur-xl border border-slate-700/50 hover:border-lendr-400/50 rounded-3xl overflow-hidden shadow-2xl hover:shadow-lendr-400/30 transition-all duration-500'
+        className='bg-gradient-to-br max-h-120 from-slate-900/90 to-slate-800/90 backdrop-blur-xl border border-slate-700/50 hover:border-lendr-400/50 rounded-3xl overflow-hidden shadow-2xl hover:shadow-lendr-400/30 transition-all duration-500'
         whileHover={{
           y: -15,
           boxShadow: '0 25px 80px rgba(220, 243, 71, 0.25)',
@@ -103,10 +86,11 @@ export const RentalPostCard = ({ post }: RentalPostProps) => {
             whileHover={{ scale: 1.1 }}
             transition={{ duration: 0.5 }}>
             <Image
-              src={post.image || '/placeholder.svg'}
+              src={post.imageUrl || '/placeholder.svg'}
               alt={post.name}
-              width={400}
-              height={300}
+              width={500}
+              height={500}
+              unoptimized
               className='w-full h-64 object-cover'
             />
           </motion.div>
@@ -155,9 +139,9 @@ export const RentalPostCard = ({ post }: RentalPostProps) => {
           </div>
         </div>
 
-        <div className='p-6'>
+        <div className='p-4'>
           <motion.h3
-            className='text-xl font-bold text-white mb-2 group-hover:text-lendr-400 transition-colors duration-300'
+            className='text-md font-mono font-bold text-white mb-2 group-hover:text-lendr-400 transition-colors duration-300 line-clamp-1 text-ellipsis truncate'
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}>
@@ -165,7 +149,7 @@ export const RentalPostCard = ({ post }: RentalPostProps) => {
           </motion.h3>
 
           <motion.p
-            className='text-sm text-slate-400 mb-4 line-clamp-2'
+            className='text-sm text-slate-400 mb-4 line-clamp-1 text-ellipsis truncate'
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.5 }}>
@@ -179,7 +163,7 @@ export const RentalPostCard = ({ post }: RentalPostProps) => {
               transition={{ delay: 0.6 }}>
               <div className='text-sm text-slate-400'>Hourly Rate</div>
               <motion.div
-                className='text-lg font-bold text-lendr-400'
+                className='text-md font-bold text-lendr-400 font-mono'
                 animate={{
                   textShadow: [
                     '0 0 5px rgba(220, 243, 71, 0.5)',
@@ -199,25 +183,25 @@ export const RentalPostCard = ({ post }: RentalPostProps) => {
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.7 }}>
               <div className='text-sm text-slate-400'>Collateral</div>
-              <div className='text-lg font-bold text-cyan-400'>{post.collateral} ETH</div>
+              <div className='text-md font-bold text-cyan-400 font-mono'>{post.collateral} ETH</div>
             </motion.div>
           </div>
 
-          <motion.div
-            className='flex items-center justify-between mb-6'
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.8 }}>
-            <div className='flex items-center space-x-1'>
-              <Star className='w-4 h-4 text-yellow-400 fill-current' />
-              <span className='text-sm text-slate-300'>{post.rating}</span>
-              <span className='text-xs text-slate-500'>({post.currentBids} bids)</span>
-            </div>
-            <div className='text-xs text-slate-400 font-mono'>
-              {post.posterAddress.slice(0, 6)}...
-              {post.posterAddress.slice(-4)}
-            </div>
-          </motion.div>
+          {/* <motion.div
+                        className='flex items-center justify-between mb-6'
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.8 }}>
+                        <div className='flex items-center space-x-1'>
+                            <Star className='w-4 h-4 text-yellow-400 fill-current' />
+                            <span className='text-sm text-slate-300'>{post.}</span>
+                            <span className='text-xs text-slate-500'>({post.currentBids} bids)</span>
+                        </div>
+                        <div className='text-xs text-slate-400 font-mono'>
+                            {post.posterAddress.slice(0, 6)}...
+                            {post.posterAddress.slice(-4)}
+                        </div>
+                    </motion.div> */}
 
           <motion.div
             whileHover={{ scale: 1.02 }}
@@ -234,7 +218,7 @@ export const RentalPostCard = ({ post }: RentalPostProps) => {
                 whileHover={{ x: '100%' }}
                 transition={{ duration: 0.6 }}
               />
-              <span className='relative z-10'>{post.isActive ? 'Enter Pool' : 'Pool Locked'}</span>
+              <span className='relative z-10'>{post.isActive ? 'Place Bid' : 'Unavailable'}</span>
             </Button>
           </motion.div>
         </div>

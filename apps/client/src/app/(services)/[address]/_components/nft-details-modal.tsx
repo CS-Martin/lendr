@@ -21,6 +21,7 @@ interface NFTDetailsModalProps {
 }
 
 export const NFTDetailsModal = ({ nft, isOpen, onClose, session, profileAddress }: NFTDetailsModalProps) => {
+  console.log(nft);
   const [imageLoading, setImageLoading] = useState(true);
   const [copiedAddress, setCopiedAddress] = useState(false);
 

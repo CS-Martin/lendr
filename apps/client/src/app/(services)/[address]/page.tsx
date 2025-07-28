@@ -114,7 +114,7 @@ export default function UserProfilePage() {
         />
       )}
 
-      {selectedNFTForListing && isListDrawerOpen && session?.user.address === address && (
+      {selectedNFTForListing && isListDrawerOpen && session && (
         <ListNFTDrawer
           nft={selectedNFTForListing}
           isOpen={isListDrawerOpen}

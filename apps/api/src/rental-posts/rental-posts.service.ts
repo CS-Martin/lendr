@@ -133,6 +133,9 @@ export class RentalPostsService implements RentalPostsServiceAbstractClass {
     rentalPostDto.rentalPostId = rentalPost.rentalPostId;
     rentalPostDto.posterAddress = rentalPost.posterAddress;
     rentalPostDto.name = rentalPost.name;
+    rentalPostDto.imageUrl = rentalPost.imageUrl;
+    rentalPostDto.tokenType = rentalPost.tokenType;
+    rentalPostDto.collectionName = rentalPost.collectionName ?? undefined;
     rentalPostDto.description = rentalPost.description ?? '';
 
     rentalPostDto.category = rentalPost.category ?? undefined;
@@ -142,7 +145,7 @@ export class RentalPostsService implements RentalPostsServiceAbstractClass {
     rentalPostDto.biddingStarttime = rentalPost.biddingStarttime ?? undefined;
     rentalPostDto.biddingEndtime = rentalPost.biddingEndtime ?? undefined;
     rentalPostDto.isActive = rentalPost.isActive;
-    rentalPostDto.statusCode = rentalPost.statusCode as RentalPostStatusEnum;
+    rentalPostDto.status = rentalPost.status as RentalPostStatusEnum;
     rentalPostDto.createdAt = rentalPost.createdAt;
     rentalPostDto.updatedAt = rentalPost.updatedAt ?? undefined;
 

@@ -3,7 +3,6 @@
 import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { Button } from '@/components/ui/button';
 import { Home, Search, ArrowLeft, Zap, Coins, Gem } from 'lucide-react';
 import { GridBackground } from '@/components/shared/grid-background';
 import LendrButton from '@/components/shared/lendr-btn';
