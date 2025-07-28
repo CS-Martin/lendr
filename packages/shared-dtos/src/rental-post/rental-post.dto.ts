@@ -124,7 +124,7 @@ export class RentalPostDto {
         default: RentalListingStatus.AVAILABLE,
     })
     @IsEnum(RentalListingStatus)
-    statusCode!: RentalListingStatus;
+    status!: RentalListingStatus;
 
     @ApiProperty({
         description: 'The rental post created at',

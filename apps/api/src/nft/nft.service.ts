@@ -17,14 +17,10 @@ export class NftService implements NftServiceAbstractClass {
   async create(createNftDto: CreateNftDto): Promise<ResponseDto<NftDto>> {
     this.logger.log('Creating NFT', createNftDto);
 
-    const nft = await this.nftDbService.findOne(createNftDto.address);
-    const user = await this.userDbService.findOne(createNftDto.userAddress);
+    const user = await this.userDbService.findOne(createNftDto.ownerAddress as string);
 
-    if (nft) {
-      this.logger.error('NFT already exists', createNftDto.address);
-      throw new BadRequestException('NFT already exists');
-    } else if (!user) {
-      this.logger.error('User not found', createNftDto.userAddress);
+    if (!user) {
+      this.logger.error('User not found', createNftDto.ownerAddress);
       throw new NotFoundException('User not found');
     }
 
@@ -131,21 +127,21 @@ export class NftService implements NftServiceAbstractClass {
    * @returns The NftDto.
    */
   private convertToNftDto(nft: NFT | null): NftDto {
-    if (!nft) {
-      throw new NotFoundException('NFT not found');
-    }
-
     const dto = new NftDto();
-    dto.address = nft.address;
-    dto.userAddress = nft.userAddress;
-    dto.title = nft.title;
-    dto.imageUrl = nft.imageUrl;
-    dto.description = nft.description ?? '';
-    dto.category = nft.category ?? '';
-    dto.floorPrice = nft.floorPrice ?? 0;
-    dto.collectionName = nft.collectionName ?? '';
-    dto.createdAt = nft.createdAt;
-    dto.updatedAt = nft.updatedAt;
+
+    dto.id = nft?.id ?? 0;
+    dto.contractAddress = nft?.contractAddress ?? '';
+    dto.tokenId = nft?.tokenId ?? '';
+    dto.ownerAddress = nft?.ownerAddress ?? '';
+    dto.title = nft?.title ?? '';
+    dto.imageUrl = nft?.imageUrl ?? '';
+    dto.description = nft?.description ?? '';
+    dto.category = nft?.category ?? '';
+    dto.floorPrice = nft?.floorPrice ?? 0;
+    dto.collectionName = nft?.collectionName ?? '';
+    dto.metadata = nft?.metadata;
+    dto.isListable = nft?.isListable ?? false;
+    dto.createdAt = nft?.createdAt ?? new Date();
 
     return dto;
   }

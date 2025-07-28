@@ -25,7 +25,7 @@ model User {
 }
 
 model NFT {
-    id              String  @id @default(cuid())
+    id              Int     @id @default(autoincrement())
     contractAddress String // Alchemy's nft.contract.address
     tokenId         String // Alchemy's nft.tokenId
     title           String
@@ -85,14 +85,14 @@ model RentalPost {
 
 model RentalPostItem {
     rentalPostId Int
-    nftAddress   String
+    nftId        Int
     createdAt    DateTime @default(now())
     updatedAt    DateTime @updatedAt
 
     post RentalPost @relation(fields: [rentalPostId], references: [rentalPostId])
-    nft  NFT        @relation(fields: [nftAddress], references: [id])
+    nft  NFT        @relation(fields: [nftId], references: [id])
 
-    @@id([rentalPostId, nftAddress])
+    @@id([rentalPostId, nftId])
 }
 
 model Rental {
