@@ -12,16 +12,46 @@ import {
     DropdownMenuItem,
     DropdownMenuLabel,
     DropdownMenuSeparator,
-} from "@/components/ui/dropdown-menu"
+} from '@/components/ui/dropdown-menu';
+import { toast } from 'sonner';
+import { useEffect, useRef } from 'react';
 
 export const WalletConnectButton = () => {
+    const prevState = useRef<{
+        connected: boolean | undefined;
+        unsupportedChain: boolean | undefined;
+        ready: boolean;
+    } | null>(null);
+
+    const hasShownInitialToasts = useRef(false);
+
     return (
         <ConnectButton.Custom>
             {({ account, chain, openConnectModal, openAccountModal, openChainModal, mounted, authenticationStatus }) => {
                 const ready = mounted && authenticationStatus !== 'loading';
-                const connected =
-                    ready && account && chain && (!authenticationStatus || authenticationStatus === 'authenticated');
+                const connected = ready && account && chain && (!authenticationStatus || authenticationStatus === 'authenticated');
                 const unsupportedChain = connected && chain.unsupported;
+
+                // Only show toasts on actual state changes, not on every render
+                if (prevState.current) {
+                    if (unsupportedChain && !prevState.current.unsupportedChain) {
+                        toast.error('Unsupported Chain', {
+                            description: 'Please switch to a supported chain.',
+                        });
+                    } else if (ready && !prevState.current.ready && !hasShownInitialToasts.current) {
+                        toast.success('Your wallet is ready', {
+                            description: 'Sign message to connect.',
+                        });
+                        hasShownInitialToasts.current = true;
+                    } else if (connected && !prevState.current.connected && !hasShownInitialToasts.current) {
+                        toast.success('Connected', {
+                            description: 'You are now connected to a wallet.',
+                        });
+                        hasShownInitialToasts.current = true;
+                    }
+                }
+
+                prevState.current = { connected, unsupportedChain, ready };
 
                 return (
                     <div className='relative'>
@@ -40,7 +70,11 @@ export const WalletConnectButton = () => {
                                 {account.displayBalance && (
                                     <div className='hidden md:flex items-center gap-2 hover:bg-gray-700/20 rounded-md cursor-pointer px-2'>
                                         <span className='text-sm font-medium flex items-center gap-2'>
-                                            <EthereumIcon width={20} height={20} color='white' />
+                                            <EthereumIcon
+                                                width={20}
+                                                height={20}
+                                                color='white'
+                                            />
                                             {account.displayBalance}
                                         </span>
                                     </div>
@@ -54,7 +88,9 @@ export const WalletConnectButton = () => {
                                             className='flex items-center text-white border rounded-md border-slate-800 md:border-none hover:bg-gray-700/20 gap-2 cursor-pointer px-3 py-2 transition-all'
                                             onClick={() => unsupportedChain && openChainModal()}>
                                             <div className='flex items-center gap-2'>
-                                                <div className={`hidden md:block w-2 h-2 rounded-full ${unsupportedChain ? 'md:bg-red-400' : 'md:bg-green-400'}`} />
+                                                <div
+                                                    className={`hidden md:block w-2 h-2 rounded-full ${unsupportedChain ? 'md:bg-red-400' : 'md:bg-green-400'}`}
+                                                />
                                                 <Wallet className='block md:hidden w-4 h-4' />
                                                 <span className='hidden md:block text-sm font-medium'>{account.displayName}</span>
                                             </div>
@@ -63,17 +99,24 @@ export const WalletConnectButton = () => {
                                     </DropdownMenuTrigger>
 
                                     {!unsupportedChain && (
-                                        <DropdownMenuContent side='bottom' align='start' className='w-56 bg-gray-900 border-gray-700 text-white'>
+                                        <DropdownMenuContent
+                                            side='bottom'
+                                            align='start'
+                                            className='w-56 bg-gray-900 border-gray-700 text-white'>
                                             <DropdownMenuLabel>My Account</DropdownMenuLabel>
                                             <DropdownMenuSeparator className='bg-gray-700' />
                                             <DropdownMenuItem className='cursor-pointer focus:bg-gray-700/50'>
-                                                <Link href={`/${account.address}`} className='flex items-center gap-2 w-full'>
+                                                <Link
+                                                    href={`/${account.address}`}
+                                                    className='flex items-center gap-2 w-full'>
                                                     <User className='w-4 h-4' />
                                                     <span>Profile</span>
                                                 </Link>
                                             </DropdownMenuItem>
                                             <DropdownMenuItem className='cursor-pointer focus:bg-gray-700/50'>
-                                                <Link href='/settings' className='flex items-center gap-2 w-full'>
+                                                <Link
+                                                    href='/settings'
+                                                    className='flex items-center gap-2 w-full'>
                                                     <Settings className='w-4 h-4' />
                                                     <span>Settings</span>
                                                 </Link>
