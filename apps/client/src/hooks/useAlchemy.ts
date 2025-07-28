@@ -31,6 +31,7 @@ export const useGetNFTsForAddress = (address: string) => {
 };
 
 export const useShowMoreNFTs = (walletAddress: string) => {
+  const { start, stop } = useProgress();
   const [nfts, setNfts] = useState<OwnedNft[]>([]);
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
@@ -42,6 +43,7 @@ export const useShowMoreNFTs = (walletAddress: string) => {
     setLoading(true);
 
     try {
+      start();
       const { nfts: newNfts, pageKey: newPageKey } = await alchemyService.getNFTsForAddress(
         walletAddress,
         initialLoad ? undefined : pageKey,
@@ -54,6 +56,7 @@ export const useShowMoreNFTs = (walletAddress: string) => {
       console.error('Error loading NFTs:', error);
     } finally {
       setLoading(false);
+      stop();
     }
   };
 

@@ -24,12 +24,14 @@ export const useCreateRentalPost = () => {
 export const useFindAllRentalPost = () => {
   const { start, stop } = useProgress();
   const [rentalPosts, setRentalPosts] = useState<RentalPostDto[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         start();
+        setIsLoading(true);
         const res = await rentalPostApiService.findAll();
 
         setRentalPosts(res.data || ([] as RentalPostDto[]));
@@ -37,11 +39,12 @@ export const useFindAllRentalPost = () => {
         setError(err as Error);
       } finally {
         stop();
+        setIsLoading(false);
       }
     };
 
     fetchData();
   }, [start, stop]);
 
-  return { rentalPosts, error };
+  return { rentalPosts, isLoading, error };
 };

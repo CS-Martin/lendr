@@ -53,7 +53,8 @@
         "viem": "^2.31.7",
         "wagmi": "^2.15.6",
         "websocket": "^1.0.35",
-        "zod": "^4.0.5"
+        "zod": "^4.0.5",
+        "zustand": "^5.0.6"
     },
     "devDependencies": {
         "@eslint/eslintrc": "^3",
