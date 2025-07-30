@@ -58,6 +58,7 @@ export function HeroSection() {
           <LendrButton
             size='lg'
             className='p-3 md:p-6.5 w-full'
+            link='/marketplace'
             icon={<ArrowRight className='ml-2 w-5 h-5' />}>
             Explore Now!
           </LendrButton>

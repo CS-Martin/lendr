@@ -28,6 +28,7 @@ import { Session } from 'next-auth';
 import { toast } from 'sonner';
 import { nftApiService } from '@/services/nft.api';
 import { rentalPostApiService } from '@/services/rental-posts.api';
+import { useProgress } from '@bprogress/next';
 
 interface ListNFTDrawerProps {
   nft: OwnedNft | null;
@@ -59,6 +60,7 @@ const listNftFormSchema = z.object({
 type ListNftFormInputs = z.infer<typeof listNftFormSchema>;
 
 export const ListNFTDrawer = ({ nft, isOpen, onClose, session, profileAddress }: ListNFTDrawerProps) => {
+  const { start, stop } = useProgress();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const {
@@ -98,6 +100,8 @@ export const ListNFTDrawer = ({ nft, isOpen, onClose, session, profileAddress }:
     }
 
     try {
+      start();
+
       // Store the NFT to database
       const createdNft = await nftApiService.create({
         contractAddress: nft?.contract.address || '',
@@ -122,6 +126,10 @@ export const ListNFTDrawer = ({ nft, isOpen, onClose, session, profileAddress }:
         if (post.data) {
           toast.success('Rental post created successfully');
         }
+      } else {
+        toast.error('Failed to create rental post');
+
+        throw new Error('Failed to create rental post');
       }
     } catch (error) {
       console.error('Error creating NFT rental listing:', error);
@@ -132,6 +140,7 @@ export const ListNFTDrawer = ({ nft, isOpen, onClose, session, profileAddress }:
 
       return;
     } finally {
+      stop();
       setIsSubmitting(false);
       onClose();
     }

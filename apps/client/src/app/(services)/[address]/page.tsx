@@ -3,11 +3,10 @@
 import LendrButton from '@/components/shared/lendr-btn';
 import { useShowMoreNFTs } from '@/hooks/useAlchemy';
 import { ProfileHeader } from './_components/profile-header';
-import { useRef, useState } from 'react';
+import { Suspense, useRef, useState } from 'react';
 import { OwnedNft } from 'alchemy-sdk';
 import { useParams } from 'next/navigation';
 import { NFTCardSkeleton } from '@/components/shared/skeletons/nft-card';
-import { EmptyState } from '../marketplace/_components/empty-state';
 import { NFTCard } from '@/components/shared/nft/nft-card';
 import dynamic from 'next/dynamic';
 import { ListNFTDrawer } from './_components/list-nft-drawer';
@@ -23,8 +22,6 @@ export default function UserProfilePage() {
   const { fetchedUser, loading } = useFindOneUser(address as string);
   const { nfts, loadMore, loading: nftsLoading, hasMore } = useShowMoreNFTs(address as string);
   const { data: session } = useSession();
-
-  console.log('Session:', session);
 
   const [selectedNFTForListing, setSelectedNFTForListing] = useState<OwnedNft | null>(null);
   const [isListDrawerOpen, setIsListDrawerOpen] = useState(false);
@@ -65,15 +62,12 @@ export default function UserProfilePage() {
       <ProfileHeader userDto={fetchedUser} />
 
       <div className='max-w-7xl min-h-screen mx-auto py-20'>
-        {nfts.length === 0 && !loading ? (
-          <EmptyState
-            title='No NFTs Found'
-            description='No NFTs found for this user'
-          />
-        ) : (
-          <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 min-h-[calc(100vh-20rem)]'>
-            {nfts.map((nft, index) =>
-              nft.name ? (
+        <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 min-h-[calc(100vh-20rem)]'>
+          {nfts.map((nft, index) =>
+            nft.name ? (
+              <Suspense
+                key={index}
+                fallback={<NFTCardSkeleton />}>
                 <NFTCard
                   key={index}
                   nft={nft}
@@ -82,13 +76,13 @@ export default function UserProfilePage() {
                   session={session}
                   profileAddress={address as string}
                 />
-              ) : null,
-            )}
+              </Suspense>
+            ) : null,
+          )}
 
-            {/* Show skeletons while loading more */}
-            {loading && Array.from({ length: 10 }).map((_, index) => <NFTCardSkeleton key={`skeleton-${index}`} />)}
-          </div>
-        )}
+          {/* Show skeletons while loading more */}
+          {loading && Array.from({ length: 10 }).map((_, index) => <NFTCardSkeleton key={`skeleton-${index}`} />)}
+        </div>
 
         {hasMore && (
           <div className='flex justify-center mt-8'>

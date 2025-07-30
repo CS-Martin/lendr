@@ -139,8 +139,8 @@ export const RentalPostCard = ({ post, viewMode, onViewRentalPost }: RentalPostP
         {/* Content Section - Center */}
         <div
           className={cn(
-            'p-4 flex flex-col justify-between group-hover:-translate-y-2 transition-all duration-500',
-            viewMode === 'list' && 'w-full p-2.5',
+            'p-4 flex flex-col justify-between transition-all duration-500',
+            viewMode === 'list' ? 'w-full p-2.5' : 'group-hover:-translate-y-2',
           )}>
           <div>
             <motion.h3
@@ -199,7 +199,7 @@ export const RentalPostCard = ({ post, viewMode, onViewRentalPost }: RentalPostP
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.8 }}
-                className={cn(viewMode === 'list' ? 'hidden md:block' : 'block')}>
+                className={cn(viewMode === 'list' ? 'hidden' : 'block')}>
                 <div className='text-sm text-slate-400'>Category</div>
                 <div className='text-md font-bold text-purple-400 font-mono'>{post.category}</div>
               </motion.div>
