@@ -112,6 +112,8 @@ export default function MarketplacePage() {
         setIsModalOpen(true);
     };
 
+    console.log(rentalPosts);
+
     const filteredRentalPosts = rentalPosts.filter((post) => {
         const matchesSearch =
             post.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -120,9 +122,9 @@ export default function MarketplacePage() {
         const matchesFilters =
             selectedFilters.length === 0 ||
             selectedFilters.some((filter) => {
-                if (filter === 'available') return post.status === 'AVAILABLE';
-                if (filter === 'rented') return post.status === 'RENTED';
-                if (filter === 'delisted') return post.status === 'DELISTED';
+                if (filter === 'AVAILABLE') return post.status === 'AVAILABLE';
+                if (filter === 'RENTED') return post.status === 'RENTED';
+                if (filter === 'DELISTED') return post.status === 'DELISTED';
 
                 if (filter === 'art') return post.category === 'art';
                 if (filter === 'gaming') return post.category === 'gaming';
