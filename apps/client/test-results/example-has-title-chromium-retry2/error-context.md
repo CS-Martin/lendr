@@ -149,7 +149,61 @@
   - link "Forum":
     - /url: "#"
   - paragraph: © 2025 Lendr. All rights reserved. Built on Ethereum with ❤️
-- region "Notifications alt+T"
+- region "Notifications alt+T":
+  - list:
+    - listitem:
+      - img
+      - text: Your wallet is ready Sign message to connect.
+- complementary "Tanstack query devtools":
+  - button "Close tanstack query devtools":
+    - img
+  - button "Close Tanstack query devtools": TANSTACK React Query v5
+  - radiogroup:
+    - group:
+      - radio "Queries" [checked]
+      - text: Queries
+    - group:
+      - radio "Mutations"
+      - text: Mutations
+  - button "Fresh 4" [disabled]
+  - button "Fetching 0" [disabled]
+  - button "Paused 0" [disabled]
+  - button "Stale 0" [disabled]
+  - button "Inactive 0" [disabled]
+  - img
+  - textbox "Filter queries by query key"
+  - combobox:
+    - option "Sort by status" [selected]
+    - option "Sort by query hash"
+    - option "Sort by last updated"
+  - img
+  - button "Sort order ascending":
+    - text: Asc
+    - img
+  - button "Clear query cache":
+    - img
+  - button "Mock offline behavior":
+    - img
+  - button "Open in picture-in-picture mode":
+    - img
+  - button:
+    - img
+  - 'button "Query key [\"balance\",{\"chainId\":1}]"':
+    - text: "1"
+    - code: "[\"balance\",{\"chainId\":1}]"
+    - text: disabled
+  - 'button "Query key [\"ensAvatar\",{\"chainId\":1}]"':
+    - text: "1"
+    - code: "[\"ensAvatar\",{\"chainId\":1}]"
+    - text: disabled
+  - 'button "Query key [\"address\",null,{}]"':
+    - text: "1"
+    - code: "[\"address\",null,{}]"
+    - text: disabled
+  - 'button "Query key [\"ensName\",{\"chainId\":1}]"':
+    - text: "1"
+    - code: "[\"ensName\",{\"chainId\":1}]"
+    - text: disabled
 - alert
 - button "Open Next.js Dev Tools":
   - img

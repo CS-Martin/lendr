@@ -10,7 +10,7 @@
     - heading "Lendr" [level=1]
     - paragraph: Decentralized NFT Lending Protocol
     - paragraph: Powered by Advanced DeFi Infrastructure
-    - text: Initializing Protocol 66% ✓ Smart Contracts Loaded ✓ Blockchain Connection Established ✓ DeFi Protocols Initialized ✓ NFT Marketplace Ready ✓ Welcome to Lendr
+    - text: Initializing Protocol 100% ✓ Smart Contracts Loaded ✓ Blockchain Connection Established ✓ DeFi Protocols Initialized ✓ NFT Marketplace Ready ✓ Welcome to Lendr
     - img
     - img
     - img
@@ -44,7 +44,7 @@
     - paragraph: Pay the rental fee and collateral through smart contracts. Use the NFT for your desired duration.
     - heading "All Time Top Users" [level=2]
     - paragraph: Discover our most successful lenders based on completed transactions, reputation scores, and total earnings in the Lendr ecosystem.
-    - button [disabled]
+    - button
     - button
     - img "CryptoLender"
     - text: "4.9"
@@ -149,11 +149,7 @@
   - link "Forum":
     - /url: "#"
   - paragraph: © 2025 Lendr. All rights reserved. Built on Ethereum with ❤️
-- region "Notifications alt+T":
-  - list:
-    - listitem:
-      - img
-      - text: Your wallet is ready Sign message to connect.
+- region "Notifications alt+T"
 - complementary "Tanstack query devtools":
   - button "Close tanstack query devtools":
     - img
@@ -188,21 +184,21 @@
     - img
   - button:
     - img
-  - 'button "Query key [\"balance\",{\"chainId\":1}]"':
+  - 'button "Query key [\"ensName\",{\"chainId\":1}]"':
     - text: "1"
-    - code: "[\"balance\",{\"chainId\":1}]"
-    - text: disabled
-  - 'button "Query key [\"ensAvatar\",{\"chainId\":1}]"':
-    - text: "1"
-    - code: "[\"ensAvatar\",{\"chainId\":1}]"
+    - code: "[\"ensName\",{\"chainId\":1}]"
     - text: disabled
   - 'button "Query key [\"address\",null,{}]"':
     - text: "1"
     - code: "[\"address\",null,{}]"
     - text: disabled
-  - 'button "Query key [\"ensName\",{\"chainId\":1}]"':
+  - 'button "Query key [\"ensAvatar\",{\"chainId\":1}]"':
     - text: "1"
-    - code: "[\"ensName\",{\"chainId\":1}]"
+    - code: "[\"ensAvatar\",{\"chainId\":1}]"
+    - text: disabled
+  - 'button "Query key [\"balance\",{\"chainId\":1}]"':
+    - text: "1"
+    - code: "[\"balance\",{\"chainId\":1}]"
     - text: disabled
 - alert
 - button "Open Next.js Dev Tools":
