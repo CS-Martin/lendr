@@ -9,7 +9,8 @@ import { SearchBar } from '@/app/(services)/marketplace/_components/search-bar';
 import { FilterHeader } from '@/app/(services)/marketplace/_components/filter-header';
 import { FilterSection } from '@/app/(services)/marketplace/_components/filter-section';
 import { EmptyState } from './_components/empty-state';
-import { useFindAllRentalPost } from '@/hooks/useRentalPost';
+import { useQuery } from '@tanstack/react-query';
+import { rentalPostApiService } from '@/services/rental-posts.api';
 import { RentalPostDetailsModal } from './_components/rental-post-details-modal';
 import { ActiveFilters } from './_components/active-filters';
 import { RentalPostDto } from '@repo/shared-dtos';
@@ -17,6 +18,7 @@ import { useSession } from 'next-auth/react';
 import { RentalPostCardSkeleton } from '@/components/shared/skeletons/rental-post-card.skeleton';
 import { useViewMode, useSetViewMode } from '@/stores/card-view-mode.store';
 import dynamic from 'next/dynamic';
+import { useGetRentalPosts } from '@/queries/rental-posts';
 const RentalPostCard = dynamic(
     () => import('@/components/shared/rental-post/rental-post-card').then((mod) => mod.RentalPostCard),
     {
@@ -89,7 +91,9 @@ export default function MarketplacePage() {
         }
     };
 
-    const { rentalPosts } = useFindAllRentalPost();
+    const { data: rentalPostsResponse } = useGetRentalPosts();
+
+    const rentalPosts = rentalPostsResponse?.data || [];
 
     const clearAllFilters = () => {
         setSelectedFilters([]);

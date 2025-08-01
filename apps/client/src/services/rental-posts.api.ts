@@ -51,6 +51,24 @@ export class RentalPostApiService {
       throw error;
     }
   }
+
+  public async findById(id: string): Promise<ResponseDto<RentalPostDto>> {
+    logger.info(`Fetching rental post with id: ${id}`);
+
+    try {
+      const response = await fetch(`${this.API_BASE_URL}/${id}`);
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error(`Error fetching rental post with id: ${id}`, error);
+      throw error;
+    }
+  }
 }
 
 export const rentalPostApiService = new RentalPostApiService();

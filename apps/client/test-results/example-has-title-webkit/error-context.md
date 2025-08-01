@@ -1,0 +1,160 @@
+# Page snapshot
+
+```yaml
+- navigation:
+  - link "Lendr Lendr":
+    - /url: /
+  - button "Connect Wallet"
+- main:
+  - main:
+    - heading "Lendr" [level=1]
+    - paragraph: Decentralized NFT Lending Protocol
+    - paragraph: Powered by Advanced DeFi Infrastructure
+    - text: Initializing Protocol 15% ✓ Smart Contracts Loaded ✓ Blockchain Connection Established ✓ DeFi Protocols Initialized ✓ NFT Marketplace Ready ✓ Welcome to Lendr
+    - img
+    - img
+    - img
+    - img
+    - img
+    - img
+    - text: A Smarter way to rent NFTs. A Smarter way to rent NFTs.
+    - paragraph: The first decentralized marketplace for lending NFT assets. Unlock utility from your digital collectibles with advanced DeFi protocols.
+    - link "Explore Now!":
+      - /url: /marketplace
+    - button "Rent your first NFT"
+    - text: $2.4M+ Total Volume Locked 15K+ Active Protocols 8.5K+ DeFi Users
+    - img
+    - img
+    - img
+    - img
+    - heading "Easy Steps to Rent & List NFTs in our Marketplace" [level=2]
+    - paragraph: Our decentralized platform enables seamless NFT rentals with advanced DeFi protocols, smart contract security, and automated yield optimization for maximum returns.
+    - img
+    - text: +15.2% APY 2.4K Rentals
+    - button "How to Rent"
+    - button "How to List"
+    - text: "01"
+    - heading "Connect Your Wallet" [level=3]
+    - paragraph: Connect your Web3 wallet to access the decentralized marketplace and browse available NFT rentals.
+    - text: "02"
+    - heading "Browse & Search NFTs" [level=3]
+    - paragraph: Explore our curated collection of rental NFTs. Filter by category, price, and rental duration.
+    - text: "03"
+    - heading "Rent & Enjoy" [level=3]
+    - paragraph: Pay the rental fee and collateral through smart contracts. Use the NFT for your desired duration.
+    - heading "All Time Top Users" [level=2]
+    - paragraph: Discover our most successful lenders based on completed transactions, reputation scores, and total earnings in the Lendr ecosystem.
+    - button [disabled]
+    - button
+    - img "CryptoLender"
+    - text: "4.9"
+    - heading "CryptoLender" [level=3]
+    - text: 12.5 ETH 247 +90%
+    - img "NFTMaster"
+    - text: "4.8"
+    - heading "NFTMaster" [level=3]
+    - text: 9.8 ETH 189 +80%
+    - img "DefiKing"
+    - text: "4.7"
+    - heading "DefiKing" [level=3]
+    - text: 8.2 ETH 156 +70%
+    - img "BlockchainPro"
+    - text: 4 4.6
+    - heading "BlockchainPro" [level=3]
+    - text: 7.1 ETH 134 +60%
+    - img "EthLender"
+    - text: 5 4.5
+    - heading "EthLender" [level=3]
+    - text: 5.9 ETH 98 +50%
+    - img "DeFiQueen"
+    - text: 6 4.4
+    - heading "DeFiQueen" [level=3]
+    - text: 4.7 ETH 87 +40%
+    - img "CryptoWhale"
+    - text: 7 4.3
+    - heading "CryptoWhale" [level=3]
+    - text: 3.9 ETH 76 +30%
+    - img "TokenLord"
+    - text: 8 4.2
+    - heading "TokenLord" [level=3]
+    - text: 3.2 ETH 65 +20%
+    - img "TokenLord"
+    - text: 10 4.2
+    - heading "TokenLord" [level=3]
+    - text: 3.2 ETH 65 +20%
+    - img "TokenLord"
+    - text: 10 4.2
+    - heading "TokenLord" [level=3]
+    - text: 3.2 ETH 65 +20%
+    - button
+    - button
+    - button
+    - button
+    - button
+    - button
+    - button "View Full Leaderboard"
+    - text: Premium Asset Pools Premium Asset Pools
+    - paragraph: Discover high-yield NFT assets in our curated liquidity pools with institutional-grade security
+    - 'img "Legendary Sword #1337"'
+    - text: Available Gaming +12.5% APY
+    - 'heading "Legendary Sword #1337" [level=3]'
+    - text: Floor Price 0.05 ETH Collateral 0.2 ETH 4.8 0x1234...5678
+    - button "Enter Pool"
+    - 'img "CryptoPunk #7890"'
+    - text: Available Art +12.5% APY
+    - 'heading "CryptoPunk #7890" [level=3]'
+    - text: Floor Price 0.15 ETH Collateral 1.0 ETH 4.9 0x9876...5432
+    - button "Enter Pool"
+    - img "premium.eth"
+    - text: Locked Domain +12.5% APY
+    - heading "premium.eth" [level=3]
+    - text: Floor Price 0.02 ETH Collateral 0.5 ETH 4.7 0x5555...7777
+    - button "Pool Locked" [disabled]
+    - link "Explore Marketplace":
+      - /url: /marketplace
+    - heading "Discover, rent and lend your own NFT" [level=2]
+    - button "Explore Now"
+    - button "List your first NFT"
+    - img
+    - img
+    - img
+- contentinfo:
+  - heading "Lendr" [level=3]
+  - paragraph: The future of NFT utility through advanced DeFi protocols and decentralized lending infrastructure.
+  - heading "Protocol" [level=4]
+  - link "Marketplace":
+    - /url: "#"
+  - link "Dashboard":
+    - /url: "#"
+  - link "Analytics":
+    - /url: "#"
+  - link "Governance":
+    - /url: "#"
+  - heading "Developers" [level=4]
+  - link "Documentation":
+    - /url: "#"
+  - link "Smart Contracts":
+    - /url: "#"
+  - link "API":
+    - /url: "#"
+  - link "Security":
+    - /url: "#"
+  - heading "Community" [level=4]
+  - link "Discord":
+    - /url: "#"
+  - link "Twitter":
+    - /url: "#"
+  - link "GitHub":
+    - /url: "#"
+  - link "Forum":
+    - /url: "#"
+  - paragraph: © 2025 Lendr. All rights reserved. Built on Ethereum with ❤️
+- region "Notifications alt+T":
+  - list:
+    - listitem:
+      - img
+      - text: Your wallet is ready Sign message to connect.
+- alert
+- button "Open Next.js Dev Tools":
+  - img
+```
