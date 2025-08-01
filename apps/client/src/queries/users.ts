@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { userApiService } from '@/services/users.api';
 import { usersKeys } from '@/lib/query-keys';
-import { ResponseDto, UpdateUserDto, UserDto } from '@repo/shared-dtos';
+import { UpdateUserDto, UserDto } from '@repo/shared-dtos';
 import { useSession } from 'next-auth/react';
 
 export const useGetUserByAddress = (address: string) =>
@@ -13,7 +13,8 @@ export const useGetUserByAddress = (address: string) =>
 
 export const useCreateUser = () => {
   const queryClient = useQueryClient();
-  return useMutation<ResponseDto<UserDto>, Error, UserDto>({
+
+  return useMutation<UserDto, Error, UserDto>({
     mutationFn: (user: UserDto) => userApiService.create(user),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: usersKeys.lists() });
@@ -25,7 +26,7 @@ export const useUpdateUser = () => {
   const queryClient = useQueryClient();
   const { update } = useSession();
 
-  return useMutation<ResponseDto<UserDto>, Error, { address: string; user: UpdateUserDto }>({
+  return useMutation<UserDto, Error, { address: string; user: UpdateUserDto }>({
     mutationFn: ({ address, user }) => userApiService.update(address, user),
     onSuccess: (data, variables) => {
       // Invalidate the user query to refetch the latest data
@@ -36,7 +37,7 @@ export const useUpdateUser = () => {
       // Update the next-auth session
       update({
         user: {
-          ...data.data,
+          ...data,
           address: variables.address,
         },
       });

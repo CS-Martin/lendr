@@ -9,7 +9,7 @@ export class UserApiService {
     this.API_BASE_URL = `${config.api.BASE_URL}/${config.api.VERSION}/user`;
   }
 
-  public async create(user: UserDto): Promise<ResponseDto<UserDto>> {
+  public async create(user: UserDto): Promise<UserDto> {
     logger.info('Creating user:', user);
 
     try {
@@ -22,7 +22,8 @@ export class UserApiService {
       });
 
       const data = await response.json();
-      return data;
+
+      return data.data;
     } catch (error) {
       console.error('Error creating user:', error);
 
@@ -30,7 +31,7 @@ export class UserApiService {
     }
   }
 
-  public async update(address: string, user: UpdateUserDto): Promise<ResponseDto<UserDto>> {
+  public async update(address: string, user: UpdateUserDto): Promise<UserDto> {
     logger.info('Updating user:', user);
 
     try {
@@ -43,7 +44,8 @@ export class UserApiService {
       });
 
       const data = await response.json();
-      return data;
+
+      return data.data;
     } catch (error) {
       console.error('Error updating user:', error);
 
@@ -51,14 +53,15 @@ export class UserApiService {
     }
   }
 
-  public async findOne(address: string): Promise<ResponseDto<UserDto>> {
+  public async findOne(address: string): Promise<UserDto> {
     logger.info('Fetching user by address:', address);
 
     try {
       const response = await fetch(`${this.API_BASE_URL}/${address}`);
 
       const data = await response.json();
-      return data;
+
+      return data.data;
     } catch (error) {
       console.error('Error fetching user:', error);
 
@@ -66,7 +69,7 @@ export class UserApiService {
     }
   }
 
-  public async findAll(): Promise<ResponseDto<UserDto[]>> {
+  public async findAll(): Promise<UserDto[]> {
     logger.info('Fetching all users');
 
     try {
@@ -77,7 +80,8 @@ export class UserApiService {
       }
 
       const data = await response.json();
-      return data;
+
+      return data.data;
     } catch (error) {
       console.error('Error fetching users:', error);
 

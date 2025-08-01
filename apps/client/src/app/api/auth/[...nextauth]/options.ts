@@ -3,7 +3,6 @@ import { SiweMessage } from 'siwe';
 import type { NextAuthOptions } from 'next-auth';
 import { logger } from '../../../../lib/logger';
 import { userApiService } from '@/services/users.api';
-import { UserDto } from '@repo/shared-dtos';
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -15,8 +14,6 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials) {
         try {
-          logger.debug('Credentials received:', credentials);
-
           const siwe = new SiweMessage(credentials?.message || '');
           const result = await siwe.verify({
             signature: credentials?.signature || '',
@@ -27,24 +24,33 @@ export const authOptions: NextAuthOptions = {
           if (result.success) {
             logger.info(`SIWE auth succeeded for address ${siwe.address}`);
 
-            // Fetch or create user right in the authorize callback
-            let user = await userApiService.findOne(siwe.address);
+            const userResponse = await userApiService.findOne(siwe.address);
 
-            // Create user if not found
-            if (!user.data) {
-              const newUser = await userApiService.create({
-                address: siwe.address,
-                username: ``,
-                avatarUrl: ``,
-                bio: '',
-              } as UserDto);
-              user = newUser;
+            if (userResponse) {
+              return {
+                id: userResponse.address, // Authorize expects ID which causes an error. Use address instead
+                address: userResponse.address,
+                username: userResponse.username,
+                avatarUrl: userResponse.avatarUrl,
+                bio: userResponse.bio,
+                createdAt: userResponse.createdAt,
+                updatedAt: userResponse.updatedAt,
+              };
             }
 
-            return {
-              id: siwe.address,
+            // Create user if not found
+            const newUserResponse = await userApiService.create({
               address: siwe.address,
-              ...user.data,
+              username: '',
+              avatarUrl: '',
+              bio: '',
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            });
+
+            return {
+              id: newUserResponse.address, // Using address as id since it's unique
+              ...newUserResponse,
             };
           }
 
@@ -65,49 +71,32 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user, trigger, session }) {
       // Initial sign in
       if (user) {
-        return {
-          ...token,
-          ...user,
-        };
+        token.address = user.address;
+        token.username = user.username;
+        token.avatarUrl = user.avatarUrl;
+        token.bio = user.bio;
+        token.createdAt = user.createdAt;
+        token.updatedAt = user.updatedAt;
       }
 
       // Manual update trigger (from client-side update)
       if (trigger === 'update' && session?.user) {
-        return {
-          ...token,
-          ...session.user,
-        };
-      }
-
-      // Periodic refresh (every 5 minutes)
-      if (token.address && Date.now() - ((token.lastUpdated as number) || 0) > 5 * 60 * 1000) {
-        try {
-          const userData = await userApiService.findOne(token.address as string);
-          if (userData.data) {
-            return {
-              ...token,
-              ...userData.data,
-              lastUpdated: Date.now(),
-            };
-          }
-        } catch (error) {
-          // Log error but don't fail the token refresh
-          logger.error('Failed to refresh user data in JWT callback:', error);
-        }
+        token.username = session.user.username;
+        token.avatarUrl = session.user.avatarUrl;
+        token.bio = session.user.bio;
+        token.updatedAt = new Date();
       }
 
       return token;
     },
 
     async session({ session, token }) {
-      session.user = {
-        address: token.address as string,
-        username: token.username as string,
-        avatarUrl: token.avatarUrl as string,
-        bio: token.bio as string,
-        createdAt: token.createdAt as Date,
-        updatedAt: token.updatedAt as Date,
-      };
+      session.user.address = token.address as string;
+      session.user.username = token.username as string;
+      session.user.avatarUrl = token.avatarUrl as string;
+      session.user.bio = token.bio as string;
+      session.user.createdAt = token.createdAt as Date;
+      session.user.updatedAt = token.updatedAt as Date;
       return session;
     },
   },
