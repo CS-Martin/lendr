@@ -1,7 +1,6 @@
 'use client';
 
 import LendrButton from '@/components/shared/lendr-btn';
-import { useShowMoreNFTs } from '@/hooks/useAlchemy';
 import { ProfileHeader } from './_components/profile-header';
 import { Suspense, useRef, useState } from 'react';
 import { OwnedNft } from 'alchemy-sdk';
@@ -12,6 +11,7 @@ import dynamic from 'next/dynamic';
 import { ListNFTDrawer } from './_components/list-nft-drawer';
 import { useSession } from 'next-auth/react';
 import NotFound from '@/app/not-found';
+import { useShowMoreNFTs } from '@/queries/alchemy-sdk';
 import { useGetUserByAddress } from '@/queries/users';
 const NFTDetailsModal = dynamic(() => import('./_components/nft-details-modal').then((mod) => mod.NFTDetailsModal), {
     ssr: false,
@@ -23,6 +23,7 @@ export default function UserProfilePage() {
     const { nfts, loadMore, loading: nftsLoading, hasMore } = useShowMoreNFTs(address as string);
     const { data: session } = useSession();
 
+    console.log(nfts)
     const [selectedNFTForListing, setSelectedNFTForListing] = useState<OwnedNft | null>(null);
     const [isListDrawerOpen, setIsListDrawerOpen] = useState(false);
     const [selectedNFTForDetails, setSelectedNFTForDetails] = useState<OwnedNft | null>(null);
@@ -59,12 +60,12 @@ export default function UserProfilePage() {
 
     return (
         <div className='bg-slate-950'>
-            <ProfileHeader userDto={fetchedUser || null} />
+            <ProfileHeader userDto={fetchedUser!} />
 
             <div className='max-w-7xl min-h-screen mx-auto py-20'>
                 <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 min-h-[calc(100vh-20rem)]'>
-                    {nfts.map((nft, index) =>
-                        nft.name ? (
+                    {nfts.map((nft: OwnedNft, index: number) =>
+                        nft.contract.name ? (
                             <Suspense
                                 key={index}
                                 fallback={<NFTCardSkeleton />}>
@@ -81,7 +82,7 @@ export default function UserProfilePage() {
                     )}
 
                     {/* Show skeletons while loading more */}
-                    {nftsLoading && Array.from({ length: 10 }).map((_, index) => <NFTCardSkeleton key={`skeleton-${index}`} />)}
+                    {isLoading && Array.from({ length: 10 }).map((_, index) => <NFTCardSkeleton key={`skeleton-${index}`} />)}
                 </div>
 
                 {hasMore && (
