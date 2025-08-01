@@ -15,7 +15,7 @@ import { useEffect } from 'react';
 import { toast } from 'sonner';
 import z from 'zod';
 import { UpdateUserDto, UserDto } from '@repo/shared-dtos';
-import { useUpdateUser } from '@/hooks/useUser';
+import { useUpdateUser } from '@/queries/users';
 
 interface ProfileTabProps {
   user: UserDto;
@@ -34,7 +34,7 @@ export const userSchema = z.object({
 export type UserFormData = z.infer<typeof userSchema>;
 
 export const ProfileTab = ({ user }: ProfileTabProps) => {
-  const { updateUser } = useUpdateUser();
+  const { mutateAsync: updateUser } = useUpdateUser();
 
   const {
     register,
@@ -62,7 +62,10 @@ export const ProfileTab = ({ user }: ProfileTabProps) => {
 
   const onSubmit = async (data: UpdateUserDto) => {
     try {
-      const updatedUser = await updateUser(user?.address || '', data);
+      const updatedUser = await updateUser({
+        address: user?.address || '',
+        user: data,
+      });
 
       reset({
         username: updatedUser?.username,

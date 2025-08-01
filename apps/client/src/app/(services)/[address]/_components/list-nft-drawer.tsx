@@ -22,7 +22,6 @@ import LendrButton from '@/components/shared/lendr-btn';
 import z from 'zod';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useCreateRentalPost } from '@/hooks/useRentalPost';
 import { CreateRentalPostDto } from '@repo/shared-dtos';
 import { Session } from 'next-auth';
 import { toast } from 'sonner';
