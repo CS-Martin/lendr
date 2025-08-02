@@ -319,6 +319,52 @@ contract CollateralRegistry is ERC721Holder, ERC1155Holder, ReentrancyGuard {
     }
 
     /**
+     * @notice Lender calls this to release the NFT to the renter.
+     * @dev Only available for collateral rentals.
+     * @dev Uses TimeConverter to convert hours to seconds.
+     */
+    function releaseNFTToRenterFromLender(uint256 _rentalId) 
+        external
+        agreementExists(_rentalId)
+        onlyLender(_rentalId)
+        inState(_rentalId, State.READY_TO_RELEASE)
+        nonReentrant
+    {
+        CollateralAgreement storage agreement = s_agreements[_rentalId];
+
+        if (block.timestamp > agreement.lenderDepositDeadline) {
+            revert CollateralRegistry__DeadlinePassed();
+        }
+
+        State oldState = agreement.rentalState;
+        agreement.rentalState = State.ACTIVE_RENTAL;
+        agreement.renterClaimDeadline = block.timestamp + getCustomDuration(agreement.dealDuration);
+    
+        emit StateChanged(_rentalId, oldState, State.ACTIVE_RENTAL);
+
+        if (agreement.nftStandard == RentalEnums.NftStandard.ERC721) {
+            IERC721(agreement.nftContract).safeTransferFrom(
+                agreement.lender,
+                agreement.renter,
+                agreement.tokenId
+            );
+        } else if (agreement.nftStandard == RentalEnums.NftStandard.ERC1155) {
+            IERC1155(agreement.nftContract).safeTransferFrom(
+                agreement.lender,
+                agreement.renter,
+                agreement.tokenId,
+                1,
+                ""
+            );
+        } else {
+            revert CollateralRegistry__CollateralRentalDoesNotSupportNFTType();
+        }
+
+        emit NftReleasedToRenter(_rentalId);
+        emit RentalStarted(_rentalId, agreement.rentalEndTime);
+    }
+
+    /**
      * @notice Renter calls this to return the NFT to the lender.
      * @dev Before calling this, the renter MUST approve this contract to transfer the NFT.
      * For ERC721, call `approve(address(this), tokenId)` on the NFT contract.
