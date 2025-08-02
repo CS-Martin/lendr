@@ -338,7 +338,6 @@ contract CollateralRegistry is ERC721Holder, ERC1155Holder, ReentrancyGuard {
 
         State oldState = agreement.rentalState;
         agreement.rentalState = State.ACTIVE_RENTAL;
-        agreement.renterClaimDeadline = block.timestamp + getCustomDuration(agreement.dealDuration);
     
         emit StateChanged(_rentalId, oldState, State.ACTIVE_RENTAL);
 
