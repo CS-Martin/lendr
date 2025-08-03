@@ -340,6 +340,12 @@ contract CollateralRegistry is ERC721Holder, ERC1155Holder, ReentrancyGuard {
         agreement.rentalState = State.ACTIVE_RENTAL;
     
         emit StateChanged(_rentalId, oldState, State.ACTIVE_RENTAL);
+        agreement.rentalEndTime =
+            block.timestamp +
+            (agreement.rentalDurationInHours * 1 hours);
+        agreement.returnDeadline =
+            agreement.rentalEndTime +
+            getCustomDuration(agreement.dealDuration);
 
         if (agreement.nftStandard == RentalEnums.NftStandard.ERC721) {
             IERC721(agreement.nftContract).safeTransferFrom(
