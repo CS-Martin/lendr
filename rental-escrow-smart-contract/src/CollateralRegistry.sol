@@ -319,9 +319,10 @@ contract CollateralRegistry is ERC721Holder, ERC1155Holder, ReentrancyGuard {
     }
 
     /**
-     * @notice Lender calls this to release the NFT to the renter.
-     * @dev Only available for collateral rentals.
-     * @dev Uses TimeConverter to convert hours to seconds.
+     * @notice Lender calls this to directly transfer the NFT to the renter, bypassing escrow.
+     * @dev Only available for collateral rentals in READY_TO_RELEASE state.
+     * @dev This function allows lenders to transfer NFTs directly without depositing to escrow first.
+     * @param _rentalId The ID of the rental agreement
      */
     function releaseNFTToRenterFromLender(uint256 _rentalId) 
         external
