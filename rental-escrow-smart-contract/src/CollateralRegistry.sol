@@ -319,6 +319,58 @@ contract CollateralRegistry is ERC721Holder, ERC1155Holder, ReentrancyGuard {
     }
 
     /**
+     * @notice Lender calls this to directly transfer the NFT to the renter, bypassing escrow.
+     * @dev Only available for collateral rentals in READY_TO_RELEASE state.
+     * @dev This function allows lenders to transfer NFTs directly without depositing to escrow first.
+     * @param _rentalId The ID of the rental agreement
+     */
+    function releaseNFTToRenterFromLender(uint256 _rentalId) 
+        external
+        agreementExists(_rentalId)
+        onlyLender(_rentalId)
+        inState(_rentalId, State.READY_TO_RELEASE)
+        nonReentrant
+    {
+        CollateralAgreement storage agreement = s_agreements[_rentalId];
+
+        if (block.timestamp > agreement.lenderDepositDeadline) {
+            revert CollateralRegistry__DeadlinePassed();
+        }
+
+        State oldState = agreement.rentalState;
+        agreement.rentalState = State.ACTIVE_RENTAL;
+    
+        emit StateChanged(_rentalId, oldState, State.ACTIVE_RENTAL);
+        agreement.rentalEndTime =
+            block.timestamp +
+            (agreement.rentalDurationInHours * 1 hours);
+        agreement.returnDeadline =
+            agreement.rentalEndTime +
+            getCustomDuration(agreement.dealDuration);
+
+        if (agreement.nftStandard == RentalEnums.NftStandard.ERC721) {
+            IERC721(agreement.nftContract).safeTransferFrom(
+                agreement.lender,
+                agreement.renter,
+                agreement.tokenId
+            );
+        } else if (agreement.nftStandard == RentalEnums.NftStandard.ERC1155) {
+            IERC1155(agreement.nftContract).safeTransferFrom(
+                agreement.lender,
+                agreement.renter,
+                agreement.tokenId,
+                1,
+                ""
+            );
+        } else {
+            revert CollateralRegistry__CollateralRentalDoesNotSupportNFTType();
+        }
+
+        emit NftReleasedToRenter(_rentalId);
+        emit RentalStarted(_rentalId, agreement.rentalEndTime);
+    }
+
+    /**
      * @notice Renter calls this to return the NFT to the lender.
      * @dev Before calling this, the renter MUST approve this contract to transfer the NFT.
      * For ERC721, call `approve(address(this), tokenId)` on the NFT contract.
