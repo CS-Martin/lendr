@@ -1,10 +1,13 @@
 import { Button } from '@/components/ui/button';
 import { formatDate } from '@/lib/utils';
-import { UserDto } from '@repo/shared-dtos';
 import { Calendar, Copy, Star, TrendingUp } from 'lucide-react';
+import { Session } from 'next-auth';
 import Image from 'next/image';
+import { Doc } from '../../../../../convex/_generated/dataModel';
 
-export const ProfileHeader = ({ userDto }: { userDto: UserDto | null }) => {
+export const ProfileHeader = ({ user }: { user: Doc<"users"> }) => {
+
+
   return (
     <div className='relative z-10'>
       {/* Blurred Avatar Background */}
@@ -12,9 +15,9 @@ export const ProfileHeader = ({ userDto }: { userDto: UserDto | null }) => {
         {/* Blurred Background Image */}
         <Image
           src={
-            userDto?.avatarUrl === '' || userDto?.avatarUrl === null || userDto?.avatarUrl === undefined
+            user?.avatarUrl === '' || user?.avatarUrl === null || user?.avatarUrl === undefined
               ? '/avatar-placeholder.webp'
-              : userDto?.avatarUrl
+              : user?.avatarUrl
           }
           alt='Blurred Background'
           fill
@@ -38,9 +41,9 @@ export const ProfileHeader = ({ userDto }: { userDto: UserDto | null }) => {
             <div className='absolute inset-0 bg-gradient-to-r from-purple-500 to-cyan-500 rounded-full blur-lg opacity-75' />
             <Image
               src={
-                userDto?.avatarUrl === '' || userDto?.avatarUrl === null || userDto?.avatarUrl === undefined
+                user?.avatarUrl === '' || user?.avatarUrl === null || user?.avatarUrl === undefined
                   ? '/avatar-placeholder.webp'
-                  : userDto?.avatarUrl
+                  : user?.avatarUrl
               }
               alt='Profile Avatar'
               width={150}
@@ -58,7 +61,7 @@ export const ProfileHeader = ({ userDto }: { userDto: UserDto | null }) => {
           <div className='flex-1'>
             <div className='flex items-center gap-4 mb-3'>
               <h1 className='text-4xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent'>
-                {userDto?.username || 'Unnamed Monkey'}
+                {user?.username || 'Unnamed Monkey'}
               </h1>
               <div className='flex items-center gap-1 bg-yellow-500/20 px-2 py-1 rounded-full'>
                 <Star className='h-4 w-4 text-yellow-400 fill-current' />
@@ -68,10 +71,10 @@ export const ProfileHeader = ({ userDto }: { userDto: UserDto | null }) => {
 
             <div className='flex items-center gap-3 mb-4 text-white/80'>
               <span className='font-mono text-sm bg-black/30 px-3 py-1 rounded-lg backdrop-blur-sm'>
-                {userDto?.address?.slice(0, 6) + '...' + userDto?.address?.slice(-4)}
+                {user?.address?.slice(0, 6) + '...' + user?.address?.slice(-4)}
               </span>
               <Button
-                onClick={() => navigator.clipboard.writeText(userDto?.address || '')}
+                onClick={() => navigator.clipboard.writeText(user?.address || '')}
                 variant='ghost'
                 size='sm'
                 className='h-8 w-8 p-0 text-white/60 hover:bg-white/10 hover:text-white'>
@@ -82,7 +85,7 @@ export const ProfileHeader = ({ userDto }: { userDto: UserDto | null }) => {
             <div className='flex items-center gap-8 text-sm text-white/80'>
               <div className='flex items-center gap-2'>
                 <Calendar className='h-4 w-4' />
-                <span>{userDto?.createdAt ? formatDate(userDto.createdAt) : 'Unknown'}</span>
+                <span>{user?._creationTime ? formatDate(new Date(user._creationTime)) : 'Unknown'}</span>
               </div>
               <div className='flex items-center gap-2'>
                 <TrendingUp className='h-4 w-4 text-green-400' />

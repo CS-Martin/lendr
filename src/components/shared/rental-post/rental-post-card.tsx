@@ -7,12 +7,12 @@ import { Heart, Share2 } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import { gsap } from 'gsap';
 import { Card3D } from '../card-3d';
-import { RentalPostDto } from '@repo/shared-dtos';
 import { cn } from '@/lib/utils';
 import LendrButton from '../lendr-btn';
+import { Doc } from '../../../../convex/_generated/dataModel';
 
 interface RentalPostProps {
-  post: RentalPostDto;
+  post: Doc<'rentalposts'>;
   viewMode: 'grid' | 'list';
   onViewRentalPost: () => void;
 }
@@ -81,7 +81,7 @@ export const RentalPostCard = ({ post, viewMode, onViewRentalPost }: RentalPostP
             transition={{ duration: 0.5 }}
             className={cn('w-full h-full', viewMode === 'list' && 'h-30')}>
             <Image
-              src={post.imageUrl || '/placeholder.svg'}
+              src={post.nftMetadata.image.cachedUrl || post.nftMetadata.image.thumbnailUrl || post.nftMetadata.image.originalUrl || '/placeholder.svg'}
               alt={post.name}
               width={500}
               height={500}

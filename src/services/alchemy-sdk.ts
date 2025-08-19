@@ -33,8 +33,6 @@ export class AlchemyService {
         };
       }
 
-      console.log(filteredNfts);
-
       return {
         nfts: filteredNfts.slice(0, 10), // Return up to 10 NFTs
         pageKey: response.pageKey,

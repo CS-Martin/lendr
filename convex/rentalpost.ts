@@ -71,15 +71,18 @@ export const deleteRentalPost = mutation({
   },
 });
 
-export const getRentalPosts = query({
-  args: { status: v.optional(RentalListingStatus) },
+export const getOneRentalPost = query({
+  args: {
+    id: v.id('rentalposts'),
+  },
   handler: async (ctx, args) => {
-    if (args.status) {
-      return await ctx.db
-        .query('rentalposts')
-        .withIndex('by_status', (q) => q.eq('status', args.status!))
-        .collect();
-    }
-    return await ctx.db.query('rentalposts').collect();
+    return await ctx.db.get(args.id);
+  },
+});
+
+export const getRentalPosts = query({
+  args: {},
+  handler: async (ctx) => {
+    return await ctx.db.query('rentalposts').order('desc').take(50);
   },
 });

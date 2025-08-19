@@ -25,6 +25,7 @@ export default function UserProfilePage() {
 
   const user = useQuery(api.user.getUser, { address: address as string });
   const { nfts, loadMore, loading: nftsLoading, hasMore } = useShowMoreNFTs(address as string);
+  console.log(user)
 
   const [selectedNFTForListing, setSelectedNFTForListing] = useState<OwnedNft | null>(null);
   const [isListDrawerOpen, setIsListDrawerOpen] = useState(false);
@@ -68,7 +69,7 @@ export default function UserProfilePage() {
 
   return (
     <div className='bg-slate-950'>
-      <ProfileHeader userDto={user} />
+      <ProfileHeader user={user} />
 
       <div className='max-w-7xl min-h-screen mx-auto py-20'>
         <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 min-h-[calc(100vh-20rem)]'>

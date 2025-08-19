@@ -85,7 +85,12 @@ export const NFTDetailsModal = ({ nft, isOpen, onClose, session, profileAddress 
                       />
                     ) : (
                       <Image
-                        src={nft.animation?.originalUrl || nft.image.cachedUrl || nft.image.thumbnailUrl || '/placeholder.svg'}
+                        src={
+                          nft.animation?.originalUrl ||
+                          nft.image.cachedUrl ||
+                          nft.image.thumbnailUrl ||
+                          '/placeholder.svg'
+                        }
                         alt={nft.name || 'NFT image'}
                         fill
                         className='object-cover hover:scale-105 transition-all duration-500'
@@ -199,7 +204,6 @@ export const NFTDetailsModal = ({ nft, isOpen, onClose, session, profileAddress 
                       </div>
                     </div>
                   </div>
-
 
                   {/* Attributes */}
                   {nft.raw.metadata.attributes && nft.raw.metadata.attributes.length > 0 && (
