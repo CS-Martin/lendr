@@ -106,7 +106,7 @@ export const ProfileTab = ({ address }: ProfileTabProps) => {
   };
 
   if (user === undefined) {
-    return <ProfileSkeleton />
+    return <ProfileSkeleton />;
   }
 
   return (

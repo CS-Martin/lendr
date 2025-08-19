@@ -13,7 +13,7 @@ import { Session } from 'next-auth';
 import { Doc } from '../../../../../convex/_generated/dataModel';
 
 interface NFTDetailsModalProps {
-  nft: Doc<"nft"> | null;
+  nft: Doc<'nft'> | null;
   isOpen: boolean;
   onClose: () => void;
   session: Session | null;
@@ -95,9 +95,7 @@ export const NFTDetailsModal = ({ nft, isOpen, onClose, session, profileAddress 
                       <FileText className='h-4 w-4 text-cyan-400' />
                       <span className='font-medium text-white'>Description</span>
                     </div>
-                    <p className='text-gray-300 leading-relaxed'>
-                      {nft.description || 'No description available'}
-                    </p>
+                    <p className='text-gray-300 leading-relaxed'>{nft.description || 'No description available'}</p>
                   </div>
 
                   <Separator className='bg-gray-700/50' />
