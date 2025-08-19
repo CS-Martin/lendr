@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "dev:backend": "npx convex dev",
-    "dev:frontend": "next dev --turbopack"
+    "dev:frontend": "next dev --turbopack",
+    "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,json,css,md}\""
   },
   "dependencies": {
     "@bprogress/next": "^3.2.12",
