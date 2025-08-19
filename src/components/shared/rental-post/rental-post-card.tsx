@@ -81,7 +81,12 @@ export const RentalPostCard = ({ post, viewMode, onViewRentalPost }: RentalPostP
             transition={{ duration: 0.5 }}
             className={cn('w-full h-full', viewMode === 'list' && 'h-30')}>
             <Image
-              src={post.nftMetadata.image.cachedUrl || post.nftMetadata.image.thumbnailUrl || post.nftMetadata.image.originalUrl || '/placeholder.svg'}
+              src={
+                post.nftMetadata.image.cachedUrl ||
+                post.nftMetadata.image.thumbnailUrl ||
+                post.nftMetadata.image.originalUrl ||
+                '/placeholder.svg'
+              }
               alt={post.name}
               width={500}
               height={500}

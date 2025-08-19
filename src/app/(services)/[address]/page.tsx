@@ -25,7 +25,7 @@ export default function UserProfilePage() {
 
   const user = useQuery(api.user.getUser, { address: address as string });
   const { nfts, loadMore, loading: nftsLoading, hasMore } = useShowMoreNFTs(address as string);
-  console.log(user)
+  console.log(user);
 
   const [selectedNFTForListing, setSelectedNFTForListing] = useState<OwnedNft | null>(null);
   const [isListDrawerOpen, setIsListDrawerOpen] = useState(false);

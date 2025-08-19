@@ -90,8 +90,8 @@ export default function MarketplacePage() {
     }
   };
 
-  const rentalPosts = useQuery(api.rentalpost.getRentalPosts)
-  console.log(rentalPosts)
+  const rentalPosts = useQuery(api.rentalpost.getRentalPosts);
+  console.log(rentalPosts);
 
   const clearAllFilters = () => {
     setSelectedFilters([]);
@@ -137,7 +137,7 @@ export default function MarketplacePage() {
         if (filter === 'sports') return post.category === 'sports';
         if (filter === 'memes') return post.category === 'memes';
         if (filter === 'utility') return post.category === 'utility';
-        if (filter === 'collectibles') return post.category === 'collectibles'
+        if (filter === 'collectibles') return post.category === 'collectibles';
 
         return false;
       });

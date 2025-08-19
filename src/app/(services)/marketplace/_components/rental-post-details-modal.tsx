@@ -32,7 +32,7 @@ interface RentalPostDetailsModalProps {
   isOpen: boolean;
   onClose: () => void;
   session: Session | null;
-  selectedRentalPost: Doc<"rentalposts"> | null;
+  selectedRentalPost: Doc<'rentalposts'> | null;
 }
 
 export const RentalPostDetailsModal = ({
@@ -87,7 +87,9 @@ export const RentalPostDetailsModal = ({
                     {selectedRentalPost.nftMetadata.name || 'Unnamed NFT'}
                   </DialogTitle>
 
-                  <p className='text-gray-400 mt-2'>{selectedRentalPost.nftMetadata.collection?.name || 'No collection name'}</p>
+                  <p className='text-gray-400 mt-2'>
+                    {selectedRentalPost.nftMetadata.collection?.name || 'No collection name'}
+                  </p>
                 </motion.div>
               </DialogHeader>
 
@@ -107,14 +109,16 @@ export const RentalPostDetailsModal = ({
                       <div className='mt-2'>
                         <span className='text-xs text-red-400'>Classifications:</span>
                         <div className='flex flex-wrap gap-1 mt-1'>
-                          {selectedRentalPost.nftMetadata.contract.spamClassifications.map((classification: string, index: number) => (
-                            <Badge
-                              key={index}
-                              variant='outline'
-                              className='border-red-700/50 text-red-400 text-xs'>
-                              {classification}
-                            </Badge>
-                          ))}
+                          {selectedRentalPost.nftMetadata.contract.spamClassifications.map(
+                            (classification: string, index: number) => (
+                              <Badge
+                                key={index}
+                                variant='outline'
+                                className='border-red-700/50 text-red-400 text-xs'>
+                                {classification}
+                              </Badge>
+                            ),
+                          )}
                         </div>
                       </div>
                     )}
@@ -161,11 +165,15 @@ export const RentalPostDetailsModal = ({
                     <div className='grid grid-cols-2 gap-4 text-sm'>
                       <div>
                         <span className='text-gray-400'>Type:</span>
-                        <span className='ml-2 text-white'>{selectedRentalPost.nftMetadata.image.contentType || 'Unknown'}</span>
+                        <span className='ml-2 text-white'>
+                          {selectedRentalPost.nftMetadata.image.contentType || 'Unknown'}
+                        </span>
                       </div>
                       <div>
                         <span className='text-gray-400'>Size:</span>
-                        <span className='ml-2 text-white'>{formatFileSize(selectedRentalPost.nftMetadata.image.size)}</span>
+                        <span className='ml-2 text-white'>
+                          {formatFileSize(selectedRentalPost.nftMetadata.image.size)}
+                        </span>
                       </div>
                       <div>
                         <span className='text-gray-400'>Original URL:</span>
@@ -211,7 +219,9 @@ export const RentalPostDetailsModal = ({
                         </div>
                         <div>
                           <span className='text-gray-400'>Description:</span>
-                          <p className='text-gray-300 mt-1'>{selectedRentalPost.nftMetadata.contract.openSeaMetadata.description}</p>
+                          <p className='text-gray-300 mt-1'>
+                            {selectedRentalPost.nftMetadata.contract.openSeaMetadata.description}
+                          </p>
                         </div>
                         {selectedRentalPost.nftMetadata.contract.openSeaMetadata.lastIngestedAt && (
                           <div>
@@ -316,7 +326,10 @@ export const RentalPostDetailsModal = ({
                             variant='ghost'
                             className='h-8 w-8 p-0 text-gray-400 hover:text-white'
                             onClick={() =>
-                              window.open(`https://etherscan.io/address/${selectedRentalPost.nftMetadata.contract.address}`, '_blank')
+                              window.open(
+                                `https://etherscan.io/address/${selectedRentalPost.nftMetadata.contract.address}`,
+                                '_blank',
+                              )
                             }>
                             <ExternalLink className='h-3 w-3' />
                           </Button>
@@ -342,11 +355,15 @@ export const RentalPostDetailsModal = ({
                       </div>
                       <div className='flex justify-between items-center'>
                         <span className='text-gray-400'>Contract Name:</span>
-                        <span className='text-white'>{selectedRentalPost.nftMetadata.contract.name || 'Unnamed contract'}</span>
+                        <span className='text-white'>
+                          {selectedRentalPost.nftMetadata.contract.name || 'Unnamed contract'}
+                        </span>
                       </div>
                       <div className='flex justify-between items-center'>
                         <span className='text-gray-400'>Symbol:</span>
-                        <span className='text-white'>{selectedRentalPost.nftMetadata.contract.symbol || 'No symbol'}</span>
+                        <span className='text-white'>
+                          {selectedRentalPost.nftMetadata.contract.symbol || 'No symbol'}
+                        </span>
                       </div>
                       {selectedRentalPost.nftMetadata.contract.totalSupply && (
                         <div className='flex justify-between items-center'>
@@ -411,12 +428,15 @@ export const RentalPostDetailsModal = ({
                         <span className='text-white'>{formatDate(selectedRentalPost.nftMetadata.timeLastUpdated)}</span>
                       </div>
                       {/* Not "unknown" */}
-                      {selectedRentalPost.nftMetadata.acquiredAt && selectedRentalPost.nftMetadata.acquiredAt.blockTimestamp && (
-                        <div className='flex justify-between items-center'>
-                          <span className='text-gray-400'>Acquired:</span>
-                          <span className='text-white'>{formatDate(selectedRentalPost.nftMetadata.acquiredAt.blockTimestamp)}</span>
-                        </div>
-                      )}
+                      {selectedRentalPost.nftMetadata.acquiredAt &&
+                        selectedRentalPost.nftMetadata.acquiredAt.blockTimestamp && (
+                          <div className='flex justify-between items-center'>
+                            <span className='text-gray-400'>Acquired:</span>
+                            <span className='text-white'>
+                              {formatDate(selectedRentalPost.nftMetadata.acquiredAt.blockTimestamp)}
+                            </span>
+                          </div>
+                        )}
                     </div>
                   </div>
 
@@ -471,40 +491,41 @@ export const RentalPostDetailsModal = ({
                   )}
 
                   {/* Attributes */}
-                  {selectedRentalPost.nftMetadata.raw?.metadata?.attributes && selectedRentalPost.nftMetadata.raw?.metadata.attributes.length > 0 && (
-                    <>
-                      <Separator className='bg-gray-700/50' />
-                      <div>
-                        <div className='flex items-center gap-2 mb-4'>
-                          <Hash className='h-4 w-4 text-pink-400' />
-                          <span className='font-medium text-white'>Attributes</span>
+                  {selectedRentalPost.nftMetadata.raw?.metadata?.attributes &&
+                    selectedRentalPost.nftMetadata.raw?.metadata.attributes.length > 0 && (
+                      <>
+                        <Separator className='bg-gray-700/50' />
+                        <div>
+                          <div className='flex items-center gap-2 mb-4'>
+                            <Hash className='h-4 w-4 text-pink-400' />
+                            <span className='font-medium text-white'>Attributes</span>
+                          </div>
+                          <div className='grid grid-cols-2 gap-3'>
+                            {selectedRentalPost.nftMetadata.raw.metadata?.attributes.map((attr: any, index: number) => (
+                              <motion.div
+                                key={index}
+                                initial={{
+                                  opacity: 0,
+                                  y: 10,
+                                }}
+                                animate={{
+                                  opacity: 1,
+                                  y: 0,
+                                }}
+                                transition={{
+                                  delay: 0.1 * index,
+                                }}
+                                className='bg-gray-800/30 rounded-lg p-3 border border-gray-700/50'>
+                                <div className='text-xs text-gray-400 uppercase tracking-wider mb-1'>
+                                  {attr.trait_type}
+                                </div>
+                                <div className='text-white font-medium'>{attr.value}</div>
+                              </motion.div>
+                            ))}
+                          </div>
                         </div>
-                        <div className='grid grid-cols-2 gap-3'>
-                          {selectedRentalPost.nftMetadata.raw.metadata?.attributes.map((attr: any, index: number) => (
-                            <motion.div
-                              key={index}
-                              initial={{
-                                opacity: 0,
-                                y: 10,
-                              }}
-                              animate={{
-                                opacity: 1,
-                                y: 0,
-                              }}
-                              transition={{
-                                delay: 0.1 * index,
-                              }}
-                              className='bg-gray-800/30 rounded-lg p-3 border border-gray-700/50'>
-                              <div className='text-xs text-gray-400 uppercase tracking-wider mb-1'>
-                                {attr.trait_type}
-                              </div>
-                              <div className='text-white font-medium'>{attr.value}</div>
-                            </motion.div>
-                          ))}
-                        </div>
-                      </div>
-                    </>
-                  )}
+                      </>
+                    )}
                 </motion.div>
               </div>
             </motion.div>

@@ -4,14 +4,15 @@ import { motion } from 'framer-motion';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { UserDto } from '@repo/shared-dtos';
 import ComingSoon from '@/components/shared/coming-soon';
+import { Session } from 'next-auth';
 
 interface SecurityTabProps {
-  user: UserDto;
+  user?: Session['user'] | null;
 }
 
 export const SecurityTab = ({ user }: SecurityTabProps) => {
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
