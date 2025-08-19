@@ -3,35 +3,18 @@ import { mutation, query } from './_generated/server';
 import { defineTable } from 'convex/server';
 
 export const nft = defineTable({
-  contractAddress: v.string(),
-  tokenId: v.string(),
-  title: v.string(),
-  description: v.optional(v.string()),
-  imageUrl: v.string(),
-  collectionName: v.optional(v.string()),
-  floorPrice: v.optional(v.float64()),
-  category: v.optional(v.string()),
-  metadata: v.any(),
-  isListable: v.boolean(),
   ownerAddress: v.string(),
-})
-  .index('by_ownerAddress', ['ownerAddress'])
-  .index('by_collectionName', ['collectionName'])
-  .index('by_contractAddress_tokenId', ['contractAddress', 'tokenId']);
+  nftContractAddress: v.string(),
+  nftMetadata: v.any(),
+  isListable: v.boolean(),
+}).index('by_ownerAddress', ['ownerAddress']);
 
 export const createNft = mutation({
   args: {
-    contractAddress: v.string(),
-    tokenId: v.string(),
-    title: v.string(),
-    description: v.optional(v.string()),
-    imageUrl: v.string(),
-    collectionName: v.optional(v.string()),
-    floorPrice: v.optional(v.float64()),
-    category: v.optional(v.string()),
-    metadata: v.any(),
-    isListable: v.boolean(),
     ownerAddress: v.string(),
+    nftContractAddress: v.string(),
+    nftMetadata: v.any(),
+    isListable: v.boolean(),
   },
   handler: async (ctx, args) => {
     return await ctx.db.insert('nfts', args);
@@ -41,7 +24,6 @@ export const createNft = mutation({
 export const updateNft = mutation({
   args: {
     id: v.id('nfts'),
-    isListable: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
     const { id, ...rest } = args;

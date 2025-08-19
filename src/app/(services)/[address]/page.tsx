@@ -13,6 +13,7 @@ import { useShowMoreNFTs } from '@/queries/alchemy-sdk';
 import LendrButton from '@/components/shared/lendr-btn';
 import { OwnedNft } from 'alchemy-sdk';
 import NotFound from '@/app/not-found';
+import { ListNFTDrawer } from './_components/list-nft-drawer';
 
 const NFTDetailsModal = dynamic(() => import('./_components/nft-details-modal').then((mod) => mod.NFTDetailsModal), {
   ssr: false,
@@ -24,8 +25,6 @@ export default function UserProfilePage() {
 
   const user = useQuery(api.user.getUser, { address: address as string });
   const { nfts, loadMore, loading: nftsLoading, hasMore } = useShowMoreNFTs(address as string);
-
-  console.log(nfts);
 
   const [selectedNFTForListing, setSelectedNFTForListing] = useState<OwnedNft | null>(null);
   const [isListDrawerOpen, setIsListDrawerOpen] = useState(false);
@@ -116,15 +115,15 @@ export default function UserProfilePage() {
         />
       )}
 
-      {/* {selectedNFTForListing && isListDrawerOpen && session && (
-                <ListNFTDrawer
-                    nft={selectedNFTForListing}
-                    isOpen={isListDrawerOpen}
-                    onClose={() => setIsListDrawerOpen(false)}
-                    session={session}
-                    profileAddress={address as string}
-                />
-            )} */}
+      {selectedNFTForListing && isListDrawerOpen && session && (
+        <ListNFTDrawer
+          nft={selectedNFTForListing}
+          isOpen={isListDrawerOpen}
+          onClose={() => setIsListDrawerOpen(false)}
+          session={session}
+          profileAddress={address as string}
+        />
+      )}
     </div>
   );
 }

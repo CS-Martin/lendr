@@ -11,9 +11,10 @@ import Image from 'next/image';
 import { formatDate } from '@/lib/utils';
 import { Session } from 'next-auth';
 import { Doc } from '../../../../../convex/_generated/dataModel';
+import { OwnedNft } from 'alchemy-sdk';
 
 interface NFTDetailsModalProps {
-  nft: Doc<'nft'> | null;
+  nft: OwnedNft;
   isOpen: boolean;
   onClose: () => void;
   session: Session | null;
@@ -52,9 +53,9 @@ export const NFTDetailsModal = ({ nft, isOpen, onClose, session, profileAddress 
                   animate={{ y: 0, opacity: 1 }}
                   transition={{ delay: 0.1 }}>
                   <DialogTitle className='text-2xl font-bold bg-gradient-to-r from-lendr-400 to-cyan-400 bg-clip-text text-transparent'>
-                    {nft.title || 'Unnamed NFT'}
+                    {nft.name || 'Unnamed NFT'}
                   </DialogTitle>
-                  <p className='text-gray-400 mt-2'>{nft.collectionName || 'No collection name'}</p>
+                  <p className='text-gray-400 mt-2'>{nft.collection?.name || 'No collection name'}</p>
                 </motion.div>
               </DialogHeader>
 
@@ -71,15 +72,28 @@ export const NFTDetailsModal = ({ nft, isOpen, onClose, session, profileAddress 
                         <Loader2 className='h-8 w-8 animate-spin text-lendr-400' />
                       </div>
                     )}
-                    <Image
-                      src={nft.imageUrl || '/placeholder.svg'}
-                      alt={nft.title || 'NFT image'}
-                      fill
-                      className='object-cover hover:scale-105 transition-all duration-500'
-                      onLoad={() => setImageLoading(false)}
-                      onError={() => setImageLoading(false)}
-                      unoptimized
-                    />
+                    {nft.animation?.cachedUrl ? (
+                      <video
+                        src={nft.animation?.cachedUrl || '/placeholder.svg'}
+                        autoPlay
+                        loop
+                        muted
+                        controls
+                        className={`object-cover w-full h-full ${imageLoading ? 'hidden' : ''}`}
+                        onLoadedData={() => setImageLoading(false)}
+                        onError={() => setImageLoading(false)}
+                      />
+                    ) : (
+                      <Image
+                        src={nft.animation?.originalUrl || nft.image.cachedUrl || nft.image.thumbnailUrl || '/placeholder.svg'}
+                        alt={nft.name || 'NFT image'}
+                        fill
+                        className='object-cover hover:scale-105 transition-all duration-500'
+                        onLoad={() => setImageLoading(false)}
+                        onError={() => setImageLoading(false)}
+                        unoptimized
+                      />
+                    )}
                   </div>
                 </motion.div>
 
@@ -106,13 +120,21 @@ export const NFTDetailsModal = ({ nft, isOpen, onClose, session, profileAddress 
                       <Hash className='h-4 w-4 text-purple-400' />
                       <span className='font-medium text-white'>Token Details</span>
                     </div>
-                    <div className='space-y-3'>
-                      <div className='flex justify-between items-center'>
+                    <div className='flex flex-col gap-y-3'>
+                      <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between w-full'>
                         <span className='text-gray-400'>Token ID:</span>
                         <Badge
                           variant='outline'
                           className='border-gray-600 text-gray-300'>
                           #{nft.tokenId}
+                        </Badge>
+                      </div>
+                      <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between w-full'>
+                        <span className='text-gray-400'>Token Type:</span>
+                        <Badge
+                          variant='outline'
+                          className='border-gray-600 text-gray-300'>
+                          {nft.tokenType}
                         </Badge>
                       </div>
                     </div>
@@ -131,14 +153,14 @@ export const NFTDetailsModal = ({ nft, isOpen, onClose, session, profileAddress 
                         <span className='text-gray-400 block mb-1'>Contract Address:</span>
                         <div className='flex items-center gap-2'>
                           <code className='bg-gray-800/50 px-2 py-1 rounded text-sm font-mono text-gray-300'>
-                            {nft.contractAddress.slice(0, 10)}
+                            {nft.contract.address.slice(0, 10)}
                             ...
-                            {nft.contractAddress.slice(-8)}
+                            {nft.contract.address.slice(-8)}
                           </code>
                           <Button
                             size='sm'
                             variant='ghost'
-                            onClick={() => copyToClipboard(nft.contractAddress)}
+                            onClick={() => copyToClipboard(nft.contract.address)}
                             className='h-8 w-8 p-0 text-gray-400 hover:text-white'>
                             <Copy className='h-3 w-3' />
                           </Button>
@@ -147,7 +169,7 @@ export const NFTDetailsModal = ({ nft, isOpen, onClose, session, profileAddress 
                             variant='ghost'
                             className='h-8 w-8 p-0 text-gray-400 hover:text-white'
                             onClick={() =>
-                              window.open(`https://etherscan.io/address/${nft.contractAddress}`, '_blank')
+                              window.open(`https://etherscan.io/address/${nft.contract.address}`, '_blank')
                             }>
                             <ExternalLink className='h-3 w-3' />
                           </Button>
@@ -173,29 +195,14 @@ export const NFTDetailsModal = ({ nft, isOpen, onClose, session, profileAddress 
                       </div>
                       <div className='flex justify-between items-center'>
                         <span className='text-gray-400'>Collection Name:</span>
-                        <span className='text-white'>{nft.collectionName || 'Unnamed contract'}</span>
+                        <span className='text-white'>{nft.collection?.name || 'Unnamed contract'}</span>
                       </div>
                     </div>
                   </div>
 
-                  <Separator className='bg-gray-700/50' />
-
-                  {/* Timeline */}
-                  <div>
-                    <div className='flex items-center gap-2 mb-4'>
-                      <Clock className='h-4 w-4 text-yellow-400' />
-                      <span className='font-medium text-white'>Timeline</span>
-                    </div>
-                    <div className='space-y-3'>
-                      <div className='flex justify-between items-center'>
-                        <span className='text-gray-400'>Created:</span>
-                        {/* /* <span className='text-white'>{formatDate(nft._creationTime)}</span> */}
-                      </div>
-                    </div>
-                  </div>
 
                   {/* Attributes */}
-                  {nft.metadata?.attributes && nft.metadata.attributes.length > 0 && (
+                  {nft.raw.metadata.attributes && nft.raw.metadata.attributes.length > 0 && (
                     <>
                       <Separator className='bg-gray-700/50' />
                       <div>
@@ -204,7 +211,7 @@ export const NFTDetailsModal = ({ nft, isOpen, onClose, session, profileAddress 
                           <span className='font-medium text-white'>Attributes</span>
                         </div>
                         <div className='grid grid-cols-2 gap-3'>
-                          {nft.metadata.attributes.map(
+                          {nft.raw.metadata.attributes.map(
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             (attr: any, index: number) => (
                               <motion.div
