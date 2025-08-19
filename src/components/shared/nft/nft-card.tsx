@@ -6,10 +6,10 @@ import Image from 'next/image';
 import gsap from 'gsap';
 import LendrButton from '../lendr-btn';
 import { Session } from 'next-auth';
-import { Doc } from '../../../convex/_generated/dataModel';
+import { OwnedNft } from 'alchemy-sdk';
 
 interface NFTCardProps {
-    nft: Doc<"nft">;
+    nft: OwnedNft;
     onListNFT?: () => void;
     onViewNFT?: () => void;
     session: Session | null;
@@ -55,8 +55,8 @@ export const NFTCard = ({ nft, onViewNFT, onListNFT, session, profileAddress }: 
                         whileHover={{ scale: 1.1 }}
                         transition={{ duration: 0.5 }}>
                         <Image
-                            src={nft.imageUrl || '/placeholder.svg'}
-                            alt={nft.title || 'NFT'}
+                            src={nft.image.cachedUrl || nft.image.thumbnailUrl || nft.image.originalUrl || '/placeholder.svg'}
+                            alt={nft.name || 'NFT'}
                             width={500}
                             height={500}
                             onError={(e) => {
@@ -77,15 +77,15 @@ export const NFTCard = ({ nft, onViewNFT, onListNFT, session, profileAddress }: 
                 {/* Content */}
                 <div className='relative p-2 py-3 flex-1'>
                     <motion.h3
-                        className='text-sm font-bold text-white mb-2 group-hover:text-lendr-400 transition-colors duration-300'
+                        className='text-sm font-bold line-clamp-1 text-white mb-2 group-hover:text-lendr-400 transition-colors duration-300'
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.4 }}>
-                        {nft.title}
+                        {nft.name}
                     </motion.h3>
 
                     <motion.p
-                        className='text-sm text-slate-400 mb-4 line-clamp-1'
+                        className='text-sm text-slate-400 line-clamp-1'
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ delay: 0.5 }}>

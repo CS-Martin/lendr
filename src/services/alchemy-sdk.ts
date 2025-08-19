@@ -16,7 +16,6 @@ export class AlchemyService {
       const response: OwnedNftsResponse = await alchemy.nft.getNftsForOwner(walletAddress, {
         pageSize: 10,
         omitMetadata: false,
-        excludeFilters: [NftFilters.SPAM],
         pageKey,
       });
 

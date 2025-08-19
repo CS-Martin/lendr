@@ -1,33 +1,33 @@
-import { NextAuthOptions } from "next-auth";
-import CredentialsProvider from "next-auth/providers/credentials";
-import { ConvexHttpClient } from "convex/browser";
-import { api } from "../../../../../convex/_generated/api";
-import { SiweMessage } from "siwe";
-import { logger } from "@/lib/logger";
+import { NextAuthOptions } from 'next-auth';
+import CredentialsProvider from 'next-auth/providers/credentials';
+import { ConvexHttpClient } from 'convex/browser';
+import { api } from '../../../../../convex/_generated/api';
+import { SiweMessage } from 'siwe';
+import { logger } from '@/lib/logger';
 
 const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
 
 export const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
-      name: "Ethereum",
+      name: 'Ethereum',
       credentials: {
-        message: { label: "Message", type: "text" },
-        signature: { label: "Signature", type: "text" },
+        message: { label: 'Message', type: 'text' },
+        signature: { label: 'Signature', type: 'text' },
       },
       async authorize(credentials) {
-        console.log("CREDENTIALS", credentials);
+        console.log('CREDENTIALS', credentials);
         try {
-          const siwe = await new SiweMessage(credentials?.message || "");
+          const siwe = await new SiweMessage(credentials?.message || '');
 
           const result = await siwe.verify({
-            signature: credentials?.signature || "",
-            domain: process.env.NEXTAUTH_URL?.replace(/^https?:\/\//, ""),
+            signature: credentials?.signature || '',
+            domain: process.env.NEXTAUTH_URL?.replace(/^https?:\/\//, ''),
             nonce: siwe.nonce,
           });
 
           if (!result.success) {
-            throw new Error("Failed to verify SIWE message");
+            throw new Error('Failed to verify SIWE message');
           }
 
           logger.info(`SIWE auth succeeded for address ${siwe.address}`);
@@ -43,7 +43,7 @@ export const authOptions: NextAuthOptions = {
           }
 
           return {
-            id: user._id.toString(),
+            id: user._id,
             address: user.address,
             name: user.username || 'Anonymous',
             image: user.avatarUrl || null,
@@ -57,7 +57,7 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   session: {
-    strategy: "jwt",
+    strategy: 'jwt',
   },
   callbacks: {
     async jwt({ token, user }) {
