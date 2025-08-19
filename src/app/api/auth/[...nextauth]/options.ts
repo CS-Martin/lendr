@@ -16,7 +16,6 @@ export const authOptions: NextAuthOptions = {
         signature: { label: 'Signature', type: 'text' },
       },
       async authorize(credentials) {
-        console.log('CREDENTIALS', credentials);
         try {
           const siwe = await new SiweMessage(credentials?.message || '');
 
@@ -36,6 +35,8 @@ export const authOptions: NextAuthOptions = {
             address: siwe.address,
           });
 
+          logger.info(`User created or fetched: ${JSON.stringify(user)}`);
+
           if (!user) {
             logger.error('Failed to create/fetch user');
 
@@ -45,8 +46,10 @@ export const authOptions: NextAuthOptions = {
           return {
             id: user._id,
             address: user.address,
-            name: user.username || 'Anonymous',
+            username: user.username,
             image: user.avatarUrl || null,
+            createdAt: user._creationTime ? new Date(user._creationTime) : undefined,
+            updatedAt: user.updatedAt ? new Date(user.updatedAt) : undefined,
           };
         } catch (error) {
           console.error('Error in authorize:', error);
@@ -64,12 +67,20 @@ export const authOptions: NextAuthOptions = {
       if (user) {
         token.id = user.id;
         token.address = user.address;
+        token.name = user.name;
+        token.avatarUrl = user.image || null;
+        token.createdAt = user.createdAt || undefined;
+        token.updatedAt = user.updatedAt || undefined;
       }
       return token;
     },
     async session({ session, token }) {
       session.user.id = token.id as string;
       session.user.address = token.address as string;
+      session.user.username = token.name as string;
+      session.user.createdAt = token.createdAt as Date | undefined;
+      session.user.updatedAt = token.updatedAt as Date | undefined;
+
       return session;
     },
   },

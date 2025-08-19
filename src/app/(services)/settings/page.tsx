@@ -7,7 +7,6 @@ import { motion } from 'framer-motion';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { User, Shield, Bell, Palette } from 'lucide-react';
 import { useSession } from 'next-auth/react';
-import { UserDto } from '@repo/shared-dtos';
 import { ProfileTab } from './_components/profile-tab';
 import { SecurityTab } from './_components/security-tab';
 import { NotificationTab } from './_components/notification-tab';
@@ -16,12 +15,12 @@ import NotFound from '@/app/not-found';
 
 export default function SettingsPage() {
   const { data: session } = useSession();
-  const user = session?.user as UserDto;
+  const user = session?.user;
 
   const [activeTab, setActiveTab] = useState('profile');
   //   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  if (!user) {
+  if (user === null) {
     return <NotFound />;
   }
 
@@ -84,7 +83,7 @@ export default function SettingsPage() {
           <TabsContent
             value='profile'
             className='space-y-6'>
-            <ProfileTab user={user} />
+            <ProfileTab address={user?.address} />
           </TabsContent>
 
           {/* Security Tab */}

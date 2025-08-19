@@ -14,11 +14,12 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect } from 'react';
 import { toast } from 'sonner';
 import z from 'zod';
-import { UpdateUserDto, UserDto } from '@repo/shared-dtos';
-import { useUpdateUser } from '@/queries/users';
+import { useMutation, useQuery } from 'convex/react';
+import { api } from '../../../../../convex/_generated/api';
+import { ProfileSkeleton } from '../../[address]/_components/skeletons/profile-skeleton';
 
 interface ProfileTabProps {
-  user: UserDto;
+  address: string | undefined;
 }
 
 export const userSchema = z.object({
@@ -33,8 +34,8 @@ export const userSchema = z.object({
 
 export type UserFormData = z.infer<typeof userSchema>;
 
-export const ProfileTab = ({ user }: ProfileTabProps) => {
-  const { mutateAsync: updateUser } = useUpdateUser();
+export const ProfileTab = ({ address }: ProfileTabProps) => {
+  const user = useQuery(api.user.getUser, { address: address || '' });
 
   const {
     register,
@@ -58,18 +59,20 @@ export const ProfileTab = ({ user }: ProfileTabProps) => {
         bio: user.bio || '',
       });
     }
-  }, [user, reset]);
+  }, [user?._id]);
 
-  const onSubmit = async (data: UpdateUserDto) => {
+  const updateUser = useMutation(api.user.updateUser);
+
+  const onSubmit = async (data: UserFormData) => {
     try {
-      const updatedUser = await updateUser({
-        address: user?.address || '',
-        user: data,
-      });
+      if (!user) {
+        throw new Error('User not found');
+      }
 
-      reset({
-        username: updatedUser?.username,
-        bio: updatedUser?.bio,
+      await updateUser({
+        address: user.address,
+        username: data.username,
+        bio: data.bio,
       });
 
       toast.success('Profile updated successfully!', {
@@ -101,6 +104,11 @@ export const ProfileTab = ({ user }: ProfileTabProps) => {
         toast.error('Failed to copy address', err);
       });
   };
+
+  if (user === undefined) {
+    return <ProfileSkeleton />
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -131,7 +139,7 @@ export const ProfileTab = ({ user }: ProfileTabProps) => {
             <div>
               <h3 className='text-lg font-semibold text-white'>{user?.username}</h3>
               <p className='text-gray-400 text-sm'>
-                Member since {user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'Unknown'}
+                Member since {user?._creationTime ? new Date(user._creationTime).toLocaleString() : 'Unknown'}
               </p>
               <div className='flex items-center gap-2 mt-2'>
                 <span className='text-xs font-mono bg-gray-800/50 px-2 py-1 rounded text-gray-300'>
