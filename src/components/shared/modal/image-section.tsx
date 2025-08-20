@@ -7,16 +7,13 @@ import { OpenSeaMetadata } from './opensea-metadata';
 
 export const ImageSection = ({
     nftMetadata,
-    onImageLoad
 }: {
     nftMetadata: any;
-    onImageLoad: () => void;
 }) => {
     const [imageLoading, setImageLoading] = useState(true);
 
     const handleLoad = () => {
         setImageLoading(false);
-        onImageLoad();
     };
 
     return (
