@@ -62,20 +62,22 @@ function BidItem({ bid, rank, isCurrentUser }: { bid: any; rank: number; isCurre
 
   return (
     <div
-      className={`p-4 rounded-lg border ${isCurrentUser ? 'bg-blue-900/20 border-blue-700/50' : 'bg-slate-800/30 border-slate-700/50'
-        }`}>
+      className={`p-4 rounded-lg border ${
+        isCurrentUser ? 'bg-blue-900/20 border-blue-700/50' : 'bg-slate-800/30 border-slate-700/50'
+      }`}>
       <div className='flex justify-between items-start mb-2'>
         <div className='flex items-center space-x-2'>
           {/* Ranking badge based on total value */}
           <div
-            className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${rank === 1
-              ? 'bg-yellow-500 text-black'
-              : rank === 2
-                ? 'bg-gray-400 text-black'
-                : rank === 3
-                  ? 'bg-amber-700 text-white'
-                  : 'bg-slate-700 text-slate-300'
-              }`}>
+            className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
+              rank === 1
+                ? 'bg-yellow-500 text-black'
+                : rank === 2
+                  ? 'bg-gray-400 text-black'
+                  : rank === 3
+                    ? 'bg-amber-700 text-white'
+                    : 'bg-slate-700 text-slate-300'
+            }`}>
             #{rank}
           </div>
 

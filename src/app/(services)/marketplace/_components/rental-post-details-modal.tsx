@@ -67,7 +67,6 @@ export const RentalPostDetailsModal = memo(
                 <div className='grid grid-cols-1 lg:grid-cols-2 gap-8'>
                   <ImageSection
                     nftMetadata={selectedRentalPost.nftMetadata}
-                    onImageLoad={() => setImageLoaded(true)}
                   />
 
                   <motion.div

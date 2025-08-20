@@ -41,7 +41,9 @@ export const placeBid = mutation({
         if (existingBid) {
             // Update existing bid
             return await ctx.db.patch(existingBid._id, {
-                ...args,
+                message: args.message,
+                bidAmount: args.bidAmount,
+                rentalDuration: args.rentalDuration,
                 updatedTime: timestamp,
             });
         }
