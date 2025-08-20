@@ -15,3 +15,16 @@ export const formatDate = (dateString?: Date | string) => {
     return 'Invalid date';
   }
 };
+
+export const formatFileSize = (bytes?: number) => {
+  if (!bytes) return 'Unknown';
+  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(1024));
+  return Math.round((bytes / Math.pow(1024, i)) * 100) / 100 + ' ' + sizes[i];
+};
+
+export const truncateText = (text: string, startLength = 6, endLength = 4) => {
+  if (!text) return '';
+  if (text.length <= startLength + endLength) return text;
+  return `${text.slice(0, startLength)}...${text.slice(-endLength)}`;
+};

@@ -14,7 +14,7 @@ import { Doc } from '../../../../convex/_generated/dataModel';
 interface RentalPostProps {
   post: Doc<'rentalposts'>;
   viewMode: 'grid' | 'list';
-  onViewRentalPost: () => void;
+  onViewRentalPost: (e: React.MouseEvent) => void;
 }
 
 export const RentalPostCard = ({ post, viewMode, onViewRentalPost }: RentalPostProps) => {
@@ -60,7 +60,7 @@ export const RentalPostCard = ({ post, viewMode, onViewRentalPost }: RentalPostP
   return (
     <Card3D className='relative group'>
       <motion.div
-        onClick={onViewRentalPost}
+        onClick={(e) => onViewRentalPost(e)}
         ref={cardRef}
         className={cn(
           'relative cursor-pointer bg-gradient-to-br from-slate-900/90 to-slate-800/90 backdrop-blur-xl border border-slate-700/50 hover:border-lendr-400/50 rounded-2xl overflow-hidden shadow-2xl hover:shadow-lendr-400/30 transition-all duration-500',
@@ -224,8 +224,7 @@ export const RentalPostCard = ({ post, viewMode, onViewRentalPost }: RentalPostP
               <LendrButton
                 className='w-full overflow-hidden'
                 disabled={!post.isActive}
-                link={`/rentals/${post._id}`}
-                onClick={() => onViewRentalPost()}>
+                link={`/rentals/${post._id}`}>
                 <motion.div
                   className='absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent'
                   initial={{ x: '-100%' }}
