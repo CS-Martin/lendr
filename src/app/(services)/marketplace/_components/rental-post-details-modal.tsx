@@ -1,30 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
-import { memo, useEffect, useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import { memo, useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Separator } from '@/components/ui/separator';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  ExternalLink,
-  Copy,
-  Hash,
   FileText,
-  ImageIcon,
-  Link,
-  Clock,
-  Loader2,
-  AlertTriangle,
-  Timer,
 } from 'lucide-react';
-import Image from 'next/image';
-import { formatDate } from '@/lib/utils';
 import { Session } from 'next-auth';
-import { Card, CardContent } from '@/components/ui/card';
-import { CountdownTimer } from './countdown-timer';
-import LendrButton from '@/components/shared/lendr-btn';
 import { Doc } from '../../../../../convex/_generated/dataModel';
 import { SpamWarning } from '@/components/shared/modal/spam-warning';
 import { ImageSection } from '@/components/shared/modal/image-section';
