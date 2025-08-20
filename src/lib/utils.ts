@@ -39,10 +39,10 @@ export function formatDuration(hours: number) {
   const hrs = hours % 24;
 
   if (days > 0 && hrs > 0) {
-    return `${days} day${days > 1 ? "s" : ""} ${hrs} hr${hrs > 1 ? "s" : ""}`;
+    return `${days} day${days > 1 ? 's' : ''} ${hrs} hr${hrs > 1 ? 's' : ''}`;
   } else if (days > 0) {
-    return `${days} day${days > 1 ? "s" : ""}`;
+    return `${days} day${days > 1 ? 's' : ''}`;
   } else {
-    return `${hrs} hr${hrs > 1 ? "s" : ""}`;
+    return `${hrs} hr${hrs > 1 ? 's' : ''}`;
   }
 }

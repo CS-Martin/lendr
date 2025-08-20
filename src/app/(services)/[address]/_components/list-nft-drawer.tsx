@@ -45,7 +45,10 @@ const listNftFormSchema = z.object({
   collateral: z.number().min(0, 'Collateral must be greater than or equal to 0'),
   category: z.string().min(1, 'Category is required'),
   isBiddable: z.boolean(),
-  rentalDuration: z.number().min(1, 'Rental duration must be at least 1 hour').max(720, 'Rental duration cannot exceed 30 days'),
+  rentalDuration: z
+    .number()
+    .min(1, 'Rental duration must be at least 1 hour')
+    .max(720, 'Rental duration cannot exceed 30 days'),
   biddingStartTime: z.number().optional(),
   biddingEndTime: z.number().optional(),
   isActive: z.boolean(),
@@ -278,7 +281,9 @@ export const ListNFTDrawer = ({ nft, isOpen, onClose, session, profileAddress }:
                         />
                       </div>
 
-                      {errors.rentalDuration && <small className='text-red-400 mt-1'>{errors.rentalDuration.message}</small>}
+                      {errors.rentalDuration && (
+                        <small className='text-red-400 mt-1'>{errors.rentalDuration.message}</small>
+                      )}
                     </div>
 
                     <div className='space-y-2 !w-1/2'>
@@ -415,7 +420,6 @@ export const ListNFTDrawer = ({ nft, isOpen, onClose, session, profileAddress }:
                         exit={{ height: 0, opacity: 0 }}
                         transition={{ duration: 0.3 }}
                         className='space-y-4 overflow-hidden'>
-
                         <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
                           {/* Bidding Start Date */}
                           <div className='space-y-2'>
