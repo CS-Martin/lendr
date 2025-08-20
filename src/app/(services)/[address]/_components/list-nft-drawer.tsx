@@ -45,6 +45,7 @@ const listNftFormSchema = z.object({
   collateral: z.number().min(0, 'Collateral must be greater than or equal to 0'),
   category: z.string().min(1, 'Category is required'),
   isBiddable: z.boolean(),
+  rentalDuration: z.number().min(1, 'Rental duration must be at least 1 hour').max(720, 'Rental duration cannot exceed 30 days'),
   biddingStartTime: z.number().optional(),
   biddingEndTime: z.number().optional(),
   isActive: z.boolean(),
@@ -75,6 +76,7 @@ export const ListNFTDrawer = ({ nft, isOpen, onClose, session, profileAddress }:
       description: '',
       hourlyRate: 0,
       collateral: 0,
+      rentalDuration: 1,
       category: '',
       isBiddable: false,
       biddingStartTime: undefined,
@@ -253,35 +255,62 @@ export const ListNFTDrawer = ({ nft, isOpen, onClose, session, profileAddress }:
                     {errors.description && <small className='text-red-400 mt-1'>{errors.description.message}</small>}
                   </div>
 
-                  <div className='space-y-2'>
-                    <Label
-                      htmlFor='category'
-                      className='text-gray-300'>
-                      Category
-                    </Label>
-                    <Controller
-                      name='category'
-                      control={control}
-                      render={({ field }) => (
-                        <Select
-                          value={field.value}
-                          onValueChange={field.onChange}>
-                          <SelectTrigger className='bg-gray-800/50 border-gray-700/50 text-white focus:border-lendr-400/50'>
-                            <SelectValue placeholder='Select a category' />
-                          </SelectTrigger>
-                          <SelectContent className='bg-gray-800 border-gray-700 text-white'>
-                            {categories.map((category) => (
-                              <SelectItem
-                                key={category}
-                                value={category.toLowerCase()}>
-                                {category}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      )}
-                    />
-                    {errors.category && <small className='text-red-400 mt-1'>{errors.category.message}</small>}
+                  <div className='flex md:flex-row flex-col gap-4'>
+                    {/* Rental duration */}
+                    <div className='space-y-2 w-1/2'>
+                      <Label
+                        htmlFor='hourlyRate'
+                        className='text-gray-300'>
+                        Maximum Rental Duration (Days)
+                      </Label>
+
+                      <div className='relative'>
+                        <Clock className='absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400' />
+                        <Input
+                          id='rentalDuration'
+                          type='number'
+                          {...register('rentalDuration', {
+                            valueAsNumber: true,
+                          })}
+                          placeholder='1'
+                          className='pl-10 bg-gray-800/50 border-gray-700/50 text-white placeholder-gray-400 focus:border-lendr-400/50'
+                          required
+                        />
+                      </div>
+
+                      {errors.rentalDuration && <small className='text-red-400 mt-1'>{errors.rentalDuration.message}</small>}
+                    </div>
+
+                    <div className='space-y-2 !w-1/2'>
+                      <Label
+                        htmlFor='category'
+                        className='text-gray-300'>
+                        Category
+                      </Label>
+                      <Controller
+                        name='category'
+                        control={control}
+                        render={({ field }) => (
+                          <Select
+                            value={field.value}
+                            onValueChange={field.onChange}>
+                            <SelectTrigger className='bg-gray-800/50 w-full border-gray-700/50 text-white focus:border-lendr-400/50'>
+                              <SelectValue placeholder='Select a category' />
+                            </SelectTrigger>
+                            <SelectContent className='bg-gray-800 border-gray-700 text-white'>
+                              {categories.map((category) => (
+                                <SelectItem
+                                  key={category}
+                                  value={category.toLowerCase()}>
+                                  {category}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        )}
+                      />
+                      {errors.category && <small className='text-red-400 mt-1'>{errors.category.message}</small>}
+                    </div>
                   </div>
                 </motion.div>
 
@@ -386,6 +415,7 @@ export const ListNFTDrawer = ({ nft, isOpen, onClose, session, profileAddress }:
                         exit={{ height: 0, opacity: 0 }}
                         transition={{ duration: 0.3 }}
                         className='space-y-4 overflow-hidden'>
+
                         <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
                           {/* Bidding Start Date */}
                           <div className='space-y-2'>

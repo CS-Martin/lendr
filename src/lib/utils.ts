@@ -1,5 +1,6 @@
 import { clsx, type ClassValue } from 'clsx';
 import { format } from 'date-fns';
+import { useState } from 'react';
 import { twMerge } from 'tailwind-merge';
 
 export function cn(...inputs: ClassValue[]) {
@@ -28,3 +29,20 @@ export const truncateText = (text: string, startLength = 6, endLength = 4) => {
   if (text.length <= startLength + endLength) return text;
   return `${text.slice(0, startLength)}...${text.slice(-endLength)}`;
 };
+
+export const copyToClipboard = (text: string) => {
+  navigator.clipboard.writeText(text);
+};
+
+export function formatDuration(hours: number) {
+  const days = Math.floor(hours / 24);
+  const hrs = hours % 24;
+
+  if (days > 0 && hrs > 0) {
+    return `${days} day${days > 1 ? "s" : ""} ${hrs} hr${hrs > 1 ? "s" : ""}`;
+  } else if (days > 0) {
+    return `${days} day${days > 1 ? "s" : ""}`;
+  } else {
+    return `${hrs} hr${hrs > 1 ? "s" : ""}`;
+  }
+}

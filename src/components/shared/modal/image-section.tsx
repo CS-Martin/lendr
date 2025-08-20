@@ -62,8 +62,7 @@ export const ImageSection = ({
                 )}
             </div>
 
-            <MediaInfo nftMetadata={nftMetadata} />
-            {nftMetadata.contract.openSeaMetadata && <OpenSeaMetadata metadata={nftMetadata.contract.openSeaMetadata} />}
+
         </motion.div>
     );
 };

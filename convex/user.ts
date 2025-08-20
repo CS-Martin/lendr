@@ -43,12 +43,12 @@ export const updateUser = mutation({
 
 export const getUser = query({
   args: {
-    address: v.string(),
+    address: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     return await ctx.db
       .query('users')
-      .withIndex('by_address', (q) => q.eq('address', args.address))
+      .withIndex('by_address', (q) => q.eq('address', args.address || ''))
       .unique();
   },
 });

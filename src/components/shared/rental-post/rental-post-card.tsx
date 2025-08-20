@@ -222,7 +222,7 @@ export const RentalPostCard = ({ post, viewMode, onViewRentalPost }: RentalPostP
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.9 }}>
               <LendrButton
-                className='w-full overflow-hidden'
+                className='w-full overflow-hidden rounded-md'
                 disabled={!post.isActive}
                 link={`/rentals/${post._id}`}>
                 <motion.div
