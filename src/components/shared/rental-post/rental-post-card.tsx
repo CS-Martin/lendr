@@ -224,6 +224,7 @@ export const RentalPostCard = ({ post, viewMode, onViewRentalPost }: RentalPostP
               <LendrButton
                 className='w-full overflow-hidden'
                 disabled={!post.isActive}
+                link={`/rentals/${post._id}`}
                 onClick={() => onViewRentalPost()}>
                 <motion.div
                   className='absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent'
