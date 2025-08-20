@@ -21,6 +21,7 @@ interface NFTDetailsModalProps {
   profileAddress: string;
 }
 
+// TODO: Refactor this component using shared components in @/components/shared/modal
 export const NFTDetailsModal = ({ nft, isOpen, onClose, session, profileAddress }: NFTDetailsModalProps) => {
   const [imageLoading, setImageLoading] = useState(true);
   const [copiedAddress, setCopiedAddress] = useState(false);

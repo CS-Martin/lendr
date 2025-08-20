@@ -91,7 +91,6 @@ export default function MarketplacePage() {
   };
 
   const rentalPosts = useQuery(api.rentalpost.getRentalPosts);
-  console.log(rentalPosts);
 
   const clearAllFilters = () => {
     setSelectedFilters([]);
@@ -109,12 +108,12 @@ export default function MarketplacePage() {
     });
   };
 
-  const handleViewRentalPost = (post: Doc<'rentalposts'>) => {
+  const handleViewRentalPost = (e: React.MouseEvent, post: Doc<'rentalposts'>) => {
+    e.preventDefault();
+
     setSelectedRentalPost(post);
     setIsModalOpen(true);
   };
-
-  console.log(rentalPosts);
 
   const filteredRentalPosts = rentalPosts?.filter((post) => {
     const matchesSearch =
@@ -255,7 +254,7 @@ export default function MarketplacePage() {
                     <RentalPostCard
                       post={post}
                       viewMode={viewMode}
-                      onViewRentalPost={() => handleViewRentalPost(post)}
+                      onViewRentalPost={(e) => handleViewRentalPost(e, post)}
                     />
                   </Suspense>
                 </motion.div>

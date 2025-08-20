@@ -8,28 +8,28 @@ export const CountdownDisplay = memo(
       <div>
         <NumberTicker
           value={timeRemaining.days}
-          className='text-3xl font-bold text-orange-400'
+          className='md:text-3xl text-xl font-bold text-orange-400'
         />
         <div className='text-sm text-slate-400'>Days</div>
       </div>
       <div>
         <NumberTicker
           value={timeRemaining.hours}
-          className='text-3xl font-bold text-orange-400'
+          className='md:text-3xl text-xl font-bold text-orange-400'
         />
         <div className='text-sm text-slate-400'>Hours</div>
       </div>
       <div>
         <NumberTicker
           value={timeRemaining.minutes}
-          className='text-3xl font-bold text-orange-400'
+          className='md:text-3xl text-xl font-bold text-orange-400'
         />
         <div className='text-sm text-slate-400'>Minutes</div>
       </div>
       <div>
         <NumberTicker
           value={timeRemaining.seconds}
-          className='text-3xl font-bold text-orange-400'
+          className='md:text-3xl text-xl font-bold text-orange-400'
         />
         <div className='text-sm text-slate-400'>Seconds</div>
       </div>

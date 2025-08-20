@@ -13,6 +13,7 @@ import type {
   FilterApi,
   FunctionReference,
 } from "convex/server";
+import type * as bids from "../bids.js";
 import type * as nft from "../nft.js";
 import type * as rentalpost from "../rentalpost.js";
 import type * as user from "../user.js";
@@ -26,6 +27,7 @@ import type * as user from "../user.js";
  * ```
  */
 declare const fullApi: ApiFromModules<{
+  bids: typeof bids;
   nft: typeof nft;
   rentalpost: typeof rentalpost;
   user: typeof user;
