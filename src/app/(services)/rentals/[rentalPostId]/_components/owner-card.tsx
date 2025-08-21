@@ -15,18 +15,24 @@ export function OwnerCard({ rentalPost }: OwnerCardProps) {
     address: rentalPost?.posterAddress as Id<'users'>,
   });
 
+  const analytics = useQuery(api.user.getDashboardAnalytics, { address: rentalPost?.posterAddress as Id<'users'> });
+
+  console.log(analytics);
+
   return (
     <Card className='bg-slate-900/50 border-slate-800'>
       <CardContent className='p-6'>
         <div className='flex items-center justify-between mb-4'>
           <div>
             <div className='text-slate-400 text-sm'>Owned by</div>
-            <div className='text-white font-mono'>{user?.address}</div>
+            <div className='text-white font-mono'>
+              {user?.address.slice(0, 6)}...{user?.address.slice(-4)}
+            </div>
           </div>
           <div className='flex items-center space-x-1'>
             <Star className='w-4 h-4 text-yellow-400 fill-current' />
             <span className='text-white font-semibold'>4.8</span>
-            <span className='text-slate-400 text-sm'>(10 rentals)</span>
+            <span className='text-slate-400 text-sm'>({analytics?.activeRentalPosts} active rentals)</span>
           </div>
         </div>
         <div className='text-slate-400 text-sm'>Member since {user?._creationTime}</div>

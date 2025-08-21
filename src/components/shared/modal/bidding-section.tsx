@@ -2,8 +2,12 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Timer } from 'lucide-react';
 import LendrButton from '@/components/shared/lendr-btn';
 import { CountdownTimer } from '@/app/(services)/marketplace/_components/countdown-timer';
+import { useSession } from 'next-auth/react';
+import { Doc } from '../../../../convex/_generated/dataModel';
 
-export const BiddingSection = ({ rentalPost }: { rentalPost: any }) => {
+export const BiddingSection = ({ rentalPost }: { rentalPost?: Doc<'rentalposts'> }) => {
+  const { data: session } = useSession();
+
   if (!rentalPost?.isBiddable || !rentalPost.biddingEndTime) return null;
 
   return (
@@ -13,8 +17,13 @@ export const BiddingSection = ({ rentalPost }: { rentalPost: any }) => {
           <Timer className='w-5 h-5 text-orange-400' />
           <span>Bidding Ends In</span>
         </h3>
+
         <CountdownTimer biddingEndTime={new Date(rentalPost.biddingEndTime)} />
-        <LendrButton className='w-[90%] mt-5 rounded-lg'>Bid now!</LendrButton>
+
+        {/* Do not show the bid button if the user is the owner */}
+        {session?.user?.address !== rentalPost.posterAddress && (
+          <LendrButton className='w-[90%] mt-5 rounded-lg'>Bid now!</LendrButton>
+        )}
       </CardContent>
     </Card>
   );

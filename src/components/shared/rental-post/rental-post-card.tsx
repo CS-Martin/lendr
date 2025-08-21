@@ -3,13 +3,18 @@
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { Badge } from '@/components/ui/badge';
-import { Heart, Share2 } from 'lucide-react';
+import { Heart, Share2, Trash2Icon } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import { gsap } from 'gsap';
 import { Card3D } from '../card-3d';
 import { cn } from '@/lib/utils';
 import LendrButton from '../lendr-btn';
-import { Doc } from '../../../../convex/_generated/dataModel';
+import { Doc, Id } from '../../../../convex/_generated/dataModel';
+import { usePathname } from 'next/navigation';
+import { useSession } from 'next-auth/react';
+import { Button } from '@/components/ui/button';
+import { useMutation } from 'convex/react';
+import { api } from '../../../../convex/_generated/api';
 
 interface RentalPostProps {
   post: Doc<'rentalposts'>;
@@ -18,7 +23,11 @@ interface RentalPostProps {
 }
 
 export const RentalPostCard = ({ post, viewMode, onViewRentalPost }: RentalPostProps) => {
+  const { data: session } = useSession();
+  const deleteRentalPost = useMutation(api.rentalpost.deleteRentalPost);
+
   const [isLiked, setIsLiked] = useState(false);
+
   const cardRef = useRef<HTMLDivElement>(null);
   const imageRef = useRef<HTMLDivElement>(null);
 
@@ -212,8 +221,7 @@ export const RentalPostCard = ({ post, viewMode, onViewRentalPost }: RentalPostP
           </div>
         </div>
 
-        {/* Grid View Action Button */}
-        {viewMode === 'grid' && (
+        {viewMode === 'grid' && post.posterAddress !== session?.user?.address && (
           <div className='absolute -translate-y-0 group-hover:-translate-y-16 w-full p-4 transition-all duration-500'>
             <motion.div
               whileHover={{ scale: 1.02 }}
@@ -234,6 +242,59 @@ export const RentalPostCard = ({ post, viewMode, onViewRentalPost }: RentalPostP
                 />
                 <span className='relative z-10'>{post.isActive ? 'Place Bid' : 'Unavailable'}</span>
               </LendrButton>
+            </motion.div>
+          </div>
+        )}
+
+        {viewMode === 'grid' && post.posterAddress === session?.user?.address && (
+          <div className='absolute -translate-y-0 group-hover:-translate-y-16 w-full p-4 transition-all duration-500 flex flex-row items-center justify-between gap-3'>
+            <motion.div
+              className='w-full'
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.9 }}>
+              <LendrButton
+                className='w-full overflow-hidden rounded-md'
+                disabled={!post.isActive}
+                onClick={(e) => e.stopPropagation()}
+                link={`/bidding/${post._id}`}>
+                <motion.div
+                  className='absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent'
+                  initial={{ x: '-100%' }}
+                  whileHover={{ x: '100%' }}
+                  transition={{ duration: 0.6 }}
+                />
+                <span className='relative z-10'>{post.isActive ? 'Manage Bids' : 'Unavailable'}</span>
+              </LendrButton>
+            </motion.div>
+
+            <motion.div
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.9 }}
+              className='w-1/5 overflow-hidden rounded-md bg-red-500 hover:bg-red-600'
+              onClick={(e) => e.stopPropagation()}>
+              <Button
+                className='w-full overflow-hidden rounded-md bg-red-500 hover:bg-red-600'
+                disabled={!post.isActive}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  deleteRentalPost({ id: post._id as Id<'rentalposts'> });
+                }}>
+                <motion.div
+                  className='absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent'
+                  initial={{ x: '-100%' }}
+                  whileHover={{ x: '100%' }}
+                  transition={{ duration: 0.6 }}
+                />
+                <span className='relative z-10'>
+                  <Trash2Icon className='w-4 h-4' />
+                </span>
+              </Button>
             </motion.div>
           </div>
         )}

@@ -91,8 +91,6 @@ export const RentalPostDetailsModal = memo(
                         />
                       </>
                     )}
-
-
                   </motion.div>
 
                   <motion.div
@@ -129,7 +127,6 @@ export const RentalPostDetailsModal = memo(
                           <AttributesSection attributes={selectedRentalPost.nftMetadata.raw.metadata.attributes} />
                         </>
                       )}
-
                   </motion.div>
                 </div>
               </motion.div>

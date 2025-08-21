@@ -26,8 +26,16 @@ export const placeBid = mutation({
         bidAmount: v.number(),
         rentalDuration: v.number(),
     },
-    handler: async (ctx, args) => {
+        handler: async (ctx, args) => {
         const timestamp = Date.now();
+
+        const rentalPost = await ctx.db.get(args.rentalPostId);
+        if (!rentalPost) {
+            throw new Error("Rental post not found");
+        }
+        if (rentalPost.posterAddress === args.bidderAddress) {
+            throw new Error("You cannot bid on your own rental post");
+        }
 
         // Check if user already has a bid for this rental post
         const existingBid = await ctx.db
@@ -134,5 +142,59 @@ export const getHighestBid = query({
             .first();
 
         return bids;
+    },
+});
+
+export const acceptBid = mutation({
+    args: { bidId: v.id('bids') },
+    handler: async (ctx, { bidId }) => {
+        const bid = await ctx.db.get(bidId);
+        if (!bid) {
+            throw new Error('Bid not found');
+        }
+
+        // Update bid status
+        await ctx.db.patch(bidId, { isAccepted: true, acceptedTimestamp: Date.now() });
+
+        // Update rental post status and renter address
+        await ctx.db.patch(bid.rentalPostId, { status: 'RENTED', renterAddress: bid.bidderAddress });
+
+        // Reject all other bids for this rental post
+        const otherBids = await ctx.db
+            .query('bids')
+            .withIndex('by_rentalPost', q => q.eq('rentalPostId', bid.rentalPostId))
+            .filter(q => q.neq(q.field('_id'), bidId))
+            .collect()
+
+        for (const otherBid of otherBids) {
+            await ctx.db.patch(otherBid._id, { isAccepted: false });
+        }
+
+        return { success: true };
+    },
+});
+
+export const rejectBid = mutation({
+    args: { bidId: v.id('bids') },
+    handler: async (ctx, { bidId }) => {
+        return await ctx.db.patch(bidId, { isAccepted: false });
+    },
+});
+
+export const deleteRentalPostAndBids = mutation({
+    args: { rentalPostId: v.id("rentalposts") },
+    handler: async (ctx, args) => {
+        // 1. Delete all bids associated with the rental post
+        const bids = await ctx.db
+            .query("bids")
+            .withIndex("by_rentalPost", (q) => q.eq("rentalPostId", args.rentalPostId))
+            .collect();
+
+        for (const bid of bids) {
+            await ctx.db.delete(bid._id);
+        }
+
+        // 2. Delete the rental post itself
+        return await ctx.db.delete(args.rentalPostId);
     },
 });

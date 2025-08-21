@@ -22,7 +22,7 @@ export default function RentalPostDetailPage() {
 
   return (
     <div className='min-h-screen bg-slate-950 overflow-hidden'>
-      <div className='flex flex-col mb-25 container max-w-7xl px-4 mx-auto'>
+      <div className='container max-w-7xl mx-auto'>
         <Link
           href='/marketplace'
           className='flex items-center text-neutral-400 space-x-2 py-8 hover:text-white transition-colors duration-300'>

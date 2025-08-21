@@ -52,8 +52,16 @@ export default function NavBar() {
         </Link>
 
         <div className='absolute left-1/2 transform -translate-x-1/2 space-x-5'>
-          <Link href={'/marketplace'} className='text-white hover:text-lendr-400 transition-colors duration-300'>Marketplace</Link>
-          <Link href={'/dashboard'} className='text-white hover:text-lendr-400 transition-colors duration-300'>Dashboard</Link>
+          <Link
+            href={'/marketplace'}
+            className='text-white hover:text-lendr-400 transition-colors duration-300'>
+            Marketplace
+          </Link>
+          <Link
+            href={'/dashboard'}
+            className='text-white hover:text-lendr-400 transition-colors duration-300'>
+            Dashboard
+          </Link>
         </div>
 
         <div className='relative z-50'>
