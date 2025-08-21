@@ -1,3 +1,4 @@
+
 'use client';
 
 import { usePathname } from 'next/navigation';
@@ -9,7 +10,7 @@ import { Zap } from 'lucide-react';
 import { WalletConnectButton } from './custom-connect';
 import Link from 'next/link';
 
-export default function NavBar() {
+export default function HomeNavbar() {
   const pathname = usePathname();
   const [isScrolled, setIsScrolled] = useState(false);
 
@@ -27,16 +28,11 @@ export default function NavBar() {
       className={cn(
         'fixed top-0 z-50 w-full px-2 md:px-0 flex flex-row items-center justify-between transition-all duration-500',
         isScrolled ? 'h-23' : 'h-15 md:h-28',
-        pathname === '/' ? '' : '!h-20 bg-transparent ',
-        pathname === '/marketplace' ? 'border-b border-slate-800' : '',
-        pathname !== '/' && isScrolled ? 'bg-slate-950 border-b border-slate-800' : '',
       )}>
       <div
         className={cn(
-          'flex items-center justify-between p-2.5 transition-all duration-500 w-full mx-auto',
-          pathname === '/' ? 'max-w-7xl border border-slate-800' : 'mx-auto border-b border-slate-800',
-          pathname === '/marketplace' ? '' : 'max-w-7xl',
-          isScrolled && pathname === '/' ? 'rounded-2xl bg-slate bg-slate-950/80' : 'bg-transparent border-none',
+          'flex items-center justify-between p-2.5 transition-all duration-500 w-full mx-auto max-w-7xl border border-slate-800',
+          isScrolled ? 'rounded-2xl bg-slate bg-slate-950/80' : 'bg-transparent border-none',
         )}>
         <Link href={'/'}>
           <motion.div

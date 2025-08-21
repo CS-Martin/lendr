@@ -19,7 +19,7 @@ export const SpamWarning = ({ nftMetadata }: { nftMetadata: NftMetadata }) => (
         <div className='mt-2'>
           <span className='text-xs text-red-400'>Classifications:</span>
           <div className='flex flex-wrap gap-1 mt-1'>
-            {nftMetadata.contract.spamClassifications.map((classification: string, index: number) => (
+            {nftMetadata.contract?.spamClassifications.map((classification: string, index: number) => (
               <Badge
                 key={index}
                 variant='outline'

@@ -16,7 +16,7 @@ export const rentalpost = defineTable({
   description: v.optional(v.string()),
   hourlyRate: v.number(),
   collateral: v.number(),
-  rentalDuration: v.number(), // in days
+  rentalDuration: v.number(),
   category: v.string(),
   isBiddable: v.boolean(),
   biddingStartTime: v.optional(v.number()),

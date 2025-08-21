@@ -146,7 +146,7 @@ export default function MarketplacePage() {
 
   return (
     <div className='min-h-screen bg-slate-950 overflow-hidden'>
-      <div className='flex mt-20'>
+      <div className='flex'>
         {/* Left Sidebar - Filters */}
         <AnimatePresence>
           {sidebarOpen && (

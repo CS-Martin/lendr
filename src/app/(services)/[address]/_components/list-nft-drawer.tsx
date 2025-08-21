@@ -262,7 +262,7 @@ export const ListNFTDrawer = ({ nft, isOpen, onClose, session, profileAddress }:
                     {/* Rental duration */}
                     <div className='space-y-2 w-1/2'>
                       <Label
-                        htmlFor='hourlyRate'
+                        htmlFor='hourlyDuration'
                         className='text-gray-300'>
                         Maximum Rental Duration (Days)
                       </Label>
