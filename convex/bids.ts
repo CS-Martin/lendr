@@ -143,6 +143,7 @@ export const getHighestBid = query({
 
         return bids;
     },
+<<<<<<< HEAD
 });
 
 export const acceptBid = mutation({
@@ -197,4 +198,6 @@ export const deleteRentalPostAndBids = mutation({
         // 2. Delete the rental post itself
         return await ctx.db.delete(args.rentalPostId);
     },
+=======
+>>>>>>> fd0c0ecb0aa5b419913b884696ad3e2d2977784c
 });
