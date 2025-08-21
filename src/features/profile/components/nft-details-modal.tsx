@@ -72,7 +72,6 @@ export const NFTDetailsModal = ({ nft, isOpen, onClose, session, profileAddress 
                   animate={{ x: 0, opacity: 1 }}
                   transition={{ delay: 0.2 }}
                   className='space-y-4'>
-
                   <ImageSection nftMetadata={nft} />
 
                   {nft.raw?.tokenUri && (
@@ -86,15 +85,12 @@ export const NFTDetailsModal = ({ nft, isOpen, onClose, session, profileAddress 
                   )}
                 </motion.div>
 
-
                 {/* Details Section */}
                 <motion.div
                   initial={{ x: 50, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
                   transition={{ delay: 0.3 }}
                   className='space-y-6'>
-
-
                   <div>
                     <DetailSection
                       title='Description'
@@ -106,8 +102,6 @@ export const NFTDetailsModal = ({ nft, isOpen, onClose, session, profileAddress 
                     </DetailSection>
                   </div>
 
-
-
                   <Separator className='bg-gray-700/50' />
                   <TokenDetails nftMetadata={nft} />
 
@@ -117,16 +111,12 @@ export const NFTDetailsModal = ({ nft, isOpen, onClose, session, profileAddress 
                   <Separator className='bg-gray-700/50' />
                   <TimelineInfo nftMetadata={nft} />
 
-                  {nft.raw?.metadata?.attributes &&
-                    nft.raw.metadata.attributes.length > 0 && (
-                      <>
-                        <Separator className='bg-gray-700/50' />
-                        <AttributesSection attributes={nft.raw.metadata.attributes} />
-                      </>
-                    )}
-
-
-
+                  {nft.raw?.metadata?.attributes && nft.raw.metadata.attributes.length > 0 && (
+                    <>
+                      <Separator className='bg-gray-700/50' />
+                      <AttributesSection attributes={nft.raw.metadata.attributes} />
+                    </>
+                  )}
                 </motion.div>
               </div>
 

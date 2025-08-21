@@ -6,11 +6,10 @@ import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import { HolographicText } from '@/components/shared/holographic-text';
 import { Zap } from 'lucide-react';
-import { WalletConnectButton } from './custom-connect';
+import { WalletConnectButton } from './wallet-connect-btn';
 import Link from 'next/link';
 
 export default function HomeNavbar() {
-  const pathname = usePathname();
   const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {

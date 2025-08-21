@@ -1,6 +1,6 @@
 import { v } from 'convex/values';
 import { mutation, query } from './_generated/server';
-import { defineTable } from 'convex/server';
+import { defineTable, paginationOptsValidator } from 'convex/server';
 
 export const RentalListingStatus = v.union(
   v.literal('AVAILABLE'),
@@ -85,9 +85,11 @@ export const getOneRentalPost = query({
 });
 
 export const getRentalPosts = query({
-  args: {},
-  handler: async (ctx) => {
-    return await ctx.db.query('rentalposts').order('desc').take(50);
+  args: {
+    paginationOpts: paginationOptsValidator,
+  },
+  handler: async (ctx, { paginationOpts }) => {
+    return await ctx.db.query('rentalposts').order('desc').paginate(paginationOpts);
   },
 });
 

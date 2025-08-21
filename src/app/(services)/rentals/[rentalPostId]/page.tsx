@@ -18,9 +18,7 @@ export default function RentalPostDetailPage() {
   });
 
   if (rentalPost === undefined) {
-    return (
-      <RentalPostDetailsPageSkeleton />
-    )
+    return <RentalPostDetailsPageSkeleton />;
   }
 
   if (!rentalPost) {

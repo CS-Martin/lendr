@@ -23,14 +23,17 @@ export const BiddingSection = ({ rentalPost }: { rentalPost?: Doc<'rentalposts'>
 
         {/* Do not show the bid button if the user is the owner */}
         {session?.user?.address !== rentalPost.posterAddress && (
-          <LendrButton onClick={(e) => {
-            e.stopPropagation()
+          <LendrButton
+            onClick={(e) => {
+              e.stopPropagation();
 
-            if (!session) {
-              toast.error('You must be signed in to place a bid.')
-            }
-
-          }} className='w-[90%] mt-5 rounded-lg'>Bid now!</LendrButton>
+              if (!session) {
+                toast.error('You must be signed in to place a bid.');
+              }
+            }}
+            className='w-[90%] mt-5 rounded-lg'>
+            Bid now!
+          </LendrButton>
         )}
       </CardContent>
     </Card>

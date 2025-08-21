@@ -16,8 +16,9 @@ import { RentalPostCardSkeleton } from '@/components/shared/skeletons/rental-pos
 import { useViewMode, useSetViewMode } from '@/stores/card-view-mode.store';
 import dynamic from 'next/dynamic';
 import { api } from '../../../../convex/_generated/api';
-import { useQuery } from 'convex/react';
+import { usePaginatedQuery } from 'convex/react';
 import { Doc } from '../../../../convex/_generated/dataModel';
+import { useProgress } from '@bprogress/next';
 const RentalPostCard = dynamic(
   () => import('@/features/rental/components/rental-post-card').then((mod) => mod.RentalPostCard),
   {
@@ -90,7 +91,10 @@ export default function MarketplacePage() {
     }
   };
 
-  const rentalPosts = useQuery(api.rentalpost.getRentalPosts);
+  const { results: rentalPosts, status, loadMore } = usePaginatedQuery(api.rentalpost.getRentalPosts, {}, {
+    initialNumItems: 10
+  }
+  );
 
   const clearAllFilters = () => {
     setSelectedFilters([]);
@@ -219,7 +223,7 @@ export default function MarketplacePage() {
               animate={{ opacity: 1 }}
               transition={{ delay: 0.4 }}>
               <span>
-                Showing {filteredRentalPosts?.length} of {rentalPosts?.length} NFTs
+                Showing {filteredRentalPosts?.length} NFTs
               </span>
               <motion.div
                 className='text-xs text-gray-500'
@@ -263,7 +267,14 @@ export default function MarketplacePage() {
           </motion.div>
 
           {/* Empty State */}
-          {filteredRentalPosts?.length === 0 && <EmptyState onClearFilters={clearAllFilters} />}
+          {filteredRentalPosts?.length === 0 && !rentalPosts && <EmptyState onClearFilters={clearAllFilters} />}
+
+          {/* {hasMore && (
+            <div
+              ref={sentinelRef}
+              className='h-10'
+            />
+          )} */}
         </div>
       </div>
 

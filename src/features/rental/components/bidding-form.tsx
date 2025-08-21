@@ -100,7 +100,7 @@ export function BiddingForm({ rentalPost }: BiddingFormProps) {
 
   const onSubmit = async (data: BidFormValues) => {
     if (!user) {
-      toast.error("You must be signed in to place a bid.");
+      toast.error('You must be signed in to place a bid.');
       return;
     }
 

@@ -244,8 +244,7 @@ export const RentalPostCard = ({ post, viewMode, onViewRentalPost }: RentalPostP
                   }
 
                   router.push(`/rentals/${post._id}`);
-                }}
-              >
+                }}>
                 <motion.div
                   className='absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent'
                   initial={{ x: '-100%' }}
