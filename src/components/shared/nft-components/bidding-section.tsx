@@ -1,9 +1,9 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Timer } from 'lucide-react';
 import LendrButton from '@/components/shared/lendr-btn';
-import { CountdownTimer } from '@/app/(services)/marketplace/_components/countdown-timer';
 import { useSession } from 'next-auth/react';
 import { Doc } from '../../../../convex/_generated/dataModel';
+import { CountdownTimer } from '@/features/marketplace/components/countdown-timer';
 
 export const BiddingSection = ({ rentalPost }: { rentalPost?: Doc<'rentalposts'> }) => {
   const { data: session } = useSession();

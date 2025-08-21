@@ -2,14 +2,14 @@
 
 import { motion } from 'framer-motion';
 import { useState } from 'react';
-import { FloatingElement } from '../../components/shared/floating-element';
+import { FloatingElement } from '@/components/shared/floating-element';
 import { GridBackground } from '@/components/shared/grid-background';
-import { StepsToRentAndList } from './_components/steps-to-rent-and-list';
+import { StepsToRentAndList } from '@/features/home/components/steps-to-rent-and-list';
 import FlashScreen from '@/components/shared/flash-screen';
-import { HeroSection } from './_components/hero-section';
-import { TopUsersCarousel } from './_components/top-users';
-import { FeaturedRentalPosts } from './_components/featured-rental-posts';
-import { FooterCTACard } from './_components/footer-cta-card';
+import { HeroSection } from '@/features/home/components/hero-section';
+import { TopUsersCarousel } from '@/features/home/components/top-users';
+import { FeaturedRentalPosts } from '@/features/home/components/featured-rental-posts';
+import { FooterCTACard } from '@/features/home/components/footer-cta-card';
 
 export default function HomePage() {
   const [showFlashScreen, setShowFlashScreen] = useState(true);

@@ -26,7 +26,7 @@ import { Session } from 'next-auth';
 import { toast } from 'sonner';
 import { useProgress } from '@bprogress/next';
 import { useMutation } from 'convex/react';
-import { api } from '../../../../../convex/_generated/api';
+import { api } from '../../../../../../convex/_generated/api';
 
 interface ListNFTDrawerProps {
   nft: OwnedNft | null;

@@ -1,10 +1,10 @@
 'use client';
 
-import { BiddingSection } from '@/components/shared/modal/bidding-section';
-import { ContractInfo } from '@/components/shared/modal/contract-info';
-import { ImageSection } from '@/components/shared/modal/image-section';
-import { TimelineInfo } from '@/components/shared/modal/timeline-info';
-import { TokenDetails } from '@/components/shared/modal/token-details';
+import { BiddingSection } from '@/components/shared/nft-components/bidding-section';
+import { ContractInfo } from '@/components/shared/nft-components/contract-info';
+import { ImageSection } from '@/components/shared/nft-components/image-section';
+import { TimelineInfo } from '@/components/shared/nft-components/timeline-info';
+import { TokenDetails } from '@/components/shared/nft-components/token-details';
 import { Separator } from '@/components/ui/separator';
 import { type Doc } from '../../../../../../convex/_generated/dataModel';
 

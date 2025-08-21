@@ -4,15 +4,15 @@ import NotFound from '@/app/not-found';
 import { OwnedNft } from 'alchemy-sdk';
 import { useEffect, useRef, useState, Suspense } from 'react';
 import { ProfileHeader } from './_components/profile-header';
-import { NFTCard } from '@/components/shared/nft/nft-card';
+import { NFTCard } from '@/components/shared/nft-components/nft-card';
 import { NFTCardSkeleton } from '@/components/shared/skeletons/nft-card';
 import { NFTDetailsModal } from './_components/nft-details-modal';
 import { ListNFTDrawer } from './_components/list-nft-drawer';
 import { useSession } from 'next-auth/react';
 import { useParams } from 'next/navigation';
 import { useQuery } from 'convex/react';
-import { api } from '../../../../convex/_generated/api';
 import { useShowMoreNFTs } from '@/queries/alchemy-sdk';
+import { api } from '../../../../../convex/_generated/api';
 
 export default function UserProfilePage() {
   const { data: session } = useSession();

@@ -7,15 +7,15 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { FileText } from 'lucide-react';
 import { Session } from 'next-auth';
 import { Doc } from '../../../../../convex/_generated/dataModel';
-import { SpamWarning } from '@/components/shared/modal/spam-warning';
-import { ImageSection } from '@/components/shared/modal/image-section';
-import { BiddingSection } from '@/components/shared/modal/bidding-section';
-import { DetailSection } from '@/components/shared/modal/detail-section';
-import { TokenDetails } from '@/components/shared/modal/token-details';
-import { ContractInfo } from '@/components/shared/modal/contract-info';
-import { TimelineInfo } from '@/components/shared/modal/timeline-info';
-import { UriSection } from '@/components/shared/modal/uri-section';
-import { AttributesSection } from '@/components/shared/modal/attributes-section';
+import { SpamWarning } from '@/components/shared/nft-components/spam-warning';
+import { ImageSection } from '@/components/shared/nft-components/image-section';
+import { BiddingSection } from '@/components/shared/nft-components/bidding-section';
+import { DetailSection } from '@/components/shared/nft-components/detail-section';
+import { TokenDetails } from '@/components/shared/nft-components/token-details';
+import { ContractInfo } from '@/components/shared/nft-components/contract-info';
+import { TimelineInfo } from '@/components/shared/nft-components/timeline-info';
+import { UriSection } from '@/components/shared/nft-components/uri-section';
+import { AttributesSection } from '@/components/shared/nft-components/attributes-section';
 
 // Types
 interface RentalPostDetailsModalProps {

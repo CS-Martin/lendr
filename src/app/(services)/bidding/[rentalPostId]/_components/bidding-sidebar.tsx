@@ -3,8 +3,8 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Doc } from '../../../../../../convex/_generated/dataModel';
-import { ImageSection } from '@/components/shared/modal/image-section';
-import { BiddingSection } from '@/components/shared/modal/bidding-section';
+import { ImageSection } from '@/components/shared/nft-components/image-section';
+import { BiddingSection } from '@/components/shared/nft-components/bidding-section';
 
 const BiddingSidebar = ({ post }: { post?: Doc<'rentalposts'> }) => {
 
