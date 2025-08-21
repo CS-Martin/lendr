@@ -1,9 +1,9 @@
 import { DetailSection } from './detail-section';
 import { Hash } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { NftMetadata } from 'alchemy-sdk';
+import { OwnedNft } from 'alchemy-sdk';
 
-export const TokenDetails = ({ nftMetadata }: { nftMetadata: NftMetadata }) => (
+export const TokenDetails = ({ nftMetadata }: { nftMetadata: any }) => (
   <div>
     <DetailSection
       title='Token Details'

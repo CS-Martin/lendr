@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { truncateText } from '@/lib/utils';
 import { AddressField } from './address-field';
 
-export const ContractInfo = ({ nftMetadata }: { nftMetadata: NftMetadata }) => (
+export const ContractInfo = ({ nftMetadata }: { nftMetadata: any }) => (
   <div>
     <DetailSection
       title='Contract Information'
