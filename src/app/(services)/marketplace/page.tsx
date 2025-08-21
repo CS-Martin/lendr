@@ -91,9 +91,16 @@ export default function MarketplacePage() {
     }
   };
 
-  const { results: rentalPosts, status, loadMore } = usePaginatedQuery(api.rentalpost.getRentalPosts, {}, {
-    initialNumItems: 10
-  }
+  const {
+    results: rentalPosts,
+    status,
+    loadMore,
+  } = usePaginatedQuery(
+    api.rentalpost.getRentalPosts,
+    {},
+    {
+      initialNumItems: 10,
+    },
   );
 
   const clearAllFilters = () => {
@@ -222,9 +229,7 @@ export default function MarketplacePage() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.4 }}>
-              <span>
-                Showing {filteredRentalPosts?.length} NFTs
-              </span>
+              <span>Showing {filteredRentalPosts?.length} NFTs</span>
               <motion.div
                 className='text-xs text-gray-500'
                 animate={{ opacity: [0.5, 1, 0.5] }}

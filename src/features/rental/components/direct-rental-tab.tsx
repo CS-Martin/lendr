@@ -77,7 +77,7 @@ export function DirectRentalTab({ rentalPost }: DirectRentalTabProps) {
             size='lg'
             className='w-full bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-700 hover:to-cyan-700 text-white border-0 py-4 text-lg'
             disabled={rentalPost.status !== 'AVAILABLE'}>
-            {rentalPost.status === 'AVAILABLE' ? 'Rent Directly (Skip Bidding)' : 'Currently Rented'}
+            {rentalPost.status === 'AVAILABLE' ? `Rent Directly ${rentalPost.isBiddable ? '(Skip Bidding)' : ''}` : 'Currently Rented'}
           </Button>
         </DialogTrigger>
         <DirectRentalModal rentalPost={rentalPost} />
