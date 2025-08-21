@@ -8,6 +8,7 @@ import { NftImageColumn } from '@/features/rental/components/nft-image-column';
 import { RentalInfoColumn } from '@/features/rental/components/rental-info-column';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
+import { RentalPostDetailsPageSkeleton } from '@/features/rental/components/rental-skeletons';
 
 export default function RentalPostDetailPage() {
   const { rentalPostId } = useParams<{ rentalPostId: string }>();
@@ -15,6 +16,12 @@ export default function RentalPostDetailPage() {
   const rentalPost = useQuery(api.rentalpost.getOneRentalPost, {
     id: rentalPostId as Id<'rentalposts'>,
   });
+
+  if (rentalPost === undefined) {
+    return (
+      <RentalPostDetailsPageSkeleton />
+    )
+  }
 
   if (!rentalPost) {
     return null;

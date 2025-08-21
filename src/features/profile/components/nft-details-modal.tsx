@@ -10,6 +10,13 @@ import { ExternalLink, Copy, Hash, FileText, ImageIcon, Link, Clock, Loader2 } f
 import Image from 'next/image';
 import { Session } from 'next-auth';
 import { OwnedNft } from 'alchemy-sdk';
+import { ImageSection } from '@/components/shared/nft-components/image-section';
+import { UriSection } from '@/components/shared/nft-components/uri-section';
+import { DetailSection } from '@/components/shared/nft-components/detail-section';
+import { TokenDetails } from '@/components/shared/nft-components/token-details';
+import { ContractInfo } from '@/components/shared/nft-components/contract-info';
+import { TimelineInfo } from '@/components/shared/nft-components/timeline-info';
+import { AttributesSection } from '@/components/shared/nft-components/attributes-section';
 
 interface NFTDetailsModalProps {
   nft: OwnedNft;
@@ -38,7 +45,7 @@ export const NFTDetailsModal = ({ nft, isOpen, onClose, session, profileAddress 
     <Dialog
       open={isOpen}
       onOpenChange={onClose}>
-      <DialogContent className='max-w-6xl w-full bg-gray-900/95 backdrop-blur-xl border-gray-800/50 text-white max-h-[90vh] overflow-y-auto rounded-2xl'>
+      <DialogContent className='!max-w-[90vw] !p-3 md:!p-6 w-full bg-gray-900/95 backdrop-blur-xl border-gray-800/50 text-white max-h-[90vh] overflow-y-auto rounded-2xl'>
         <AnimatePresence>
           {isOpen && nft && (
             <motion.div
@@ -65,41 +72,20 @@ export const NFTDetailsModal = ({ nft, isOpen, onClose, session, profileAddress 
                   animate={{ x: 0, opacity: 1 }}
                   transition={{ delay: 0.2 }}
                   className='space-y-4'>
-                  <div className='relative aspect-square rounded-xl overflow-hidden bg-gray-800/50'>
-                    {imageLoading && (
-                      <div className='absolute inset-0 flex items-center justify-center'>
-                        <Loader2 className='h-8 w-8 animate-spin text-lendr-400' />
-                      </div>
-                    )}
-                    {nft.animation?.cachedUrl ? (
-                      <video
-                        src={nft.animation?.cachedUrl || '/placeholder.svg'}
-                        autoPlay
-                        loop
-                        muted
-                        controls
-                        className={`object-cover w-full h-full ${imageLoading ? 'hidden' : ''}`}
-                        onLoadedData={() => setImageLoading(false)}
-                        onError={() => setImageLoading(false)}
+
+                  <ImageSection nftMetadata={nft} />
+
+                  {nft.raw?.tokenUri && (
+                    <>
+                      <Separator className='bg-gray-700/50' />
+                      <UriSection
+                        title='Raw Metadata URI'
+                        uri={nft.raw.tokenUri}
                       />
-                    ) : (
-                      <Image
-                        src={
-                          nft.animation?.originalUrl ||
-                          nft.image.cachedUrl ||
-                          nft.image.thumbnailUrl ||
-                          '/placeholder.svg'
-                        }
-                        alt={nft.name || 'NFT image'}
-                        fill
-                        className='object-cover hover:scale-105 transition-all duration-500'
-                        onLoad={() => setImageLoading(false)}
-                        onError={() => setImageLoading(false)}
-                        unoptimized
-                      />
-                    )}
-                  </div>
+                    </>
+                  )}
                 </motion.div>
+
 
                 {/* Details Section */}
                 <motion.div
@@ -107,141 +93,40 @@ export const NFTDetailsModal = ({ nft, isOpen, onClose, session, profileAddress 
                   animate={{ x: 0, opacity: 1 }}
                   transition={{ delay: 0.3 }}
                   className='space-y-6'>
-                  {/* Description */}
+
+
                   <div>
-                    <div className='flex items-center gap-2 mb-3'>
-                      <FileText className='h-4 w-4 text-cyan-400' />
-                      <span className='font-medium text-white'>Description</span>
-                    </div>
-                    <p className='text-gray-300 leading-relaxed'>{nft.description || 'No description available'}</p>
+                    <DetailSection
+                      title='Description'
+                      icon={FileText}
+                      iconColor='text-cyan-400'>
+                      <p className='text-gray-300 leading-relaxed mt-3'>
+                        {nft.description || 'No description available'}
+                      </p>
+                    </DetailSection>
                   </div>
+
+
 
                   <Separator className='bg-gray-700/50' />
-
-                  {/* Token Details */}
-                  <div>
-                    <div className='flex items-center gap-2 mb-4'>
-                      <Hash className='h-4 w-4 text-purple-400' />
-                      <span className='font-medium text-white'>Token Details</span>
-                    </div>
-                    <div className='flex flex-col gap-y-3'>
-                      <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between w-full'>
-                        <span className='text-gray-400'>Token ID:</span>
-                        <Badge
-                          variant='outline'
-                          className='border-gray-600 text-gray-300'>
-                          #{nft.tokenId}
-                        </Badge>
-                      </div>
-                      <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between w-full'>
-                        <span className='text-gray-400'>Token Type:</span>
-                        <Badge
-                          variant='outline'
-                          className='border-gray-600 text-gray-300'>
-                          {nft.tokenType}
-                        </Badge>
-                      </div>
-                    </div>
-                  </div>
+                  <TokenDetails nftMetadata={nft} />
 
                   <Separator className='bg-gray-700/50' />
+                  <ContractInfo nftMetadata={nft} />
 
-                  {/* Contract Information */}
-                  <div>
-                    <div className='flex items-center gap-2 mb-4'>
-                      <Link className='h-4 w-4 text-green-400' />
-                      <span className='font-medium text-white'>Contract Information</span>
-                    </div>
-                    <div className='space-y-3'>
-                      <div>
-                        <span className='text-gray-400 block mb-1'>Contract Address:</span>
-                        <div className='flex items-center gap-2'>
-                          <code className='bg-gray-800/50 px-2 py-1 rounded text-sm font-mono text-gray-300'>
-                            {nft.contract.address.slice(0, 10)}
-                            ...
-                            {nft.contract.address.slice(-8)}
-                          </code>
-                          <Button
-                            size='sm'
-                            variant='ghost'
-                            onClick={() => copyToClipboard(nft.contract.address)}
-                            className='h-8 w-8 p-0 text-gray-400 hover:text-white'>
-                            <Copy className='h-3 w-3' />
-                          </Button>
-                          <Button
-                            size='sm'
-                            variant='ghost'
-                            className='h-8 w-8 p-0 text-gray-400 hover:text-white'
-                            onClick={() =>
-                              window.open(`https://etherscan.io/address/${nft.contract.address}`, '_blank')
-                            }>
-                            <ExternalLink className='h-3 w-3' />
-                          </Button>
-                        </div>
-                        {copiedAddress && (
-                          <motion.p
-                            initial={{
-                              opacity: 0,
-                              y: -10,
-                            }}
-                            animate={{
-                              opacity: 1,
-                              y: 0,
-                            }}
-                            exit={{
-                              opacity: 0,
-                              y: -10,
-                            }}
-                            className='text-green-400 text-xs mt-1'>
-                            Address copied to clipboard!
-                          </motion.p>
-                        )}
-                      </div>
-                      <div className='flex justify-between items-center'>
-                        <span className='text-gray-400'>Collection Name:</span>
-                        <span className='text-white'>{nft.collection?.name || 'Unnamed contract'}</span>
-                      </div>
-                    </div>
-                  </div>
+                  <Separator className='bg-gray-700/50' />
+                  <TimelineInfo nftMetadata={nft} />
 
-                  {/* Attributes */}
-                  {nft.raw.metadata.attributes && nft.raw.metadata.attributes.length > 0 && (
-                    <>
-                      <Separator className='bg-gray-700/50' />
-                      <div>
-                        <div className='flex items-center gap-2 mb-4'>
-                          <Hash className='h-4 w-4 text-pink-400' />
-                          <span className='font-medium text-white'>Attributes</span>
-                        </div>
-                        <div className='grid grid-cols-2 gap-3'>
-                          {nft.raw.metadata.attributes.map(
-                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                            (attr: any, index: number) => (
-                              <motion.div
-                                key={index}
-                                initial={{
-                                  opacity: 0,
-                                  y: 10,
-                                }}
-                                animate={{
-                                  opacity: 1,
-                                  y: 0,
-                                }}
-                                transition={{
-                                  delay: 0.1 * index,
-                                }}
-                                className='bg-gray-800/30 rounded-lg p-3 border border-gray-700/50'>
-                                <div className='text-xs text-gray-400 uppercase tracking-wider mb-1'>
-                                  {attr.trait_type}
-                                </div>
-                                <div className='text-white font-medium'>{attr.value}</div>
-                              </motion.div>
-                            ),
-                          )}
-                        </div>
-                      </div>
-                    </>
-                  )}
+                  {nft.raw?.metadata?.attributes &&
+                    nft.raw.metadata.attributes.length > 0 && (
+                      <>
+                        <Separator className='bg-gray-700/50' />
+                        <AttributesSection attributes={nft.raw.metadata.attributes} />
+                      </>
+                    )}
+
+
+
                 </motion.div>
               </div>
 

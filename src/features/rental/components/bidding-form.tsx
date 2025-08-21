@@ -19,6 +19,7 @@ import { useSession } from 'next-auth/react';
 import z from 'zod';
 import { toast } from 'sonner';
 import { formatDuration } from '@/lib/utils';
+import LendrButton from '@/components/shared/lendr-btn';
 
 type BiddingFormProps = {
   rentalPost: Doc<'rentalposts'>;
@@ -36,7 +37,9 @@ export const bidFormSchema = z.object({
 export type BidFormValues = z.infer<typeof bidFormSchema>;
 
 export function BiddingForm({ rentalPost }: BiddingFormProps) {
-  const user = useSession().data?.user;
+  const { data: session } = useSession();
+  const user = session?.user;
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [highestBid, setHighestBid] = useState<number>(rentalPost.hourlyRate);
 
@@ -70,7 +73,7 @@ export function BiddingForm({ rentalPost }: BiddingFormProps) {
   } = useForm<BidFormValues>({
     resolver: zodResolver(bidFormSchema),
     defaultValues: {
-      bidAmount: userBid?.bidAmount || Math.max(rentalPost.hourlyRate + 0.0001, highestBid + 0.0001),
+      bidAmount: userBid?.bidAmount || Math.max(rentalPost.hourlyRate, highestBid),
       rentalDuration: userBid?.rentalDuration || 12,
       message: userBid?.message || '',
     },
@@ -97,12 +100,7 @@ export function BiddingForm({ rentalPost }: BiddingFormProps) {
 
   const onSubmit = async (data: BidFormValues) => {
     if (!user) {
-      toast.error(
-        <div>
-          <strong className='text-red-500'>Authentication required</strong>
-          <div>Please sign in to place a bid</div>
-        </div>,
-      );
+      toast.error("You must be signed in to place a bid.");
       return;
     }
 
@@ -166,7 +164,6 @@ export function BiddingForm({ rentalPost }: BiddingFormProps) {
               id='bidAmount'
               type='number'
               step='0.0001'
-              placeholder={`Minimum: ${Math.max(rentalPost.hourlyRate, highestBid) + 0.0001} ETH`}
               className='bg-slate-800 border-slate-700 text-white'
               {...register('bidAmount', { valueAsNumber: true })}
             />
@@ -228,9 +225,9 @@ export function BiddingForm({ rentalPost }: BiddingFormProps) {
           )}
 
           {/* Submit */}
-          <Button
+          <LendrButton
             type='submit'
-            className='w-full bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white border-0'
+            className='w-full bg-gradient-to-r border-0'
             disabled={isSubmitting || !isValid}>
             {isSubmitting ? (
               <>
@@ -243,7 +240,7 @@ export function BiddingForm({ rentalPost }: BiddingFormProps) {
                 {userBid ? 'Update Bid' : 'Place Bid'}
               </>
             )}
-          </Button>
+          </LendrButton>
 
           {userBid && (
             <p className='text-sm text-slate-400 text-center'>

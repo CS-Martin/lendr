@@ -19,13 +19,13 @@ export function RentalActions({ rentalPost }: RentalActionsProps) {
         <TabsList className='grid w-full grid-cols-2 bg-slate-800'>
           <TabsTrigger
             value='bidding'
-            className='data-[state=active]:bg-orange-600'>
+            className='data-[state=active]:bg-orange-600 text-white'>
             <Gavel className='w-4 h-4 mr-2' />
             Place Bid
           </TabsTrigger>
           <TabsTrigger
             value='direct'
-            className='data-[state=active]:bg-purple-600'>
+            className='data-[state=active]:bg-purple-600 text-white'>
             Direct Rental
           </TabsTrigger>
         </TabsList>

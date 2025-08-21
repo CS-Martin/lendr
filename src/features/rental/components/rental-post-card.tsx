@@ -14,6 +14,8 @@ import { useSession } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
 import { useMutation } from 'convex/react';
 import { api } from '../../../../convex/_generated/api';
+import { toast } from 'sonner';
+import { useRouter } from 'next/navigation';
 
 interface RentalPostProps {
   post: Doc<'rentalposts'>;
@@ -22,6 +24,7 @@ interface RentalPostProps {
 }
 
 export const RentalPostCard = ({ post, viewMode, onViewRentalPost }: RentalPostProps) => {
+  const router = useRouter();
   const { data: session } = useSession();
   const deleteRentalPost = useMutation(api.rentalpost.deleteRentalPost);
 
@@ -220,6 +223,7 @@ export const RentalPostCard = ({ post, viewMode, onViewRentalPost }: RentalPostP
           </div>
         </div>
 
+        {/* If user is not the poster */}
         {viewMode === 'grid' && post.posterAddress !== session?.user?.address && (
           <div className='absolute -translate-y-0 group-hover:-translate-y-16 w-full p-4 transition-all duration-500'>
             <motion.div
@@ -231,8 +235,17 @@ export const RentalPostCard = ({ post, viewMode, onViewRentalPost }: RentalPostP
               <LendrButton
                 className='w-full overflow-hidden rounded-md'
                 disabled={!post.isActive}
-                onClick={(e) => e.stopPropagation()}
-                link={`/rentals/${post._id}`}>
+                onClick={(e) => {
+                  e.stopPropagation();
+
+                  if (!session) {
+                    toast.error('You must be signed in to place a bid.');
+                    return;
+                  }
+
+                  router.push(`/rentals/${post._id}`);
+                }}
+              >
                 <motion.div
                   className='absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent'
                   initial={{ x: '-100%' }}
@@ -245,7 +258,8 @@ export const RentalPostCard = ({ post, viewMode, onViewRentalPost }: RentalPostP
           </div>
         )}
 
-        {viewMode === 'grid' && post.posterAddress === session?.user?.address && (
+        {/* If user is the poster */}
+        {session && viewMode === 'grid' && post.posterAddress === session?.user?.address && (
           <div className='absolute -translate-y-0 group-hover:-translate-y-16 w-full p-4 transition-all duration-500 flex flex-row items-center justify-between gap-3'>
             <motion.div
               className='w-full'

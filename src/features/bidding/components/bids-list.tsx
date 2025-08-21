@@ -21,7 +21,7 @@ const BidsList = ({ post }: { post: Doc<'rentalposts'> }) => {
         <h2 className='text-2xl font-bold text-white'>Manage Bids</h2>
         <div className='flex gap-2'>
           <Button variant='outline'>End Bidding Early</Button>
-          { }
+          {}
           <Button>Auto-Accept Highest</Button>
         </div>
       </div>

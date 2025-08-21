@@ -17,7 +17,7 @@ const LendrButton = forwardRef<HTMLButtonElement, LendrButtonProps>(
     switch (variant) {
       case 'default':
         style = `
-                    font-bold transition-all duration-300 rounded-xl
+                    font-bold transition-all duration-300 rounded-md
                     bg-gradient-to-r from-lendr-400 to-lendr-500 hover:from-lendr-500 hover:to-lendr-600
                     text-slate-950 border-0 shadow-2xl shadow-lendr-400/50 hover:shadow-lendr-400/70
                 `;

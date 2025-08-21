@@ -42,8 +42,9 @@ const BidCard = ({ bid, index }: BidCardProps) => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: index * 0.1 }}>
       <Card
-        className={`border-slate-800 hover:border-purple-500/50 transition-all duration-300 ${index === 0 ? 'bg-green-900/20 border-green-800' : 'bg-slate-900/50'
-          }`}>
+        className={`border-slate-800 hover:border-purple-500/50 transition-all duration-300 ${
+          index === 0 ? 'bg-green-900/20 border-green-800' : 'bg-slate-900/50'
+        }`}>
         <CardContent className='p-6'>
           <div className='flex items-start justify-between mb-4'>
             <div className='flex items-center space-x-3'>

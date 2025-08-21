@@ -4,6 +4,7 @@ import LendrButton from '@/components/shared/lendr-btn';
 import { useSession } from 'next-auth/react';
 import { Doc } from '../../../../convex/_generated/dataModel';
 import { CountdownTimer } from '@/features/marketplace/components/countdown-timer';
+import { toast } from 'sonner';
 
 export const BiddingSection = ({ rentalPost }: { rentalPost?: Doc<'rentalposts'> }) => {
   const { data: session } = useSession();
@@ -22,7 +23,14 @@ export const BiddingSection = ({ rentalPost }: { rentalPost?: Doc<'rentalposts'>
 
         {/* Do not show the bid button if the user is the owner */}
         {session?.user?.address !== rentalPost.posterAddress && (
-          <LendrButton className='w-[90%] mt-5 rounded-lg'>Bid now!</LendrButton>
+          <LendrButton onClick={(e) => {
+            e.stopPropagation()
+
+            if (!session) {
+              toast.error('You must be signed in to place a bid.')
+            }
+
+          }} className='w-[90%] mt-5 rounded-lg'>Bid now!</LendrButton>
         )}
       </CardContent>
     </Card>

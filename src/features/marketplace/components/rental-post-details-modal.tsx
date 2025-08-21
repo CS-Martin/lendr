@@ -81,16 +81,6 @@ export const RentalPostDetailsModal = memo(
                         />
                       </>
                     )}
-
-                    {selectedRentalPost.nftMetadata.tokenUri && (
-                      <>
-                        <Separator className='bg-gray-700/50' />
-                        <UriSection
-                          title='Token URI'
-                          uri={selectedRentalPost.nftMetadata.tokenUri}
-                        />
-                      </>
-                    )}
                   </motion.div>
 
                   <motion.div
