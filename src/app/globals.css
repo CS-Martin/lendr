@@ -146,3 +146,9 @@
 button {
   @apply cursor-pointer;
 }
+
+/* Fix for shadcn dropdown menu scrolling bug */
+html body[data-scroll-locked] {
+  overflow: visible !important;
+  margin-right: 0 !important;
+}

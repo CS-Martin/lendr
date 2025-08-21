@@ -7,10 +7,10 @@ import { motion } from 'framer-motion';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { User, Shield, Bell, Palette } from 'lucide-react';
 import { useSession } from 'next-auth/react';
-import { ProfileTab } from './_components/profile-tab';
-import { SecurityTab } from './_components/security-tab';
-import { NotificationTab } from './_components/notification-tab';
-import { PreferenceTab } from './_components/preference-tab';
+import { ProfileTab } from '@/features/settings/components/profile-tab';
+import { SecurityTab } from '@/features/settings/components/security-tab';
+import { NotificationTab } from '@/features/settings/components/notification-tab';
+import { PreferenceTab } from '@/features/settings/components/preference-tab';
 import NotFound from '@/app/not-found';
 
 export default function SettingsPage() {

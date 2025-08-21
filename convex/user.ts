@@ -79,3 +79,26 @@ export const getOrCreateUser = mutation({
     return await ctx.db.get(userId);
   },
 });
+
+export const getDashboardAnalytics = query({
+  args: { address: v.string() },
+  handler: async (ctx, { address }) => {
+    const userRentalPosts = await ctx.db
+      .query('rentalposts')
+      .withIndex('by_posterAddress', (q) => q.eq('posterAddress', address))
+      .collect();
+
+    const activeRentalPosts = userRentalPosts.filter((post) => post.isActive).length;
+    const totalRents = userRentalPosts.filter((post) => post.status === 'RENTED').length;
+
+    // This is a simplified calculation. A real implementation would need to sum up actual rental payments.
+    const totalEarnings = userRentalPosts.reduce((acc, post) => acc + (post.status === 'RENTED' ? post.collateral : 0), 0);
+
+    return {
+      totalEarnings,
+      activeRentalPosts,
+      totalRents,
+      reputation: 4.8, // Placeholder
+    };
+  },
+});

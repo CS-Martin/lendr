@@ -1,6 +1,6 @@
 import { v } from 'convex/values';
 import { mutation, query } from './_generated/server';
-import { defineTable } from 'convex/server';
+import { defineTable, paginationOptsValidator } from 'convex/server';
 
 export const RentalListingStatus = v.union(
   v.literal('AVAILABLE'),
@@ -12,11 +12,12 @@ export const RentalListingStatus = v.union(
 
 export const rentalpost = defineTable({
   posterAddress: v.string(),
+  renterAddress: v.optional(v.string()),
   name: v.string(),
   description: v.optional(v.string()),
   hourlyRate: v.number(),
   collateral: v.number(),
-  rentalDuration: v.number(), // in days
+  rentalDuration: v.number(),
   category: v.string(),
   isBiddable: v.boolean(),
   biddingStartTime: v.optional(v.number()),
@@ -26,6 +27,7 @@ export const rentalpost = defineTable({
   nftMetadata: v.any(),
 })
   .index('by_posterAddress', ['posterAddress'])
+  .index('by_renterAddress', ['renterAddress'])
   .index('by_status', ['status']);
 
 export const createRentalPost = mutation({
@@ -83,8 +85,32 @@ export const getOneRentalPost = query({
 });
 
 export const getRentalPosts = query({
-  args: {},
-  handler: async (ctx) => {
-    return await ctx.db.query('rentalposts').order('desc').take(50);
+  args: {
+    paginationOpts: paginationOptsValidator,
+  },
+  handler: async (ctx, { paginationOpts }) => {
+    return await ctx.db.query('rentalposts').order('desc').paginate(paginationOpts);
+  },
+});
+
+export const getOwnedRentalPosts = query({
+  args: { ownerAddress: v.string() },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query('rentalposts')
+      .withIndex('by_posterAddress', (q) => q.eq('posterAddress', args.ownerAddress))
+      .order('desc')
+      .collect();
+  },
+});
+
+export const getBorrowedRentalPosts = query({
+  args: { renterAddress: v.string() },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query('rentalposts')
+      .withIndex('by_renterAddress', (q) => q.eq('renterAddress', args.renterAddress))
+      .order('desc')
+      .collect();
   },
 });

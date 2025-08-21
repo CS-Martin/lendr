@@ -1,5 +1,5 @@
 import { Footer } from '@/components/shared/footer';
-import NavBar from '@/components/shared/navbar';
+import MainNavbar from '@/components/shared/main-navbar';
 import { ReactNode } from 'react';
 
 interface ServicesLayoutProps {
@@ -9,7 +9,7 @@ interface ServicesLayoutProps {
 export default function ServicesLayout({ children }: ServicesLayoutProps) {
   return (
     <div className='flex flex-col min-h-screen'>
-      <NavBar />
+      <MainNavbar />
       <main>{children}</main>
       <Footer />
     </div>
