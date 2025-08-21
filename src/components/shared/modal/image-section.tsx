@@ -40,24 +40,23 @@ export const ImageSection = ({ nftMetadata }: { nftMetadata: any }) => {
       initial={{ x: -50, opacity: 0 }}
       animate={{ x: 0, opacity: 1 }}
       transition={{ delay: 0.2 }}
-      className='relative space-y-4'
-    >
+      className='relative space-y-4'>
       <div
         ref={containerRef}
-        className="relative aspect-square rounded-xl overflow-hidden bg-gray-800/50 transition-all duration-500 ease-out"
+        className='relative aspect-square rounded-xl overflow-hidden bg-gray-800/50 transition-all duration-500 ease-out'
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
         style={{
           transformStyle: 'preserve-3d',
           boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)',
-          border: '1px solid rgba(255, 255, 255, 0.1)'
-        }}
-      >
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+        }}>
         {/* Glowing border effect */}
-        <div className="absolute inset-0 rounded-xl opacity-0 hover:opacity-100 transition-opacity duration-500 pointer-events-none"
+        <div
+          className='absolute inset-0 rounded-xl opacity-0 hover:opacity-100 transition-opacity duration-500 pointer-events-none'
           style={{
             boxShadow: '0 0 25px rgba(101, 124, 255, 0.4), 0 0 45px rgba(101, 124, 255, 0.2)',
-            zIndex: 5
+            zIndex: 5,
           }}
         />
 

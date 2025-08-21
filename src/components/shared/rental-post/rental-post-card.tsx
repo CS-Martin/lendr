@@ -225,8 +225,7 @@ export const RentalPostCard = ({ post, viewMode, onViewRentalPost }: RentalPostP
                 className='w-full overflow-hidden rounded-md'
                 disabled={!post.isActive}
                 onClick={(e) => e.stopPropagation()}
-                link={`/rentals/${post._id}`}
-              >
+                link={`/rentals/${post._id}`}>
                 <motion.div
                   className='absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent'
                   initial={{ x: '-100%' }}

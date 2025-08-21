@@ -1,11 +1,10 @@
 import { Button } from '@/components/ui/button';
 import { formatDate } from '@/lib/utils';
 import { Calendar, Copy, Star, TrendingUp } from 'lucide-react';
-import { Session } from 'next-auth';
 import Image from 'next/image';
 import { Doc } from '../../../../../convex/_generated/dataModel';
 
-export const ProfileHeader = ({ user }: { user: Doc<'users'> }) => {
+export const ProfileHeader = ({ user }: { user?: Doc<'users'> }) => {
   return (
     <div className='relative z-10'>
       {/* Blurred Avatar Background */}

@@ -102,7 +102,9 @@ export const WalletConnectButton = () => {
                   {!unsupportedChain && (
                     <DropdownMenuContent
                       side='bottom'
-                      align='start'
+                      align='end'
+                      sideOffset={5}
+                      alignOffset={20}
                       className='w-56 bg-gray-900 border-gray-700 text-white'>
                       <DropdownMenuLabel>My Account</DropdownMenuLabel>
                       <DropdownMenuSeparator className='bg-gray-700' />
