@@ -2,8 +2,8 @@ import type { Metadata } from 'next';
 import { Geist, Azeret_Mono } from 'next/font/google';
 import './globals.css';
 import '@rainbow-me/rainbowkit/styles.css';
-import { ClientProviders } from '@/components/providers/client-providers';
 import { ConvexClientProvider } from '@/providers/convex-client-provider';
+import { ClientProviders } from '@/providers/client-providers';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',

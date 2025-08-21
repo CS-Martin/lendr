@@ -16,9 +16,7 @@ export default function BiddingPage() {
   const rentalPost = useQuery(api.rentalpost.getOneRentalPost, { id: rentalPostId as Id<'rentalposts'> });
 
   if (rentalPost === undefined) {
-    return (
-      <BiddingPageSkeleton />
-    )
+    return <BiddingPageSkeleton />;
   }
 
   if (rentalPost === null) {

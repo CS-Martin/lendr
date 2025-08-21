@@ -1,8 +1,8 @@
 import { Button } from '@/components/ui/button';
 import { formatDate } from '@/lib/utils';
+import { Doc } from '@convex/_generated/dataModel';
 import { Calendar, Copy, Star, TrendingUp } from 'lucide-react';
 import Image from 'next/image';
-import { Doc } from '../../../../../convex/_generated/dataModel';
 
 export const ProfileHeader = ({ user }: { user?: Doc<'users'> }) => {
   return (

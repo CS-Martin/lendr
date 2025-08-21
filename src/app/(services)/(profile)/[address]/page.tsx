@@ -3,11 +3,11 @@
 import NotFound from '@/app/not-found';
 import { OwnedNft } from 'alchemy-sdk';
 import { useEffect, useRef, useState, Suspense } from 'react';
-import { ProfileHeader } from './_components/profile-header';
+import { ProfileHeader } from '@/features/profile/components/profile-header';
 import { NFTCard } from '@/components/shared/nft-components/nft-card';
 import { NFTCardSkeleton } from '@/components/shared/skeletons/nft-card';
-import { NFTDetailsModal } from './_components/nft-details-modal';
-import { ListNFTDrawer } from './_components/list-nft-drawer';
+import { NFTDetailsModal } from '@/features/profile/components/nft-details-modal';
+import { ListNFTDrawer } from '@/features/profile/components/list-nft-drawer';
 import { useSession } from 'next-auth/react';
 import { useParams } from 'next/navigation';
 import { useQuery } from 'convex/react';

@@ -7,7 +7,6 @@ import { ImageSection } from '@/components/shared/nft-components/image-section';
 import { BiddingSection } from '@/components/shared/nft-components/bidding-section';
 
 const BiddingSidebar = ({ post }: { post?: Doc<'rentalposts'> }) => {
-
   if (!post) return null;
 
   return (

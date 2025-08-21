@@ -5,7 +5,7 @@ import { LoadingProgressProvider } from '@/providers/bprogress';
 import { Toaster } from 'sonner';
 import { QueryProvider } from '@/providers/query-provider';
 
-const WagmiProvider = dynamic(() => import('../../providers/wagmi').then((mod) => mod.CustomWagmiProvider), {
+const WagmiProvider = dynamic(() => import('./wagmi').then((mod) => mod.CustomWagmiProvider), {
   ssr: false,
 });
 

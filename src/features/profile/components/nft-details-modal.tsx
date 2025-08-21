@@ -8,9 +8,7 @@ import { Separator } from '@/components/ui/separator';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ExternalLink, Copy, Hash, FileText, ImageIcon, Link, Clock, Loader2 } from 'lucide-react';
 import Image from 'next/image';
-import { formatDate } from '@/lib/utils';
 import { Session } from 'next-auth';
-import { Doc } from '../../../../../convex/_generated/dataModel';
 import { OwnedNft } from 'alchemy-sdk';
 
 interface NFTDetailsModalProps {

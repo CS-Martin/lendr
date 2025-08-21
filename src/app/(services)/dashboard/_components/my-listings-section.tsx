@@ -35,30 +35,25 @@ const MyListingsSection = () => {
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+      <div className='grid grid-cols-1 md:grid-cols-4 gap-8'>
         {ownedPosts === undefined ? (
           // Skeletons while fetching
-          Array.from({ length: 4 }).map((_, i) => (
-            <NFTCardSkeleton key={i} />
-          ))
+          Array.from({ length: 4 }).map((_, i) => <NFTCardSkeleton key={i} />)
         ) : ownedPosts.length === 0 ? (
           // Empty state
-          <p className="text-gray-400 col-span-full text-center">
-            No listings yet.
-          </p>
+          <p className='text-gray-400 col-span-full text-center'>No listings yet.</p>
         ) : (
           // Real data
           ownedPosts.map((post, index) => (
             <RentalPostCard
               key={index}
               post={post}
-              viewMode="grid"
-              onViewRentalPost={() => { }}
+              viewMode='grid'
+              onViewRentalPost={() => {}}
             />
           ))
         )}
       </div>
-
     </div>
   );
 };
