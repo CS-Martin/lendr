@@ -2,7 +2,7 @@
 
 import { useSession } from 'next-auth/react';
 import { useQuery } from 'convex/react';
-import { api } from '../../../../../convex/_generated/api';
+import { api } from '@convex/_generated/api';
 import NftCard from './nft-card';
 
 const MyBorrowsSection = () => {

@@ -3,8 +3,8 @@
 import { useQuery } from 'convex/react';
 import { Star } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
-import { api } from '../../../../../../convex/_generated/api';
-import { type Doc, type Id } from '../../../../../../convex/_generated/dataModel';
+import { api } from '@convex/_generated/api';
+import { type Doc, type Id } from '@convex/_generated/dataModel';
 
 type OwnerCardProps = {
   rentalPost: Doc<'rentalposts'>;

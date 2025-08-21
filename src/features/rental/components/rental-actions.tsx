@@ -2,7 +2,7 @@
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Gavel } from 'lucide-react';
-import { type Doc } from '../../../../../../convex/_generated/dataModel';
+import { type Doc } from '@convex/_generated/dataModel';
 import { BiddingTab } from './bidding-tab';
 import { DirectRentalTab } from './direct-rental-tab';
 

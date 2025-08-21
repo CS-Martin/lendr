@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
-import { type Doc } from '../../../../../../convex/_generated/dataModel';
+import { type Doc } from '@convex/_generated/dataModel';
 
 type DirectRentalModalProps = {
   rentalPost: Doc<'rentalposts'>;

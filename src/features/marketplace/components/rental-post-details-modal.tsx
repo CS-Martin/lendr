@@ -6,7 +6,6 @@ import { Separator } from '@/components/ui/separator';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FileText } from 'lucide-react';
 import { Session } from 'next-auth';
-import { Doc } from '../../../../../convex/_generated/dataModel';
 import { SpamWarning } from '@/components/shared/nft-components/spam-warning';
 import { ImageSection } from '@/components/shared/nft-components/image-section';
 import { BiddingSection } from '@/components/shared/nft-components/bidding-section';
@@ -16,6 +15,7 @@ import { ContractInfo } from '@/components/shared/nft-components/contract-info';
 import { TimelineInfo } from '@/components/shared/nft-components/timeline-info';
 import { UriSection } from '@/components/shared/nft-components/uri-section';
 import { AttributesSection } from '@/components/shared/nft-components/attributes-section';
+import { Doc } from '@convex/_generated/dataModel';
 
 // Types
 interface RentalPostDetailsModalProps {

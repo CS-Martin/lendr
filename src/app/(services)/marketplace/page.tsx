@@ -19,7 +19,7 @@ import { api } from '../../../../convex/_generated/api';
 import { useQuery } from 'convex/react';
 import { Doc } from '../../../../convex/_generated/dataModel';
 const RentalPostCard = dynamic(
-  () => import('@/components/shared/rental-post/rental-post-card').then((mod) => mod.RentalPostCard),
+  () => import('@/features/rental/components/rental-post-card').then((mod) => mod.RentalPostCard),
   {
     ssr: true,
   },

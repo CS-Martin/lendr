@@ -4,8 +4,8 @@ import { useQuery } from 'convex/react';
 import { useParams } from 'next/navigation';
 import { api } from '../../../../../convex/_generated/api';
 import { type Id } from '../../../../../convex/_generated/dataModel';
-import { NftImageColumn } from './_components/nft-image-column';
-import { RentalInfoColumn } from './_components/rental-info-column';
+import { NftImageColumn } from '@/features/rental/components/nft-image-column';
+import { RentalInfoColumn } from '@/features/rental/components/rental-info-column';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 

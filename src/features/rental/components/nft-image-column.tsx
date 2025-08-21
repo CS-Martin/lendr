@@ -6,7 +6,7 @@ import { ImageSection } from '@/components/shared/nft-components/image-section';
 import { TimelineInfo } from '@/components/shared/nft-components/timeline-info';
 import { TokenDetails } from '@/components/shared/nft-components/token-details';
 import { Separator } from '@/components/ui/separator';
-import { type Doc } from '../../../../../../convex/_generated/dataModel';
+import { type Doc } from '@convex/_generated/dataModel';
 
 type NftImageColumnProps = {
   rentalPost: Doc<'rentalposts'>;

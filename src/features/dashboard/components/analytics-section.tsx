@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useSession } from 'next-auth/react';
 import { useQuery } from 'convex/react';
 import { DollarSign, List, Clock, Star } from 'lucide-react';
-import { api } from '../../../../../convex/_generated/api';
+import { api } from '@convex/_generated/api';
 
 const AnalyticsSection = () => {
   const { data: session } = useSession();

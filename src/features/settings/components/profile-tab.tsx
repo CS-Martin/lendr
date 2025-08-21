@@ -15,8 +15,8 @@ import { useEffect } from 'react';
 import { toast } from 'sonner';
 import z from 'zod';
 import { useMutation, useQuery } from 'convex/react';
-import { api } from '../../../../../convex/_generated/api';
-import { ProfileSkeleton } from '../../[address]/_components/skeletons/profile-skeleton';
+import { api } from '@convex/_generated/api';
+import { ProfileSkeletons } from '@/features/profile/components/profile-skeletons';
 
 interface ProfileTabProps {
   address: string | undefined;
@@ -106,7 +106,7 @@ export const ProfileTab = ({ address }: ProfileTabProps) => {
   };
 
   if (user === undefined) {
-    return <ProfileSkeleton />;
+    return <ProfileSkeletons />;
   }
 
   return (

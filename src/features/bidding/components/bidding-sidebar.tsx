@@ -2,7 +2,7 @@
 
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Doc } from '../../../../../../convex/_generated/dataModel';
+import { Doc } from '@convex/_generated/dataModel';
 import { ImageSection } from '@/components/shared/nft-components/image-section';
 import { BiddingSection } from '@/components/shared/nft-components/bidding-section';
 

@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { type Doc } from '../../../../../../convex/_generated/dataModel';
+import { type Doc } from '@convex/_generated/dataModel';
 import { RentalHeader } from './rental-header';
 import { OwnerCard } from './owner-card';
 import { RentalActions } from './rental-actions';

@@ -4,8 +4,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useMutation } from 'convex/react';
-import { Doc } from '../../../../../../convex/_generated/dataModel';
-import { api } from '../../../../../../convex/_generated/api';
+import { Doc } from '@convex/_generated/dataModel';
+import { api } from '@convex/_generated/api';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -42,9 +42,8 @@ const BidCard = ({ bid, index }: BidCardProps) => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: index * 0.1 }}>
       <Card
-        className={`border-slate-800 hover:border-purple-500/50 transition-all duration-300 ${
-          index === 0 ? 'bg-green-900/20 border-green-800' : 'bg-slate-900/50'
-        }`}>
+        className={`border-slate-800 hover:border-purple-500/50 transition-all duration-300 ${index === 0 ? 'bg-green-900/20 border-green-800' : 'bg-slate-900/50'
+          }`}>
         <CardContent className='p-6'>
           <div className='flex items-start justify-between mb-4'>
             <div className='flex items-center space-x-3'>

@@ -4,7 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Trash2, Edit, Layers } from 'lucide-react';
-import { Doc } from '../../../../../convex/_generated/dataModel';
+import { Doc } from '@convex/_generated/dataModel';
 
 interface NftCardProps {
   post: Doc<'rentalposts'>;

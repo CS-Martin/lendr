@@ -1,14 +1,12 @@
-'use client';
-
 import { useQuery } from 'convex/react';
-import BiddingSidebar from './_components/bidding-sidebar';
-import BidsList from './_components/bids-list';
+import BiddingSidebar from '@/features/bidding/components/bidding-sidebar';
+import BidsList from '@/features/bidding/components/bids-list';
 import { Id } from '../../../../../convex/_generated/dataModel';
 import { api } from '../../../../../convex/_generated/api';
 import { useParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import NotFound from '@/app/not-found';
-import { BiddingPageSkeleton } from './_components/skeletons/bidding-skeletons';
+import { BiddingPageSkeleton } from '@/features/bidding/components/bidding-skeletons';
 
 export default function BiddingPage() {
   const { data: session } = useSession();

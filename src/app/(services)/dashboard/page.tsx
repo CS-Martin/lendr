@@ -1,8 +1,8 @@
 'use client';
 
-import AnalyticsSection from './_components/analytics-section';
-import MyListingsSection from './_components/my-listings-section';
-import MyBorrowsSection from './_components/my-borrows-section';
+import AnalyticsSection from '@/features/dashboard/components/analytics-section';
+import MyListingsSection from '@/features/dashboard/components/my-listings-section';
+import MyBorrowsSection from '@/features/dashboard/components/my-borrows-section';
 
 const DashboardPage = () => {
   return (

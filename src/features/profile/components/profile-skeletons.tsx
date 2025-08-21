@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton'; // shadcn/ui skeleton
 
-export const ProfileSkeleton = () => {
+export const ProfileSkeletons = () => {
   return (
     <Card className='bg-gray-900/50 backdrop-blur-sm border-gray-800/50'>
       <CardHeader>

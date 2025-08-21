@@ -3,13 +3,13 @@
 import { useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useQuery } from 'convex/react';
-import { api } from '../../../../../convex/_generated/api';
-import { Doc } from '../../../../../convex/_generated/dataModel';
+import { api } from '@convex/_generated/api';
+import { Doc } from '@convex/_generated/dataModel';
 import NftCard from './nft-card';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 import Link from 'next/link';
-import { RentalPostCard } from '@/components/shared/rental-post/rental-post-card';
+import { RentalPostCard } from '@/features/rental/components/rental-post-card';
 import { NFTCardSkeleton } from '@/components/shared/skeletons/nft-card';
 
 const MyListingsSection = () => {
@@ -49,7 +49,7 @@ const MyListingsSection = () => {
               key={index}
               post={post}
               viewMode='grid'
-              onViewRentalPost={() => {}}
+              onViewRentalPost={() => { }}
             />
           ))
         )}
