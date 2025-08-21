@@ -1,3 +1,5 @@
+'use client';
+
 import { useQuery } from 'convex/react';
 import BiddingSidebar from '@/features/bidding/components/bidding-sidebar';
 import BidsList from '@/features/bidding/components/bids-list';
