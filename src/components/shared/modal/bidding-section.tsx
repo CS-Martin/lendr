@@ -1,7 +1,7 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Timer } from 'lucide-react';
 import LendrButton from '@/components/shared/lendr-btn';
-import { CountdownTimer } from '@/app/(services)/marketplace/_components/countdown-timer';
+import { CountdownTimer } from '@/features/marketplace/components/countdown-timer';
 
 export const BiddingSection = ({ rentalPost }: { rentalPost: any }) => {
   if (!rentalPost?.isBiddable || !rentalPost.biddingEndTime) return null;
