@@ -65,7 +65,35 @@ export const RentalPostDetailsModal = memo(
                 )}
 
                 <div className='grid grid-cols-1 lg:grid-cols-2 gap-8'>
-                  <ImageSection nftMetadata={selectedRentalPost.nftMetadata} />
+                  <motion.div
+                    initial={{ x: 50, opacity: 0 }}
+                    animate={{ x: 0, opacity: 1 }}
+                    transition={{ delay: 0.3 }}
+                    className='space-y-6'>
+                    <ImageSection nftMetadata={selectedRentalPost.nftMetadata} />
+
+                    {selectedRentalPost.nftMetadata.raw?.tokenUri && (
+                      <>
+                        <Separator className='bg-gray-700/50' />
+                        <UriSection
+                          title='Raw Metadata URI'
+                          uri={selectedRentalPost.nftMetadata.raw.tokenUri}
+                        />
+                      </>
+                    )}
+
+                    {selectedRentalPost.nftMetadata.tokenUri && (
+                      <>
+                        <Separator className='bg-gray-700/50' />
+                        <UriSection
+                          title='Token URI'
+                          uri={selectedRentalPost.nftMetadata.tokenUri}
+                        />
+                      </>
+                    )}
+
+
+                  </motion.div>
 
                   <motion.div
                     initial={{ x: 50, opacity: 0 }}
@@ -94,26 +122,6 @@ export const RentalPostDetailsModal = memo(
                     <Separator className='bg-gray-700/50' />
                     <TimelineInfo nftMetadata={selectedRentalPost.nftMetadata} />
 
-                    {selectedRentalPost.nftMetadata.tokenUri && (
-                      <>
-                        <Separator className='bg-gray-700/50' />
-                        <UriSection
-                          title='Token URI'
-                          uri={selectedRentalPost.nftMetadata.tokenUri}
-                        />
-                      </>
-                    )}
-
-                    {selectedRentalPost.nftMetadata.raw?.tokenUri && (
-                      <>
-                        <Separator className='bg-gray-700/50' />
-                        <UriSection
-                          title='Raw Metadata URI'
-                          uri={selectedRentalPost.nftMetadata.raw.tokenUri}
-                        />
-                      </>
-                    )}
-
                     {selectedRentalPost.nftMetadata.raw?.metadata?.attributes &&
                       selectedRentalPost.nftMetadata.raw.metadata.attributes.length > 0 && (
                         <>
@@ -121,6 +129,7 @@ export const RentalPostDetailsModal = memo(
                           <AttributesSection attributes={selectedRentalPost.nftMetadata.raw.metadata.attributes} />
                         </>
                       )}
+
                   </motion.div>
                 </div>
               </motion.div>

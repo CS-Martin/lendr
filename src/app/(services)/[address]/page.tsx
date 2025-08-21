@@ -1,4 +1,4 @@
-'use client'
+'use client';
 
 import NotFound from '@/app/not-found';
 import { OwnedNft } from 'alchemy-sdk';
@@ -38,7 +38,7 @@ export default function UserProfilePage() {
           loadMore();
         }
       },
-      { threshold: 1.0 }
+      { threshold: 1.0 },
     );
 
     const currentSentinel = sentinelRef.current;
@@ -64,14 +64,16 @@ export default function UserProfilePage() {
   };
 
   return (
-    <div className="bg-slate-950">
+    <div className='bg-slate-950'>
       <ProfileHeader user={user} />
 
-      <div className="max-w-7xl min-h-screen mx-auto py-20">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 min-h-[calc(100vh-20rem)]">
+      <div className='max-w-7xl min-h-screen mx-auto py-20'>
+        <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 min-h-[calc(100vh-20rem)]'>
           {nfts.map((nft: OwnedNft, index: number) =>
             nft.contract.name ? (
-              <Suspense key={index} fallback={<NFTCardSkeleton />}>
+              <Suspense
+                key={index}
+                fallback={<NFTCardSkeleton />}>
                 <NFTCard
                   nft={nft}
                   onViewNFT={() => handleViewNFT(nft)}
@@ -80,18 +82,20 @@ export default function UserProfilePage() {
                   profileAddress={address as string}
                 />
               </Suspense>
-            ) : null
+            ) : null,
           )}
 
           {/* Show skeletons while loading more */}
-          {nftsLoading &&
-            Array.from({ length: 10 }).map((_, index) => (
-              <NFTCardSkeleton key={`skeleton-${index}`} />
-            ))}
+          {nftsLoading && Array.from({ length: 10 }).map((_, index) => <NFTCardSkeleton key={`skeleton-${index}`} />)}
         </div>
 
         {/* 👇 Sentinel for infinite scroll */}
-        {hasMore && <div ref={sentinelRef} className="h-10" />}
+        {hasMore && (
+          <div
+            ref={sentinelRef}
+            className='h-10'
+          />
+        )}
       </div>
 
       {selectedNFTForDetails && isDetailsModalOpen && (
