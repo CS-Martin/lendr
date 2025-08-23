@@ -1,4 +1,3 @@
-
 import { DetailSection } from './detail-section';
 import { Hash } from 'lucide-react';
 import { motion } from 'framer-motion';
