@@ -39,9 +39,7 @@ export const ContractInfo = ({ nft }: { nft: Nft }) => (
                 size='sm'
                 variant='ghost'
                 className='h-6 w-6 p-0 text-gray-400 hover:text-white'
-                onClick={() =>
-                  window.open(`https://etherscan.io/address/${nft.contract.contractDeployer}`, '_blank')
-                }>
+                onClick={() => window.open(`https://etherscan.io/address/${nft.contract.contractDeployer}`, '_blank')}>
                 <ExternalLink className='h-3 w-3' />
               </Button>
             </div>

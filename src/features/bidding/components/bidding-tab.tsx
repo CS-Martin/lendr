@@ -162,7 +162,7 @@ function BidItem({
           <Clock className='h-3 w-3 mr-1' />
           {formatDistanceToNow(new Date(bid.updatedTime), { addSuffix: true })}
         </div>
-        {bid._updatedTime !== bid._creationTime && <span>Edited</span>}
+        {bid.updatedTime !== bid._creationTime && <span>Edited</span>}
       </div>
     </div>
   );

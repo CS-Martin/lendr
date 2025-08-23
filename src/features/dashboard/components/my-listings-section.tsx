@@ -1,10 +1,8 @@
 'use client';
 
-import { useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useQuery } from 'convex/react';
 import { api } from '@convex/_generated/api';
-import { Doc } from '@convex/_generated/dataModel';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 import { RentalPostCard } from '@/features/rental/components/rental-post-card';

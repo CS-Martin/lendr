@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Separator } from '@/components/ui/separator';
@@ -26,9 +25,6 @@ interface NFTDetailsModalProps {
 
 // TODO: Refactor this component using shared components in @/components/shared/modal
 export const NFTDetailsModal = ({ nft, isOpen, onClose, session, profileAddress }: NFTDetailsModalProps) => {
-
-
-
   return (
     <Dialog
       open={isOpen}

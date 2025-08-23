@@ -3,7 +3,7 @@
 import { Button } from '@/components/ui/button';
 import { formatFileSize, truncateText } from '@/lib/utils';
 import { ExternalLink, ImageIcon } from 'lucide-react';
-import { NftImage, NftMetadata } from 'alchemy-sdk';
+import { NftImage } from 'alchemy-sdk';
 
 export const MediaInfo = ({ nft }: { nft: NftImage }) => (
   <div className='bg-gray-800/30 rounded-lg p-4 border border-gray-700/50'>
@@ -23,9 +23,7 @@ export const MediaInfo = ({ nft }: { nft: NftImage }) => (
       <div>
         <span className='text-gray-400'>Original URL:</span>
         <div className='flex items-center gap-1 mt-1'>
-          <code className='text-xs text-gray-300 truncate'>
-            {truncateText(nft.originalUrl || '', 30, 10)}
-          </code>
+          <code className='text-xs text-gray-300 truncate'>{truncateText(nft.originalUrl || '', 30, 10)}</code>
           {nft.originalUrl && (
             <Button
               size='sm'

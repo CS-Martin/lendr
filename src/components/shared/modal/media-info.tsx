@@ -21,9 +21,7 @@ export const MediaInfo = ({ nft }: { nft: NftMetadata }) => (
       <div>
         <span className='text-gray-400'>Original URL:</span>
         <div className='flex items-center gap-1 mt-1'>
-          <code className='text-xs text-gray-300 truncate'>
-            {truncateText(nft.image?.originalUrl || '', 30, 10)}
-          </code>
+          <code className='text-xs text-gray-300 truncate'>{truncateText(nft.image?.originalUrl || '', 30, 10)}</code>
           {nft.image?.originalUrl && (
             <Button
               size='sm'

@@ -92,8 +92,8 @@ export default function MarketplacePage() {
 
   const {
     results: rentalPosts,
-    status,
-    loadMore,
+    // status,
+    // loadMore,
   } = usePaginatedQuery(
     api.rentalpost.getRentalPosts,
     {},
@@ -286,7 +286,6 @@ export default function MarketplacePage() {
         <RentalPostDetailsModal
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
-          session={session}
           selectedRentalPost={selectedRentalPost}
         />
       )}
