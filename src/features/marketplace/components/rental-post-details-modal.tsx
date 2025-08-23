@@ -21,14 +21,12 @@ import { Doc } from '@convex/_generated/dataModel';
 interface RentalPostDetailsModalProps {
   isOpen: boolean;
   onClose: () => void;
-  session: Session | null;
   selectedRentalPost: Doc<'rentalposts'> | null;
 }
 
 // Main component
 export const RentalPostDetailsModal = memo(
-  ({ isOpen, onClose, session, selectedRentalPost }: RentalPostDetailsModalProps) => {
-    const [imageLoaded, setImageLoaded] = useState(false);
+  ({ isOpen, onClose, selectedRentalPost }: RentalPostDetailsModalProps) => {
 
     if (!selectedRentalPost) {
       return null;
@@ -61,7 +59,7 @@ export const RentalPostDetailsModal = memo(
                 </DialogHeader>
 
                 {selectedRentalPost.nftMetadata.contract.isSpam && (
-                  <SpamWarning nftMetadata={selectedRentalPost.nftMetadata} />
+                  <SpamWarning nftContract={selectedRentalPost.nftMetadata.contract} />
                 )}
 
                 <div className='grid grid-cols-1 lg:grid-cols-2 gap-8'>
@@ -70,7 +68,7 @@ export const RentalPostDetailsModal = memo(
                     animate={{ x: 0, opacity: 1 }}
                     transition={{ delay: 0.3 }}
                     className='space-y-6'>
-                    <ImageSection nftMetadata={selectedRentalPost.nftMetadata} />
+                    <ImageSection nft={selectedRentalPost.nftMetadata} />
 
                     {selectedRentalPost.nftMetadata.raw?.tokenUri && (
                       <>
@@ -102,19 +100,19 @@ export const RentalPostDetailsModal = memo(
                     </div>
 
                     <Separator className='bg-gray-700/50' />
-                    <TokenDetails nftMetadata={selectedRentalPost.nftMetadata} />
+                    <TokenDetails nft={selectedRentalPost.nftMetadata} />
 
                     <Separator className='bg-gray-700/50' />
-                    <ContractInfo nftMetadata={selectedRentalPost.nftMetadata} />
+                    <ContractInfo nft={selectedRentalPost.nftMetadata} />
 
                     <Separator className='bg-gray-700/50' />
-                    <TimelineInfo nftMetadata={selectedRentalPost.nftMetadata} />
+                    <TimelineInfo nft={selectedRentalPost.nftMetadata} />
 
                     {selectedRentalPost.nftMetadata.raw?.metadata?.attributes &&
                       selectedRentalPost.nftMetadata.raw.metadata.attributes.length > 0 && (
                         <>
                           <Separator className='bg-gray-700/50' />
-                          <AttributesSection attributes={selectedRentalPost.nftMetadata.raw.metadata.attributes} />
+                          <AttributesSection nftMetadata={selectedRentalPost.nftMetadata.raw.metadata} />
                         </>
                       )}
                   </motion.div>

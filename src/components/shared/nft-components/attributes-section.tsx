@@ -1,15 +1,16 @@
 import { DetailSection } from './detail-section';
 import { Hash } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { NftMetadata } from 'alchemy-sdk';
 
-export const AttributesSection = ({ attributes }: { attributes: any[] }) => (
+export const AttributesSection = ({ nftMetadata }: { nftMetadata: NftMetadata }) => (
   <div>
     <DetailSection
       title='Attributes'
       icon={Hash}
       iconColor='text-pink-400'>
       <div className='grid grid-cols-2 gap-3 mt-4'>
-        {attributes.map((attr: any, index: number) => (
+        {nftMetadata.attributes?.map((attr: any, index: number) => (
           <motion.div
             key={index}
             initial={{ opacity: 0, y: 10 }}

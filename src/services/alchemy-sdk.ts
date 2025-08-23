@@ -1,4 +1,4 @@
-import { Alchemy, Network, NftFilters, OwnedNft, OwnedNftsResponse } from 'alchemy-sdk';
+import { Alchemy, Network, OwnedNft, OwnedNftsResponse } from 'alchemy-sdk';
 
 const config = {
   apiKey: process.env.NEXT_PUBLIC_ALCHEMY_API_KEY || '',

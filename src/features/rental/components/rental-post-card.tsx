@@ -17,13 +17,13 @@ import { api } from '../../../../convex/_generated/api';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 
-interface RentalPostProps {
+interface RentalPostCardProps {
   post: Doc<'rentalposts'>;
   viewMode: 'grid' | 'list';
   onViewRentalPost: (e: React.MouseEvent) => void;
 }
 
-export const RentalPostCard = ({ post, viewMode, onViewRentalPost }: RentalPostProps) => {
+export const RentalPostCard = ({ post, viewMode, onViewRentalPost }: RentalPostCardProps) => {
   const router = useRouter();
   const { data: session } = useSession();
   const deleteRentalPost = useMutation(api.rentalpost.deleteRentalPost);

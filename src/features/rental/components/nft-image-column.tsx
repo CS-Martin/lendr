@@ -15,21 +15,21 @@ type NftImageColumnProps = {
 export function NftImageColumn({ rentalPost }: NftImageColumnProps) {
   return (
     <div className='flex flex-col space-y-4'>
-      <ImageSection nftMetadata={rentalPost.nftMetadata} />
+      <ImageSection nft={rentalPost.nftMetadata} />
 
       <BiddingSection rentalPost={rentalPost} />
 
       <Separator className='bg-gray-700/50' />
 
-      <TokenDetails nftMetadata={rentalPost.nftMetadata} />
+      <TokenDetails nft={rentalPost.nftMetadata} />
 
       <Separator className='bg-gray-700/50' />
 
-      <ContractInfo nftMetadata={rentalPost.nftMetadata} />
+      <ContractInfo nft={rentalPost.nftMetadata} />
 
       <Separator className='bg-gray-700/50' />
 
-      <TimelineInfo nftMetadata={rentalPost.nftMetadata} />
+      <TimelineInfo nft={rentalPost.nftMetadata} />
     </div>
   );
 }

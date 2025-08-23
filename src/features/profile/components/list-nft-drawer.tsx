@@ -33,7 +33,6 @@ interface ListNFTDrawerProps {
   isOpen: boolean;
   onClose: () => void;
   session: Session | null;
-  profileAddress: string;
 }
 
 // RentalPost Zod Schema
@@ -57,7 +56,7 @@ const listNftFormSchema = z.object({
 
 type ListNftFormInputs = z.infer<typeof listNftFormSchema>;
 
-export const ListNFTDrawer = ({ nft, isOpen, onClose, session, profileAddress }: ListNFTDrawerProps) => {
+export const ListNFTDrawer = ({ nft, isOpen, onClose, session }: ListNFTDrawerProps) => {
   const { start, stop } = useProgress();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const createNft = useMutation(api.nft.createNft);

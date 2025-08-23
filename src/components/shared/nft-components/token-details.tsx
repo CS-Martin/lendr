@@ -3,7 +3,7 @@ import { Hash } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { OwnedNft } from 'alchemy-sdk';
 
-export const TokenDetails = ({ nftMetadata }: { nftMetadata: any }) => (
+export const TokenDetails = ({ nft }: { nft: OwnedNft }) => (
   <div>
     <DetailSection
       title='Token Details'
@@ -15,7 +15,7 @@ export const TokenDetails = ({ nftMetadata }: { nftMetadata: any }) => (
           <Badge
             variant='outline'
             className='border-gray-600 text-gray-300'>
-            #{nftMetadata.tokenId}
+            #{nft.tokenId}
           </Badge>
         </div>
         <div className='flex justify-between items-center'>
@@ -23,12 +23,12 @@ export const TokenDetails = ({ nftMetadata }: { nftMetadata: any }) => (
           <Badge
             variant='outline'
             className='border-gray-600 text-gray-300'>
-            {nftMetadata.tokenType}
+            {nft.tokenType}
           </Badge>
         </div>
         <div className='flex justify-between items-center'>
           <span className='text-gray-400'>Balance:</span>
-          <span className='text-white'>{nftMetadata.balance || '1'}</span>
+          <span className='text-white'>{nft.balance || '1'}</span>
         </div>
       </div>
     </DetailSection>

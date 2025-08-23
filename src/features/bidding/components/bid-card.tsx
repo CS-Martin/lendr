@@ -3,13 +3,11 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { useMutation } from 'convex/react';
 import { Doc } from '@convex/_generated/dataModel';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { Star, MessageSquare } from 'lucide-react';
 import { AcceptBidModal } from './accept-bid-modal';
-import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import LendrButton from '@/components/shared/lendr-btn';
 
@@ -20,9 +18,6 @@ interface BidCardProps {
 }
 
 const BidCard = ({ bid, index, hasAcceptedBid }: BidCardProps) => {
-  const { data: session } = useSession();
-  const user = session?.user;
-
   const [showAcceptModal, setShowAcceptModal] = useState(false);
   const [selectedBid, setSelectedBid] = useState<string | null>(null);
 
@@ -38,11 +33,10 @@ const BidCard = ({ bid, index, hasAcceptedBid }: BidCardProps) => {
       transition={{ duration: 0.5, delay: index * 0.1 }}>
       <Card
         className={`relative transition-all duration-300 
-        ${
-          bid.isAccepted
+        ${bid.isAccepted
             ? 'bg-green-900/30 border-green-500 shadow-lg shadow-green-500/30'
             : 'bg-slate-900/50 border-slate-800 hover:border-purple-500/50'
-        }`}>
+          }`}>
         <CardContent className='p-6'>
           {/* Accepted badge */}
           {bid.isAccepted && (

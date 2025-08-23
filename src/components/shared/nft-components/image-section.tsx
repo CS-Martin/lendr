@@ -2,8 +2,9 @@ import { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Loader2 } from 'lucide-react';
 import Image from 'next/image';
+import { Nft } from 'alchemy-sdk';
 
-export const ImageSection = ({ nftMetadata }: { nftMetadata: any }) => {
+export const ImageSection = ({ nft }: { nft: Nft }) => {
   const [imageLoading, setImageLoading] = useState(true);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -65,9 +66,9 @@ export const ImageSection = ({ nftMetadata }: { nftMetadata: any }) => {
             <Loader2 className='h-8 w-8 animate-spin text-lendr-400' />
           </div>
         )}
-        {nftMetadata.animation?.cachedUrl ? (
+        {nft.animation?.cachedUrl ? (
           <video
-            src={nftMetadata.animation?.cachedUrl || '/placeholder.svg'}
+            src={nft.animation?.cachedUrl || '/placeholder.svg'}
             autoPlay
             loop
             muted
@@ -79,13 +80,13 @@ export const ImageSection = ({ nftMetadata }: { nftMetadata: any }) => {
         ) : (
           <Image
             src={
-              nftMetadata.image?.cachedUrl ||
-              nftMetadata.image?.originalUrl ||
-              nftMetadata.image?.pngUrl ||
-              nftMetadata.contract.openSeaMetadata?.imageUrl ||
+              nft.image?.cachedUrl ||
+              nft.image?.originalUrl ||
+              nft.image?.pngUrl ||
+              nft.contract.openSeaMetadata?.imageUrl ||
               '/placeholder.svg'
             }
-            alt={nftMetadata.name || 'NFT image'}
+            alt={nft.name || 'NFT image'}
             fill
             className='object-cover transition-transform duration-500'
             onLoad={() => setImageLoading(false)}

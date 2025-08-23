@@ -2,15 +2,10 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Loader2 } from 'lucide-react';
 import Image from 'next/image';
-import { MediaInfo } from './media-info';
-import { OpenSeaMetadata } from './opensea-metadata';
+import { NftMetadata } from 'alchemy-sdk';
 
-export const ImageSection = ({ nftMetadata }: { nftMetadata: any }) => {
+export const ImageSection = ({ nftMetadata }: { nftMetadata: NftMetadata }) => {
   const [imageLoading, setImageLoading] = useState(true);
-
-  const handleLoad = () => {
-    setImageLoading(false);
-  };
 
   return (
     <motion.div

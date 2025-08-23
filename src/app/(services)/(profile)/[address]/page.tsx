@@ -114,7 +114,6 @@ export default function UserProfilePage() {
           isOpen={isListDrawerOpen}
           onClose={() => setIsListDrawerOpen(false)}
           session={session}
-          profileAddress={address as string}
         />
       )}
     </div>
