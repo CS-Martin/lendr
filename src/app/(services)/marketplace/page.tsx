@@ -11,7 +11,6 @@ import { FilterSection } from '@/features/marketplace/components/filter-section'
 import { EmptyState } from '@/features/marketplace/components/empty-state';
 import { RentalPostDetailsModal } from '@/features/marketplace/components/rental-post-details-modal';
 import { ActiveFilters } from '@/features/marketplace/components/active-filters';
-import { useSession } from 'next-auth/react';
 import { RentalPostCardSkeleton } from '@/components/shared/skeletons/rental-post-card.skeleton';
 import { useViewMode, useSetViewMode } from '@/stores/card-view-mode.store';
 import dynamic from 'next/dynamic';
