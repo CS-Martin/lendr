@@ -7,12 +7,18 @@ import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 import { RentalPostCard } from '@/features/rental/components/rental-post-card';
 import { NFTCardSkeleton } from '@/components/shared/skeletons/nft-card';
+import { RentalPostDetailsModal } from '@/features/marketplace/components/rental-post-details-modal';
+import { useState } from 'react';
+import { Doc } from '@convex/_generated/dataModel';
 
 const MyListingsSection = () => {
   const { data: session } = useSession();
 
   const address = session?.user?.address || '';
   const ownedPosts = useQuery(api.rentalpost.getOwnedRentalPosts, { ownerAddress: address });
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedRentalPost, setSelectedRentalPost] = useState<Doc<'rentalposts'> | null>(null);
 
   return (
     <div>
@@ -37,11 +43,23 @@ const MyListingsSection = () => {
               key={index}
               post={post}
               viewMode='grid'
-              onViewRentalPost={() => {}}
+              onViewRentalPost={() => {
+                setSelectedRentalPost(post);
+                setIsModalOpen(true);
+              }}
             />
           ))
         )}
       </div>
+
+      {/* Rental Post Details Modal */}
+      {selectedRentalPost && isModalOpen && (
+        <RentalPostDetailsModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          selectedRentalPost={selectedRentalPost}
+        />
+      )}
     </div>
   );
 };
