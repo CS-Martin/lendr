@@ -4,7 +4,7 @@ import { Loader2 } from 'lucide-react';
 import Image from 'next/image';
 import { NftMetadata as AlchemyNftMetadata } from 'alchemy-sdk';
 
-interface ExtendedNftImage {
+export interface ExtendedNftImage {
   originalUrl?: string;
   pngUrl?: string;
   cachedUrl?: string;
