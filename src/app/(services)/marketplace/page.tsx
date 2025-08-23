@@ -136,7 +136,6 @@ export default function MarketplacePage() {
       selectedFilters.some((filter) => {
         if (filter === 'AVAILABLE') return post.status === 'AVAILABLE';
         if (filter === 'RENTED') return post.status === 'RENTED';
-        if (filter === 'DELISTED') return post.status === 'DELISTED';
 
         if (filter === 'art') return post.category === 'art';
         if (filter === 'gaming') return post.category === 'gaming';

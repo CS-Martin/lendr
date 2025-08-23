@@ -2,13 +2,7 @@ import { v } from 'convex/values';
 import { mutation, query } from './_generated/server';
 import { defineTable, paginationOptsValidator } from 'convex/server';
 
-export const RentalListingStatus = v.union(
-  v.literal('AVAILABLE'),
-  v.literal('RENTED'),
-  v.literal('DELISTED'),
-  v.literal('DISPUTED_FOR_LENDER'),
-  v.literal('DISPUTED_FOR_RENTER'),
-);
+export const RentalListingStatus = v.union(v.literal('AVAILABLE'), v.literal('RENTED'));
 
 export const rentalpost = defineTable({
   posterAddress: v.string(),
@@ -22,7 +16,6 @@ export const rentalpost = defineTable({
   isBiddable: v.boolean(),
   biddingStartTime: v.optional(v.number()),
   biddingEndTime: v.optional(v.number()),
-  isActive: v.boolean(),
   status: RentalListingStatus,
   nftMetadata: v.any(),
 })
@@ -42,7 +35,6 @@ export const createRentalPost = mutation({
     isBiddable: v.boolean(),
     biddingStartTime: v.optional(v.number()),
     biddingEndTime: v.optional(v.number()),
-    isActive: v.boolean(),
     status: RentalListingStatus,
     nftMetadata: v.any(),
   },
@@ -59,7 +51,6 @@ export const updateRentalPost = mutation({
     isBiddable: v.optional(v.boolean()),
     biddingStarttime: v.optional(v.number()),
     biddingEndtime: v.optional(v.number()),
-    isActive: v.optional(v.boolean()),
     status: v.optional(RentalListingStatus),
   },
   handler: async (ctx, args) => {
@@ -80,7 +71,13 @@ export const getOneRentalPost = query({
     id: v.id('rentalposts'),
   },
   handler: async (ctx, args) => {
-    return await ctx.db.get(args.id);
+    const rentalPost = await ctx.db.get(args.id);
+
+    if (!rentalPost) {
+      throw new Error('Rental post not found');
+    }
+
+    return rentalPost;
   },
 });
 

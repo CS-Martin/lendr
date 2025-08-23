@@ -3,8 +3,8 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Gavel } from 'lucide-react';
 import { type Doc } from '@convex/_generated/dataModel';
-import { BiddingTab } from './bidding-tab';
 import { DirectRentalTab } from './direct-rental-tab';
+import { BiddingTab } from '@/features/bidding/components/bidding-tab';
 
 type RentalActionsProps = {
   rentalPost: Doc<'rentalposts'>;

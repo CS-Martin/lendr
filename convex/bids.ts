@@ -8,6 +8,7 @@ export const bids = defineTable({
   bidderAddress: v.string(),
   message: v.optional(v.string()),
   bidAmount: v.number(),
+  totalBidAmount: v.number(), // Total bid amount with collateral included
   rentalDuration: v.number(),
   isAccepted: v.boolean(),
   acceptedTimestamp: v.optional(v.number()),
@@ -15,7 +16,7 @@ export const bids = defineTable({
 })
   .index('by_rentalPost', ['rentalPostId'])
   .index('by_bidder', ['bidderAddress'])
-  .index('by_rentalPost_bidAmount', ['rentalPostId', 'bidAmount'])
+  .index('by_rentalPost_total', ['rentalPostId', 'totalBidAmount'])
   .index('by_rentalPost_bidder', ['rentalPostId', 'bidderAddress']); // New index for user restriction
 
 export const placeBid = mutation({
@@ -24,6 +25,7 @@ export const placeBid = mutation({
     bidderAddress: v.string(),
     message: v.optional(v.string()),
     bidAmount: v.number(),
+    totalBidAmount: v.number(),
     rentalDuration: v.number(),
   },
   handler: async (ctx, args) => {
@@ -33,6 +35,7 @@ export const placeBid = mutation({
     if (!rentalPost) {
       throw new Error('Rental post not found');
     }
+
     if (rentalPost.posterAddress === args.bidderAddress) {
       throw new Error('You cannot bid on your own rental post');
     }
@@ -50,6 +53,7 @@ export const placeBid = mutation({
       return await ctx.db.patch(existingBid._id, {
         message: args.message,
         bidAmount: args.bidAmount,
+        totalBidAmount: args.totalBidAmount,
         rentalDuration: args.rentalDuration,
         updatedTime: timestamp,
       });
@@ -77,7 +81,7 @@ export const getBidsByRentalPostTotalValue = query({
       .collect();
 
     // Sort by total value
-    const sortedBids = allBids.sort((a, b) => b.bidAmount * b.rentalDuration - a.bidAmount * a.rentalDuration);
+    const sortedBids = allBids.sort((a, b) => b.totalBidAmount - a.totalBidAmount);
 
     // Implement manual pagination
     const startIndex = paginationOpts.cursor ? parseInt(paginationOpts.cursor) : 0;
@@ -100,7 +104,7 @@ export const getBidsByRentalPost = query({
   handler: async (ctx, { rentalPostId, paginationOpts }) => {
     return await ctx.db
       .query('bids')
-      .withIndex('by_rentalPost_bidAmount', (q) => q.eq('rentalPostId', rentalPostId))
+      .withIndex('by_rentalPost_total', (q) => q.eq('rentalPostId', rentalPostId))
       .order('desc')
       .paginate(paginationOpts);
   },
@@ -126,7 +130,7 @@ export const getHighestBid = query({
   handler: async (ctx, { rentalPostId }) => {
     const bids = await ctx.db
       .query('bids')
-      .withIndex('by_rentalPost_bidAmount', (q) => q.eq('rentalPostId', rentalPostId))
+      .withIndex('by_rentalPost_total', (q) => q.eq('rentalPostId', rentalPostId))
       .order('desc')
       .first();
 
@@ -138,6 +142,7 @@ export const acceptBid = mutation({
   args: { bidId: v.id('bids') },
   handler: async (ctx, { bidId }) => {
     const bid = await ctx.db.get(bidId);
+
     if (!bid) {
       throw new Error('Bid not found');
     }
@@ -163,27 +168,21 @@ export const acceptBid = mutation({
   },
 });
 
-export const rejectBid = mutation({
+export const rejectsssss = mutation({
   args: { bidId: v.id('bids') },
   handler: async (ctx, { bidId }) => {
     return await ctx.db.patch(bidId, { isAccepted: false });
   },
 });
 
-export const deleteRentalPostAndBids = mutation({
-  args: { rentalPostId: v.id('rentalposts') },
-  handler: async (ctx, args) => {
-    // 1. Delete all bids associated with the rental post
-    const bids = await ctx.db
-      .query('bids')
-      .withIndex('by_rentalPost', (q) => q.eq('rentalPostId', args.rentalPostId))
-      .collect();
+export const deleteBid = mutation({
+  args: { bidId: v.id('bids') },
+  handler: async (ctx, { bidId }) => {
+    const bid = await ctx.db.get(bidId);
 
-    for (const bid of bids) {
-      await ctx.db.delete(bid._id);
+    if (!bid) {
+      throw new Error('Bid not found');
     }
-
-    // 2. Delete the rental post itself
-    return await ctx.db.delete(args.rentalPostId);
+    return await ctx.db.delete(bidId);
   },
 });
