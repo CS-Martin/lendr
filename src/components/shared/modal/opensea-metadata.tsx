@@ -1,7 +1,8 @@
 import { formatDate } from '@/lib/utils';
 import { ImageIcon } from 'lucide-react';
+import { OpenSeaCollectionMetadata } from 'alchemy-sdk';
 
-export const OpenSeaMetadata = ({ metadata }: { metadata: any }) => (
+export const OpenSeaMetadata = ({ metadata }: { metadata: OpenSeaCollectionMetadata }) => (
   <div className='bg-gray-800/30 rounded-lg p-4 border border-gray-700/50'>
     <div className='flex items-center gap-2 mb-3'>
       <ImageIcon className='h-4 w-4 text-purple-400' />

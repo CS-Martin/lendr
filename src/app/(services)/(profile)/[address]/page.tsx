@@ -78,8 +78,6 @@ export default function UserProfilePage() {
                   nft={nft}
                   onViewNFT={() => handleViewNFT(nft)}
                   onListNFT={() => handleListNFT(nft)}
-                  session={session}
-                  profileAddress={address as string}
                 />
               </Suspense>
             ) : null,
@@ -114,7 +112,6 @@ export default function UserProfilePage() {
           isOpen={isListDrawerOpen}
           onClose={() => setIsListDrawerOpen(false)}
           session={session}
-          profileAddress={address as string}
         />
       )}
     </div>

@@ -22,8 +22,9 @@ export const BiddingSection = ({ rentalPost }: { rentalPost?: Doc<'rentalposts'>
         <CountdownTimer biddingEndTime={new Date(rentalPost.biddingEndTime)} />
 
         {/* Do not show the bid button if the user is the owner */}
-        {session?.user?.address !== rentalPost.posterAddress && (
+        {session?.user?.address !== rentalPost.posterAddress && rentalPost.status === 'AVAILABLE' && (
           <LendrButton
+            link={`/rentals/${rentalPost._id}`}
             onClick={(e) => {
               e.stopPropagation();
 

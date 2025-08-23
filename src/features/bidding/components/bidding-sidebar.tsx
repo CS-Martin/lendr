@@ -12,7 +12,7 @@ const BiddingSidebar = ({ post }: { post?: Doc<'rentalposts'> }) => {
   return (
     <Card className='bg-slate-900 border-gray-700 text-white rounded-lg'>
       <CardContent className='p-4 space-y-4'>
-        <ImageSection nftMetadata={post.nftMetadata} />
+        <ImageSection nft={post.nftMetadata} />
         <BiddingSection rentalPost={post} />
         <h3 className='text-xl font-bold mt-4'>{post?.name}</h3>
         <Badge className='mt-2 bg-purple-600'>{post?.category}</Badge>

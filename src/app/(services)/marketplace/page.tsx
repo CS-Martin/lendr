@@ -11,14 +11,12 @@ import { FilterSection } from '@/features/marketplace/components/filter-section'
 import { EmptyState } from '@/features/marketplace/components/empty-state';
 import { RentalPostDetailsModal } from '@/features/marketplace/components/rental-post-details-modal';
 import { ActiveFilters } from '@/features/marketplace/components/active-filters';
-import { useSession } from 'next-auth/react';
 import { RentalPostCardSkeleton } from '@/components/shared/skeletons/rental-post-card.skeleton';
 import { useViewMode, useSetViewMode } from '@/stores/card-view-mode.store';
 import dynamic from 'next/dynamic';
 import { api } from '../../../../convex/_generated/api';
 import { usePaginatedQuery } from 'convex/react';
 import { Doc } from '../../../../convex/_generated/dataModel';
-import { useProgress } from '@bprogress/next';
 const RentalPostCard = dynamic(
   () => import('@/features/rental/components/rental-post-card').then((mod) => mod.RentalPostCard),
   {
@@ -69,8 +67,6 @@ const chainFilters = [
 ];
 
 export default function MarketplacePage() {
-  const { data: session } = useSession();
-
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedRentalPost, setSelectedRentalPost] = useState<Doc<'rentalposts'> | null>(null);
 
@@ -93,8 +89,8 @@ export default function MarketplacePage() {
 
   const {
     results: rentalPosts,
-    status,
-    loadMore,
+    // status,
+    // loadMore,
   } = usePaginatedQuery(
     api.rentalpost.getRentalPosts,
     {},
@@ -136,7 +132,6 @@ export default function MarketplacePage() {
       selectedFilters.some((filter) => {
         if (filter === 'AVAILABLE') return post.status === 'AVAILABLE';
         if (filter === 'RENTED') return post.status === 'RENTED';
-        if (filter === 'DELISTED') return post.status === 'DELISTED';
 
         if (filter === 'art') return post.category === 'art';
         if (filter === 'gaming') return post.category === 'gaming';
@@ -288,7 +283,6 @@ export default function MarketplacePage() {
         <RentalPostDetailsModal
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
-          session={session}
           selectedRentalPost={selectedRentalPost}
         />
       )}

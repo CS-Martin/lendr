@@ -17,13 +17,13 @@ import { api } from '../../../../convex/_generated/api';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 
-interface RentalPostProps {
+interface RentalPostCardProps {
   post: Doc<'rentalposts'>;
   viewMode: 'grid' | 'list';
   onViewRentalPost: (e: React.MouseEvent) => void;
 }
 
-export const RentalPostCard = ({ post, viewMode, onViewRentalPost }: RentalPostProps) => {
+export const RentalPostCard = ({ post, viewMode, onViewRentalPost }: RentalPostCardProps) => {
   const router = useRouter();
   const { data: session } = useSession();
   const deleteRentalPost = useMutation(api.rentalpost.deleteRentalPost);
@@ -138,9 +138,11 @@ export const RentalPostCard = ({ post, viewMode, onViewRentalPost }: RentalPostP
                 initial={{ x: -50, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
                 transition={{ delay: 0.2 }}>
-                <Badge className={`${post.isActive ? 'bg-green-500' : 'bg-red-500'} shadow-lg`}>
-                  {post.isActive ? 'Available' : 'Locked'}
-                </Badge>
+                {post.status === 'AVAILABLE' ? (
+                  <Badge className='bg-green-500 shadow-lg'>Available</Badge>
+                ) : (
+                  <Badge className='bg-red-500 shadow-lg'>Rented</Badge>
+                )}
               </motion.div>
               <motion.div
                 initial={{ x: -50, opacity: 0 }}
@@ -224,7 +226,7 @@ export const RentalPostCard = ({ post, viewMode, onViewRentalPost }: RentalPostP
         </div>
 
         {/* If user is not the poster */}
-        {viewMode === 'grid' && post.posterAddress !== session?.user?.address && (
+        {viewMode === 'grid' && post.posterAddress !== session?.user?.address && post.status === 'AVAILABLE' && (
           <div className='absolute -translate-y-0 group-hover:-translate-y-16 w-full p-4 transition-all duration-500'>
             <motion.div
               whileHover={{ scale: 1.02 }}
@@ -234,7 +236,7 @@ export const RentalPostCard = ({ post, viewMode, onViewRentalPost }: RentalPostP
               transition={{ delay: 0.9 }}>
               <LendrButton
                 className='w-full overflow-hidden rounded-md'
-                disabled={!post.isActive}
+                disabled={post.status !== 'AVAILABLE'}
                 onClick={(e) => {
                   e.stopPropagation();
 
@@ -251,7 +253,7 @@ export const RentalPostCard = ({ post, viewMode, onViewRentalPost }: RentalPostP
                   whileHover={{ x: '100%' }}
                   transition={{ duration: 0.6 }}
                 />
-                <span className='relative z-10'>{post.isActive ? 'Place Bid' : 'Unavailable'}</span>
+                <span className='relative z-10'>{post.status === 'AVAILABLE' ? 'Place Bid' : 'Unavailable'}</span>
               </LendrButton>
             </motion.div>
           </div>
@@ -269,7 +271,7 @@ export const RentalPostCard = ({ post, viewMode, onViewRentalPost }: RentalPostP
               transition={{ delay: 0.9 }}>
               <LendrButton
                 className='w-full overflow-hidden rounded-md'
-                disabled={!post.isActive}
+                disabled={post.status !== 'AVAILABLE'}
                 onClick={(e) => e.stopPropagation()}
                 link={`/bidding/${post._id}`}>
                 <motion.div
@@ -278,7 +280,7 @@ export const RentalPostCard = ({ post, viewMode, onViewRentalPost }: RentalPostP
                   whileHover={{ x: '100%' }}
                   transition={{ duration: 0.6 }}
                 />
-                <span className='relative z-10'>{post.isActive ? 'Manage Bids' : 'Unavailable'}</span>
+                <span className='relative z-10'>{post.status === 'AVAILABLE' ? 'Manage Bids' : 'Unavailable'}</span>
               </LendrButton>
             </motion.div>
 
@@ -292,7 +294,7 @@ export const RentalPostCard = ({ post, viewMode, onViewRentalPost }: RentalPostP
               onClick={(e) => e.stopPropagation()}>
               <Button
                 className='w-full overflow-hidden rounded-md bg-red-500 hover:bg-red-600'
-                disabled={!post.isActive}
+                disabled={post.status !== 'AVAILABLE'}
                 onClick={(e) => {
                   e.stopPropagation();
                   deleteRentalPost({ id: post._id as Id<'rentalposts'> });

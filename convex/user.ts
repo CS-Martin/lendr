@@ -88,11 +88,14 @@ export const getDashboardAnalytics = query({
       .withIndex('by_posterAddress', (q) => q.eq('posterAddress', address))
       .collect();
 
-    const activeRentalPosts = userRentalPosts.filter((post) => post.isActive).length;
+    const activeRentalPosts = userRentalPosts.filter((post) => post.status === 'AVAILABLE').length;
     const totalRents = userRentalPosts.filter((post) => post.status === 'RENTED').length;
 
     // This is a simplified calculation. A real implementation would need to sum up actual rental payments.
-    const totalEarnings = userRentalPosts.reduce((acc, post) => acc + (post.status === 'RENTED' ? post.collateral : 0), 0);
+    const totalEarnings = userRentalPosts.reduce(
+      (acc, post) => acc + (post.status === 'RENTED' ? post.collateral : 0),
+      0,
+    );
 
     return {
       totalEarnings,

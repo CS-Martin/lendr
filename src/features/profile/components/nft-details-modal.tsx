@@ -1,13 +1,10 @@
 'use client';
 
-import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Separator } from '@/components/ui/separator';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ExternalLink, Copy, Hash, FileText, ImageIcon, Link, Clock, Loader2 } from 'lucide-react';
-import Image from 'next/image';
+import { FileText } from 'lucide-react';
 import { Session } from 'next-auth';
 import { OwnedNft } from 'alchemy-sdk';
 import { ImageSection } from '@/components/shared/nft-components/image-section';
@@ -28,19 +25,6 @@ interface NFTDetailsModalProps {
 
 // TODO: Refactor this component using shared components in @/components/shared/modal
 export const NFTDetailsModal = ({ nft, isOpen, onClose, session, profileAddress }: NFTDetailsModalProps) => {
-  const [imageLoading, setImageLoading] = useState(true);
-  const [copiedAddress, setCopiedAddress] = useState(false);
-
-  const copyToClipboard = async (text: string) => {
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopiedAddress(true);
-      setTimeout(() => setCopiedAddress(false), 2000);
-    } catch (err) {
-      console.error('Failed to copy: ', err);
-    }
-  };
-
   return (
     <Dialog
       open={isOpen}
@@ -72,7 +56,7 @@ export const NFTDetailsModal = ({ nft, isOpen, onClose, session, profileAddress 
                   animate={{ x: 0, opacity: 1 }}
                   transition={{ delay: 0.2 }}
                   className='space-y-4'>
-                  <ImageSection nftMetadata={nft} />
+                  <ImageSection nft={nft} />
 
                   {nft.raw?.tokenUri && (
                     <>
@@ -103,18 +87,18 @@ export const NFTDetailsModal = ({ nft, isOpen, onClose, session, profileAddress 
                   </div>
 
                   <Separator className='bg-gray-700/50' />
-                  <TokenDetails nftMetadata={nft} />
+                  <TokenDetails nft={nft} />
 
                   <Separator className='bg-gray-700/50' />
-                  <ContractInfo nftMetadata={nft} />
+                  <ContractInfo nft={nft} />
 
                   <Separator className='bg-gray-700/50' />
-                  <TimelineInfo nftMetadata={nft} />
+                  <TimelineInfo nft={nft} />
 
                   {nft.raw?.metadata?.attributes && nft.raw.metadata.attributes.length > 0 && (
                     <>
                       <Separator className='bg-gray-700/50' />
-                      <AttributesSection attributes={nft.raw.metadata.attributes} />
+                      <AttributesSection nftMetadata={nft.raw.metadata} />
                     </>
                   )}
                 </motion.div>

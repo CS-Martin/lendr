@@ -1,9 +1,9 @@
 import { motion } from 'framer-motion';
 import { AlertTriangle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { NftMetadata } from 'alchemy-sdk';
+import { NftContractForNft } from 'alchemy-sdk';
 
-export const SpamWarning = ({ nftMetadata }: { nftMetadata: NftMetadata }) => (
+export const SpamWarning = ({ nftContract }: { nftContract: NftContractForNft }) => (
   <motion.div
     initial={{ opacity: 0, y: -10 }}
     animate={{ opacity: 1, y: 0 }}
@@ -15,11 +15,11 @@ export const SpamWarning = ({ nftMetadata }: { nftMetadata: NftMetadata }) => (
       <p className='text-red-400 text-sm mt-1'>
         This NFT has been flagged as potential spam. Be cautious when interacting with it.
       </p>
-      {nftMetadata.contract.spamClassifications?.length > 0 && (
+      {nftContract.spamClassifications?.length > 0 && (
         <div className='mt-2'>
           <span className='text-xs text-red-400'>Classifications:</span>
           <div className='flex flex-wrap gap-1 mt-1'>
-            {nftMetadata.contract.spamClassifications.map((classification: string, index: number) => (
+            {nftContract.spamClassifications.map((classification: string, index: number) => (
               <Badge
                 key={index}
                 variant='outline'

@@ -2,8 +2,9 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Timer } from 'lucide-react';
 import LendrButton from '@/components/shared/lendr-btn';
 import { CountdownTimer } from '@/features/marketplace/components/countdown-timer';
+import { Doc } from '@convex/_generated/dataModel';
 
-export const BiddingSection = ({ rentalPost }: { rentalPost: any }) => {
+export const BiddingSection = ({ rentalPost }: { rentalPost: Doc<'rentalposts'> }) => {
   if (!rentalPost?.isBiddable || !rentalPost.biddingEndTime) return null;
 
   return (

@@ -1,30 +1,24 @@
 'use client';
 
-import { useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useQuery } from 'convex/react';
 import { api } from '@convex/_generated/api';
-import { Doc } from '@convex/_generated/dataModel';
-import NftCard from './nft-card';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
-import Link from 'next/link';
 import { RentalPostCard } from '@/features/rental/components/rental-post-card';
 import { NFTCardSkeleton } from '@/components/shared/skeletons/nft-card';
+import { RentalPostDetailsModal } from '@/features/marketplace/components/rental-post-details-modal';
+import { useState } from 'react';
+import { Doc } from '@convex/_generated/dataModel';
 
 const MyListingsSection = () => {
-  const [selectedPost, setSelectedPost] = useState<Doc<'rentalposts'> | null>(null);
   const { data: session } = useSession();
+
   const address = session?.user?.address || '';
   const ownedPosts = useQuery(api.rentalpost.getOwnedRentalPosts, { ownerAddress: address });
 
-  const handleManageBids = (post: Doc<'rentalposts'>) => {
-    setSelectedPost(post);
-  };
-
-  const handleCloseModal = () => {
-    setSelectedPost(null);
-  };
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedRentalPost, setSelectedRentalPost] = useState<Doc<'rentalposts'> | null>(null);
 
   return (
     <div>
@@ -49,11 +43,23 @@ const MyListingsSection = () => {
               key={index}
               post={post}
               viewMode='grid'
-              onViewRentalPost={() => {}}
+              onViewRentalPost={() => {
+                setSelectedRentalPost(post);
+                setIsModalOpen(true);
+              }}
             />
           ))
         )}
       </div>
+
+      {/* Rental Post Details Modal */}
+      {selectedRentalPost && isModalOpen && (
+        <RentalPostDetailsModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          selectedRentalPost={selectedRentalPost}
+        />
+      )}
     </div>
   );
 };

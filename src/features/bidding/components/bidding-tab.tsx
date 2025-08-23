@@ -11,52 +11,82 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { useSession } from 'next-auth/react';
 import { api } from '@convex/_generated/api';
-import { formatDuration } from '@/lib/utils';
+import { formatDuration, truncateText } from '@/lib/utils';
 import { useMemo } from 'react';
 
-type BiddingTabProps = {
+interface BiddingStatusProps {
   rentalPost: Doc<'rentalposts'>;
-};
+  bids: Doc<'bids'>[];
+}
 
-function BiddingStatus({ rentalPost, bids }: { rentalPost: Doc<'rentalposts'>; bids: any[] }) {
-  // Calculate highest total value instead of highest hourly rate
-  const highestTotalValue =
-    bids.length > 0 ? Math.max(...bids.map((bid) => bid.bidAmount * bid.rentalDuration)) : rentalPost.hourlyRate; // Fallback to hourly rate if no bids
+function BiddingStatus({ rentalPost, bids }: BiddingStatusProps) {
+  // Calculate highest total value (bidAmount * rentalDuration + collateral)
+  const highestTotalBid =
+    bids.length > 0 ? bids.reduce((max, bid) => (bid.totalBidAmount > max.totalBidAmount ? bid : max), bids[0]) : null;
 
-  const highestHourlyRate = bids.length > 0 ? Math.max(...bids.map((bid) => bid.bidAmount)) : rentalPost.hourlyRate;
+  const highestHourlyBid =
+    bids.length > 0 ? bids.reduce((max, bid) => (bid.bidAmount > max.bidAmount ? bid : max), bids[0]) : null;
 
   const totalBids = bids.length;
   const uniqueBidders = new Set(bids.map((bid) => bid.bidderAddress)).size;
 
+  // Format ETH values consistently
+  const formatEth = (value: number) => value.toFixed(4);
+
   return (
     <Card className='bg-slate-900/50 border-slate-800'>
       <CardContent className='p-6'>
-        <div className='grid grid-cols-3 gap-6 text-center'>
-          <div>
-            <div className='text-slate-400 text-sm mb-1'>Starting Price</div>
-            <div className='text-2xl font-bold text-slate-300'>{rentalPost.hourlyRate} ETH</div>
-            <div className='text-slate-400 text-sm'>per hour</div>
+        <div className='grid grid-cols-2 md:grid-cols-2 gap-5 text-center'>
+          {/* Starting Price */}
+          <div className='space-y-1'>
+            <div className='text-slate-400 text-sm'>Starting Price</div>
+            <div className='text-xl font-bold text-slate-300'>{formatEth(rentalPost.hourlyRate)} ETH</div>
+            <div className='text-slate-500 text-xs'>per hour</div>
           </div>
-          <div>
-            <div className='text-slate-400 text-sm mb-1'>Highest Total</div>
-            <div className='text-xl font-bold text-green-400'>{highestTotalValue} ETH</div>
-            <div className='text-slate-400 text-sm'>total value</div>
+
+          {/* Highest Total Bid */}
+          <div className='space-y-1'>
+            <div className='text-slate-400 text-sm'>Highest Total</div>
+            <div className='text-xl font-bold text-green-400'>
+              {highestTotalBid ? formatEth(highestTotalBid.totalBidAmount) : formatEth(rentalPost.hourlyRate)} ETH
+            </div>
+            <div className='text-slate-500 text-xs'>
+              {highestTotalBid ? `by ${truncateText(highestTotalBid.bidderAddress)}` : 'No bids yet'}
+            </div>
           </div>
-          <div>
-            <div className='text-slate-400 text-sm mb-1'>Bids / Bidders</div>
+
+          {/* Highest Hourly Rate */}
+          <div className='space-y-1'>
+            <div className='text-slate-400 text-sm'>Highest Hourly Rate</div>
+            <div className='text-xl font-bold text-blue-400'>
+              {highestHourlyBid ? formatEth(highestHourlyBid.bidAmount) : formatEth(rentalPost.hourlyRate)} ETH
+            </div>
+            <div className='text-slate-500 text-xs'>per hour</div>
+          </div>
+
+          {/* Bids Statistics */}
+          <div className='space-y-1'>
+            <div className='text-slate-400 text-sm'>Bids / Bidders</div>
             <div className='text-xl font-bold text-orange-400'>{totalBids}</div>
-            <div className='text-slate-400 text-sm'>{uniqueBidders} bidders</div>
+            <div className='text-slate-500 text-xs'>{uniqueBidders} unique bidders</div>
           </div>
         </div>
-
-        {/* Additional info about highest hourly rate */}
-        <div className='mt-4 text-center text-slate-400 text-sm'>Highest hourly rate: {highestHourlyRate} ETH/hr</div>
       </CardContent>
     </Card>
   );
 }
 
-function BidItem({ bid, rank, isCurrentUser }: { bid: any; rank: number; isCurrentUser: boolean }) {
+function BidItem({
+  bid,
+  rank,
+  isCurrentUser,
+  collateral,
+}: {
+  bid: Doc<'bids'>;
+  rank: number;
+  isCurrentUser: boolean;
+  collateral: number;
+}) {
   const totalValue = bid.bidAmount * bid.rentalDuration;
   const hourlyRate = bid.bidAmount;
 
@@ -89,7 +119,7 @@ function BidItem({ bid, rank, isCurrentUser }: { bid: any; rank: number; isCurre
 
         {/* Total Value (Primary ranking metric) */}
         <div className='text-right'>
-          <div className='text-lg font-bold text-green-400'>{totalValue} ETH</div>
+          <div className='text-lg font-bold text-green-400'>{totalValue + collateral} ETH</div>
           <div className='text-sm text-slate-400'>total value</div>
         </div>
       </div>
@@ -134,7 +164,7 @@ function BidItem({ bid, rank, isCurrentUser }: { bid: any; rank: number; isCurre
           <Clock className='h-3 w-3 mr-1' />
           {formatDistanceToNow(new Date(bid.updatedTime), { addSuffix: true })}
         </div>
-        {bid._updatedTime !== bid._creationTime && <span>Edited</span>}
+        {bid.updatedTime !== bid._creationTime && <span>Edited</span>}
       </div>
     </div>
   );
@@ -151,7 +181,6 @@ function CurrentBids({ rentalPost }: { rentalPost: Doc<'rentalposts'> }) {
     isLoading,
   } = usePaginatedQuery(api.bids.getBidsByRentalPost, { rentalPostId: rentalPost._id }, { initialNumItems: 5 });
 
-  // Sort bids by total value (client-side)
   const sortedBids = useMemo(() => {
     return [...bids].sort((a, b) => b.bidAmount * b.rentalDuration - a.bidAmount * a.rentalDuration);
   }, [bids]);
@@ -205,6 +234,7 @@ function CurrentBids({ rentalPost }: { rentalPost: Doc<'rentalposts'> }) {
               <BidItem
                 key={bid._id}
                 bid={bid}
+                collateral={rentalPost.collateral}
                 rank={index + 1}
                 isCurrentUser={bid.bidderAddress === currentUserAddress}
               />
@@ -235,12 +265,16 @@ function CurrentBids({ rentalPost }: { rentalPost: Doc<'rentalposts'> }) {
   );
 }
 
+type BiddingTabProps = {
+  rentalPost: Doc<'rentalposts'>;
+};
+
 export function BiddingTab({ rentalPost }: BiddingTabProps) {
   // For the bidding status, we need all bids to calculate statistics
   const allBids = usePaginatedQuery(
     api.bids.getBidsByRentalPost,
     { rentalPostId: rentalPost._id },
-    { initialNumItems: 100 },
+    { initialNumItems: 10 },
   ).results;
 
   return (

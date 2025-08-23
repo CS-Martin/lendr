@@ -6,17 +6,15 @@ import Image from 'next/image';
 import gsap from 'gsap';
 import LendrButton from '../lendr-btn';
 import { Session } from 'next-auth';
-import { OwnedNft } from 'alchemy-sdk';
+import { Nft } from 'alchemy-sdk';
 
 interface NFTCardProps {
-  nft: OwnedNft;
+  nft: Nft;
   onListNFT?: () => void;
   onViewNFT?: () => void;
-  session: Session | null;
-  profileAddress: string;
 }
 
-export const NFTCard = ({ nft, onViewNFT, onListNFT, session, profileAddress }: NFTCardProps) => {
+export const NFTCard = ({ nft, onViewNFT, onListNFT }: NFTCardProps) => {
   const cardRef = useRef<HTMLDivElement>(null);
   const imageRef = useRef<HTMLDivElement>(null);
 

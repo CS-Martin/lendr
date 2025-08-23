@@ -33,7 +33,6 @@ interface ListNFTDrawerProps {
   isOpen: boolean;
   onClose: () => void;
   session: Session | null;
-  profileAddress: string;
 }
 
 // RentalPost Zod Schema
@@ -51,14 +50,13 @@ const listNftFormSchema = z.object({
     .max(720, 'Rental duration cannot exceed 30 days'),
   biddingStartTime: z.number().optional(),
   biddingEndTime: z.number().optional(),
-  isActive: z.boolean(),
-  status: z.enum(['AVAILABLE', 'RENTED', 'DELISTED', 'DISPUTED_FOR_LENDER', 'DISPUTED_FOR_RENTER']),
+  status: z.enum(['AVAILABLE', 'RENTED']),
   nftMetadata: z.any(),
 });
 
 type ListNftFormInputs = z.infer<typeof listNftFormSchema>;
 
-export const ListNFTDrawer = ({ nft, isOpen, onClose, session, profileAddress }: ListNFTDrawerProps) => {
+export const ListNFTDrawer = ({ nft, isOpen, onClose, session }: ListNFTDrawerProps) => {
   const { start, stop } = useProgress();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const createNft = useMutation(api.nft.createNft);
@@ -84,7 +82,6 @@ export const ListNFTDrawer = ({ nft, isOpen, onClose, session, profileAddress }:
       isBiddable: false,
       biddingStartTime: undefined,
       biddingEndTime: undefined,
-      isActive: true,
       status: 'AVAILABLE',
       nftMetadata: nft,
     },
@@ -106,35 +103,32 @@ export const ListNFTDrawer = ({ nft, isOpen, onClose, session, profileAddress }:
     try {
       start();
 
-      // Store the NFT to database
+      // Step 1: Create NFT (must succeed before rental post)
       const createdNft = await createNft({
         ownerAddress: session.user.address,
         nftContractAddress: nft.contract.address,
         nftMetadata: nft,
         isListable: true,
+      }).catch((err) => {
+        toast.error('Failed to create NFT');
+        throw err; // rethrow to stop execution
       });
 
-      // If creating nft is successful
-      if (createdNft) {
-        // Create the rental post
-        const createdRentalPost = await createRentalPost(data);
-
-        if (createdRentalPost) {
-          toast.success('Rental post created successfully');
-        }
-      } else {
+      // Step 2: Create Rental Post (only runs if NFT was created)
+      const createdRentalPost = await createRentalPost(data).catch((err) => {
         toast.error('Failed to create rental post');
+        throw err; // rethrow so outer catch handles it
+      });
 
-        throw new Error('Failed to create rental post');
+      // Success (both must succeed)
+      if (createdNft && createdRentalPost) {
+        toast.success('Rental post created successfully');
       }
     } catch (error) {
       console.error('Error creating NFT rental listing:', error);
-
-      toast.error('Failed to create rental post', {
+      toast.error('Failed to create NFT rental listing', {
         description: error instanceof Error ? error.message : 'An unknown error occurred',
       });
-
-      return;
     } finally {
       stop();
       setIsSubmitting(false);

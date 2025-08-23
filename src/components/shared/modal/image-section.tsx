@@ -2,15 +2,24 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Loader2 } from 'lucide-react';
 import Image from 'next/image';
-import { MediaInfo } from './media-info';
-import { OpenSeaMetadata } from './opensea-metadata';
+import { NftMetadata as AlchemyNftMetadata } from 'alchemy-sdk';
 
-export const ImageSection = ({ nftMetadata }: { nftMetadata: any }) => {
+export interface ExtendedNftImage {
+  originalUrl?: string;
+  pngUrl?: string;
+  cachedUrl?: string;
+  thumbnailUrl?: string;
+  contentType?: string;
+  size?: number;
+}
+
+// Instead of extending AlchemyNftMetadata, create a new interface
+export interface ExtendedNftMetadata extends Omit<AlchemyNftMetadata, 'image'> {
+  image?: string | ExtendedNftImage;
+}
+
+export const ImageSection = ({ nftMetadata }: { nftMetadata: ExtendedNftMetadata }) => {
   const [imageLoading, setImageLoading] = useState(true);
-
-  const handleLoad = () => {
-    setImageLoading(false);
-  };
 
   return (
     <motion.div
@@ -38,9 +47,8 @@ export const ImageSection = ({ nftMetadata }: { nftMetadata: any }) => {
         ) : (
           <Image
             src={
-              nftMetadata.image?.cachedUrl ||
-              nftMetadata.image?.originalUrl ||
-              nftMetadata.image?.pngUrl ||
+              (nftMetadata.image as ExtendedNftImage)?.originalUrl ||
+              (nftMetadata.image as ExtendedNftImage)?.pngUrl ||
               nftMetadata.contract.openSeaMetadata?.imageUrl ||
               '/placeholder.svg'
             }

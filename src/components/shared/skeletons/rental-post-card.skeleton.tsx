@@ -1,5 +1,4 @@
 import { Skeleton } from '@/components/ui/skeleton';
-import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 
 export const RentalPostCardSkeleton = ({ viewMode }: { viewMode: 'grid' | 'list' }) => {
