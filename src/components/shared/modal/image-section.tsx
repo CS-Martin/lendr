@@ -33,7 +33,6 @@ export const ImageSection = ({ nftMetadata }: { nftMetadata: NftMetadata }) => {
         ) : (
           <Image
             src={
-              nftMetadata.image?.cachedUrl ||
               nftMetadata.image?.originalUrl ||
               nftMetadata.image?.pngUrl ||
               nftMetadata.contract.openSeaMetadata?.imageUrl ||
