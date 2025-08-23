@@ -37,7 +37,7 @@ const MyListingsSection = () => {
               key={index}
               post={post}
               viewMode='grid'
-              onViewRentalPost={() => { }}
+              onViewRentalPost={() => {}}
             />
           ))
         )}

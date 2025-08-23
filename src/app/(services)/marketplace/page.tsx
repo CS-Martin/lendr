@@ -68,8 +68,6 @@ const chainFilters = [
 ];
 
 export default function MarketplacePage() {
-  const { data: session } = useSession();
-
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedRentalPost, setSelectedRentalPost] = useState<Doc<'rentalposts'> | null>(null);
 
