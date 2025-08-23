@@ -19,6 +19,7 @@ import type * as escrowSmartContract from "../escrowSmartContract.js";
 import type * as escrowSmartContractStep from "../escrowSmartContractStep.js";
 import type * as messages from "../messages.js";
 import type * as nft from "../nft.js";
+import type * as presence from "../presence.js";
 import type * as rentalpost from "../rentalpost.js";
 import type * as user from "../user.js";
 
@@ -37,6 +38,7 @@ declare const fullApi: ApiFromModules<{
   escrowSmartContractStep: typeof escrowSmartContractStep;
   messages: typeof messages;
   nft: typeof nft;
+  presence: typeof presence;
   rentalpost: typeof rentalpost;
   user: typeof user;
 }>;

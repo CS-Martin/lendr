@@ -9,9 +9,25 @@ import { ChatSheet } from '@/features/chat/components/chat-sheet';
 import { WalletConnectButton } from '../wallet-connect-btn';
 import LendrButton from '../lendr-btn';
 import { useChatSheetStore } from '@/stores/chat-sheet.store';
+import { useEffect } from 'react';
+import { useAccount } from 'wagmi';
+import { useMutation } from 'convex/react';
+import { api } from '@convex/_generated/api';
 
 export default function NavBar() {
   const { openChatSheet } = useChatSheetStore();
+  const { address } = useAccount();
+  const heartbeat = useMutation(api.presence.heartbeat);
+
+  useEffect(() => {
+    if (!address) return;
+
+    const interval = setInterval(() => {
+      heartbeat({ address });
+    }, 30000); // 30 seconds
+
+    return () => clearInterval(interval);
+  }, [address, heartbeat]);
 
   return (
     <nav
@@ -70,7 +86,10 @@ export default function NavBar() {
         </div>
 
         <div className='relative z-50 flex items-center gap-4'>
-          <LendrButton variant={'ghost'} onClick={() => openChatSheet()} className='text-white hover:text-lendr-400 hover:bg-slate-800 transition-colors duration-300 border border-slate-800'>
+          <LendrButton
+            variant={'ghost'}
+            onClick={() => openChatSheet()}
+            className='text-white hover:text-lendr-400 hover:bg-slate-800 transition-colors duration-300 border border-slate-800'>
             <MessageCircle className='w-5 h-5 mr-2 text-slate-400' />
             <span className='text-slate-400'>Messages</span>
           </LendrButton>

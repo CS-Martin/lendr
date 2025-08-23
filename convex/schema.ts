@@ -7,6 +7,7 @@ import { escrowSmartContract } from './escrowSmartContract';
 import { escrowSmartContractStep } from './escrowSmartContractStep';
 import { conversations } from './conversations';
 import { messages } from './messages';
+import { presence } from './presence';
 
 export default defineSchema({
   users: user,
@@ -17,4 +18,5 @@ export default defineSchema({
   escrowSmartContractSteps: escrowSmartContractStep,
   conversations: conversations,
   messages: messages,
+  presence: presence,
 });

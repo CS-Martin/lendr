@@ -1,5 +1,7 @@
+'use client';
+
 import { Footer } from '@/components/shared/layout/footer';
-import NavBar from '@/components/shared/home-navbar';
+import NavBar from '@/components/shared/layout/home-navbar';
 import { ReactNode } from 'react';
 
 interface HomeLayoutProps {

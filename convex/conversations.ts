@@ -95,3 +95,36 @@ export const getConversationsWithParticipantDetails = query({
     return conversationsWithParticipantDetails.filter(Boolean);
   },
 });
+
+export const getConversationWithParticipantDetails = query({
+  args: { conversationId: v.id('conversations'), address: v.string() },
+  handler: async (ctx, args) => {
+    const user = await ctx.db
+      .query('users')
+      .withIndex('by_address', (q) => q.eq('address', args.address))
+      .unique();
+
+    if (!user) {
+      return null;
+    }
+
+    const conversation = await ctx.db.get(args.conversationId);
+
+    if (!conversation) {
+      return null;
+    }
+
+    const participantId = conversation.participants.find((id) => id !== user._id);
+
+    if (!participantId) {
+      return null;
+    }
+
+    const participant = await ctx.db.get(participantId);
+
+    return {
+      ...conversation,
+      participant,
+    };
+  },
+});
