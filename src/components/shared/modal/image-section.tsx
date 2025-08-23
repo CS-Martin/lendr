@@ -33,8 +33,9 @@ export const ImageSection = ({ nftMetadata }: { nftMetadata: NftMetadata }) => {
         ) : (
           <Image
             src={
-              nftMetadata.image?.originalUrl ||
-              nftMetadata.image?.pngUrl ||
+              (typeof nftMetadata.image === 'object' && nftMetadata.image?.originalUrl) ||
+              (typeof nftMetadata.image === 'object' && nftMetadata.image?.pngUrl) ||
+              (typeof nftMetadata.image === 'string' ? nftMetadata.image : '') ||
               nftMetadata.contract.openSeaMetadata?.imageUrl ||
               '/placeholder.svg'
             }
