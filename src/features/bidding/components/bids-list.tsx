@@ -8,7 +8,6 @@ import { api } from '@convex/_generated/api';
 import BidCard from './bid-card';
 
 const BidsList = ({ post }: { post: Doc<'rentalposts'> }) => {
-
   const { results, status, loadMore } = usePaginatedQuery(
     api.bids.getBidsByRentalPost,
     { rentalPostId: post._id },

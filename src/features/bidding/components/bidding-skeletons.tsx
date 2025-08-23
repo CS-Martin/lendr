@@ -49,24 +49,24 @@ export const BiddingPageSkeleton = () => (
 
 export function BidFormSkeleton() {
   return (
-    <Card className="bg-slate-900/50 border-slate-800">
+    <Card className='bg-slate-900/50 border-slate-800'>
       <CardHeader>
-        <Skeleton className="h-6 w-40" />
+        <Skeleton className='h-6 w-40' />
       </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="space-y-2">
-          <Skeleton className="h-4 w-32" />
-          <Skeleton className="h-10 w-full" />
+      <CardContent className='space-y-4'>
+        <div className='space-y-2'>
+          <Skeleton className='h-4 w-32' />
+          <Skeleton className='h-10 w-full' />
         </div>
-        <div className="space-y-2">
-          <Skeleton className="h-4 w-40" />
-          <Skeleton className="h-4 w-full" />
+        <div className='space-y-2'>
+          <Skeleton className='h-4 w-40' />
+          <Skeleton className='h-4 w-full' />
         </div>
-        <div className="space-y-2">
-          <Skeleton className="h-4 w-48" />
-          <Skeleton className="h-20 w-full" />
+        <div className='space-y-2'>
+          <Skeleton className='h-4 w-48' />
+          <Skeleton className='h-20 w-full' />
         </div>
-        <Skeleton className="h-10 w-full" />
+        <Skeleton className='h-10 w-full' />
       </CardContent>
     </Card>
   );

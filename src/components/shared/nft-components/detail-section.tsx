@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+import { ReactNode, ComponentType, SVGProps } from 'react';
 
 export const DetailSection = ({
   title,
@@ -7,7 +7,7 @@ export const DetailSection = ({
   children,
 }: {
   title: string;
-  icon: any;
+  icon: ComponentType<SVGProps<SVGSVGElement>>;
   iconColor?: string;
   children: ReactNode;
 }) => (

@@ -1,8 +1,6 @@
 'use client';
 
 import { useProgress } from '@bprogress/next';
-import { motion } from 'framer-motion';
-import { Coins, Zap, TrendingUp } from 'lucide-react';
 import { useEffect } from 'react';
 
 export default function Loading() {

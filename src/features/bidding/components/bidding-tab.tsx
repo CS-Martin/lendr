@@ -21,13 +21,11 @@ interface BiddingStatusProps {
 
 function BiddingStatus({ rentalPost, bids }: BiddingStatusProps) {
   // Calculate highest total value (bidAmount * rentalDuration + collateral)
-  const highestTotalBid = bids.length > 0
-    ? bids.reduce((max, bid) => bid.totalBidAmount > max.totalBidAmount ? bid : max, bids[0])
-    : null;
+  const highestTotalBid =
+    bids.length > 0 ? bids.reduce((max, bid) => (bid.totalBidAmount > max.totalBidAmount ? bid : max), bids[0]) : null;
 
-  const highestHourlyBid = bids.length > 0
-    ? bids.reduce((max, bid) => bid.bidAmount > max.bidAmount ? bid : max, bids[0])
-    : null;
+  const highestHourlyBid =
+    bids.length > 0 ? bids.reduce((max, bid) => (bid.bidAmount > max.bidAmount ? bid : max), bids[0]) : null;
 
   const totalBids = bids.length;
   const uniqueBidders = new Set(bids.map((bid) => bid.bidderAddress)).size;
@@ -78,27 +76,38 @@ function BiddingStatus({ rentalPost, bids }: BiddingStatusProps) {
   );
 }
 
-
-function BidItem({ bid, rank, isCurrentUser, collateral }: { bid: any; rank: number; isCurrentUser: boolean; collateral: number }) {
+function BidItem({
+  bid,
+  rank,
+  isCurrentUser,
+  collateral,
+}: {
+  bid: any;
+  rank: number;
+  isCurrentUser: boolean;
+  collateral: number;
+}) {
   const totalValue = bid.bidAmount * bid.rentalDuration;
   const hourlyRate = bid.bidAmount;
 
   return (
     <div
-      className={`p-4 rounded-lg border ${isCurrentUser ? 'bg-blue-900/20 border-blue-700/50' : 'bg-slate-800/30 border-slate-700/50'
-        }`}>
+      className={`p-4 rounded-lg border ${
+        isCurrentUser ? 'bg-blue-900/20 border-blue-700/50' : 'bg-slate-800/30 border-slate-700/50'
+      }`}>
       <div className='flex justify-between items-start mb-2'>
         <div className='flex items-center space-x-2'>
           {/* Ranking badge based on total value */}
           <div
-            className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${rank === 1
-              ? 'bg-yellow-500 text-black'
-              : rank === 2
-                ? 'bg-gray-400 text-black'
-                : rank === 3
-                  ? 'bg-amber-700 text-white'
-                  : 'bg-slate-700 text-slate-300'
-              }`}>
+            className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
+              rank === 1
+                ? 'bg-yellow-500 text-black'
+                : rank === 2
+                  ? 'bg-gray-400 text-black'
+                  : rank === 3
+                    ? 'bg-amber-700 text-white'
+                    : 'bg-slate-700 text-slate-300'
+            }`}>
             #{rank}
           </div>
 
@@ -173,11 +182,8 @@ function CurrentBids({ rentalPost }: { rentalPost: Doc<'rentalposts'> }) {
   } = usePaginatedQuery(api.bids.getBidsByRentalPost, { rentalPostId: rentalPost._id }, { initialNumItems: 5 });
 
   const sortedBids = useMemo(() => {
-    return [...bids].sort(
-      (a, b) => b.bidAmount * b.rentalDuration - a.bidAmount * a.rentalDuration
-    );
+    return [...bids].sort((a, b) => b.bidAmount * b.rentalDuration - a.bidAmount * a.rentalDuration);
   }, [bids]);
-
 
   if (isLoading && bids.length === 0) {
     return (

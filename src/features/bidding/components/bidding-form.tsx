@@ -19,7 +19,11 @@ import { api } from '@convex/_generated/api';
 import { Doc } from '@convex/_generated/dataModel';
 import { formatDuration } from '@/lib/utils';
 import { bidFormSchema, BidFormValues } from '@/features/bidding/schemas/bid-schemas';
-import { BIDDING_CONSTANTS, calculateBidCosts, validateBidAgainstHighestBid } from '@/features/bidding/utils/bidding-utils';
+import {
+  BIDDING_CONSTANTS,
+  calculateBidCosts,
+  validateBidAgainstHighestBid,
+} from '@/features/bidding/utils/bidding-utils';
 import { BidFormSkeleton } from '@/features/bidding/components/bidding-skeletons';
 import { BidCostBreakdown } from '@/features/bidding/components/bid-cost-breakdown';
 
@@ -36,13 +40,10 @@ export function BiddingForm({ rentalPost }: BiddingFormProps) {
   // Convex queries
   const userBid = useQuery(
     api.bids.getUserBidForRentalPost,
-    userAddress ? { rentalPostId: rentalPost._id, bidderAddress: userAddress } : 'skip'
+    userAddress ? { rentalPostId: rentalPost._id, bidderAddress: userAddress } : 'skip',
   );
 
-  const highestBidData = useQuery(
-    api.bids.getHighestBid,
-    { rentalPostId: rentalPost._id }
-  );
+  const highestBidData = useQuery(api.bids.getHighestBid, { rentalPostId: rentalPost._id });
 
   const placeBidMutation = useMutation(api.bids.placeBid);
 
@@ -58,10 +59,7 @@ export function BiddingForm({ rentalPost }: BiddingFormProps) {
   } = useForm<BidFormValues>({
     resolver: zodResolver(bidFormSchema),
     defaultValues: {
-      bidAmount: Math.max(
-        rentalPost.hourlyRate,
-        highestBidData?.bidAmount || rentalPost.hourlyRate
-      ),
+      bidAmount: Math.max(rentalPost.hourlyRate, highestBidData?.bidAmount || rentalPost.hourlyRate),
       rentalDuration: userBid?.rentalDuration || 12,
       message: userBid?.message || '',
     },
@@ -84,11 +82,7 @@ export function BiddingForm({ rentalPost }: BiddingFormProps) {
   }, [userBid, reset]);
 
   // Calculate costs
-  const costBreakdown = calculateBidCosts(
-    bidAmount,
-    rentalDuration,
-    rentalPost.collateral
-  );
+  const costBreakdown = calculateBidCosts(bidAmount, rentalDuration, rentalPost.collateral);
 
   const handleBidSubmission = async (formData: BidFormValues) => {
     if (!userAddress) {
@@ -102,7 +96,7 @@ export function BiddingForm({ rentalPost }: BiddingFormProps) {
       formData.rentalDuration,
       rentalPost.collateral,
       highestBidData ?? null,
-      rentalPost
+      rentalPost,
     );
 
     if (!validation.isValid) {
@@ -125,21 +119,16 @@ export function BiddingForm({ rentalPost }: BiddingFormProps) {
       toast.success(
         <div>
           <strong>{userBid ? 'Bid updated!' : 'Bid placed!'}</strong>
-          <div>
-            {userBid
-              ? 'Your bid has been successfully updated.'
-              : 'Your bid has been placed successfully.'
-            }
-          </div>
-        </div>
+          <div>{userBid ? 'Your bid has been successfully updated.' : 'Your bid has been placed successfully.'}</div>
+        </div>,
       );
     } catch (error) {
       console.error('Error placing bid:', error);
       toast.error(
-        <div className="text-red-500">
+        <div className='text-red-500'>
           <strong>Bid Failed</strong>
           <div>Failed to place bid. Please try again.</div>
-        </div>
+        </div>,
       );
     } finally {
       setIsSubmitting(false);
@@ -158,34 +147,38 @@ export function BiddingForm({ rentalPost }: BiddingFormProps) {
   };
 
   return (
-    <Card className="bg-slate-900/50 border-slate-800">
+    <Card className='bg-slate-900/50 border-slate-800'>
       <CardHeader>
-        <CardTitle className="text-white flex items-center space-x-2">
-          <Gavel className="w-5 h-5 text-orange-400" />
+        <CardTitle className='text-white flex items-center space-x-2'>
+          <Gavel className='w-5 h-5 text-orange-400' />
           <span>{userBid ? 'Edit Your Bid' : 'Place Your Bid'}</span>
         </CardTitle>
       </CardHeader>
 
       <CardContent>
-        <form onSubmit={handleSubmit(handleBidSubmission)} className="space-y-4">
+        <form
+          onSubmit={handleSubmit(handleBidSubmission)}
+          className='space-y-4'>
           {/* Bid Amount Input */}
-          <div className="space-y-2">
-            <Label htmlFor="bidAmount" className="text-slate-300">
+          <div className='space-y-2'>
+            <Label
+              htmlFor='bidAmount'
+              className='text-slate-300'>
               Bid Amount (ETH per hour)
             </Label>
             <Input
-              id="bidAmount"
-              type="number"
-              step="0.0001"
+              id='bidAmount'
+              type='number'
+              step='0.0001'
               min={getMinimumBidAmount()}
-              className="bg-slate-800 border-slate-700 text-white"
+              className='bg-slate-800 border-slate-700 text-white'
               {...register('bidAmount', { valueAsNumber: true })}
             />
 
             {errors.bidAmount ? (
-              <p className="text-sm text-red-400">{errors.bidAmount.message}</p>
+              <p className='text-sm text-red-400'>{errors.bidAmount.message}</p>
             ) : (
-              <div className="text-sm text-slate-400 space-y-1">
+              <div className='text-sm text-slate-400 space-y-1'>
                 {highestBidData ? (
                   <>
                     <p>Current highest bid: {highestBidData.bidAmount} ETH/hour</p>
@@ -199,37 +192,33 @@ export function BiddingForm({ rentalPost }: BiddingFormProps) {
           </div>
 
           {/* Rental Duration Slider */}
-          <div className="space-y-2">
-            <Label className="text-slate-300">
-              Rental Duration: {formatDuration(rentalDuration)} hour(s)
-            </Label>
+          <div className='space-y-2'>
+            <Label className='text-slate-300'>Rental Duration: {formatDuration(rentalDuration)} hour(s)</Label>
             <Slider
               value={[rentalDuration]}
               onValueChange={([value]) => setValue('rentalDuration', value)}
               max={rentalPost.rentalDuration || BIDDING_CONSTANTS.MAX_RENTAL_DURATION}
               min={BIDDING_CONSTANTS.MIN_RENTAL_DURATION}
               step={1}
-              className="mt-2"
+              className='mt-2'
             />
-            {errors.rentalDuration && (
-              <p className="text-sm text-red-400">{errors.rentalDuration.message}</p>
-            )}
+            {errors.rentalDuration && <p className='text-sm text-red-400'>{errors.rentalDuration.message}</p>}
           </div>
 
           {/* Optional Message */}
-          <div className="space-y-2">
-            <Label htmlFor="message" className="text-slate-300">
+          <div className='space-y-2'>
+            <Label
+              htmlFor='message'
+              className='text-slate-300'>
               Message to Owner (Optional)
             </Label>
             <Textarea
-              id="message"
-              placeholder="Why should you be chosen?"
-              className="bg-slate-800 border-slate-700 text-white"
+              id='message'
+              placeholder='Why should you be chosen?'
+              className='bg-slate-800 border-slate-700 text-white'
               {...register('message')}
             />
-            {errors.message && (
-              <p className="text-sm text-red-400">{errors.message.message}</p>
-            )}
+            {errors.message && <p className='text-sm text-red-400'>{errors.message.message}</p>}
           </div>
 
           {/* Cost Breakdown */}
@@ -242,25 +231,24 @@ export function BiddingForm({ rentalPost }: BiddingFormProps) {
 
           {/* Submit Button */}
           <LendrButton
-            type="submit"
-            className="w-full bg-gradient-to-r border-0"
-            disabled={isSubmitting || !isValid}
-          >
+            type='submit'
+            className='w-full bg-gradient-to-r border-0'
+            disabled={isSubmitting || !isValid}>
             {isSubmitting ? (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Loader2 className='mr-2 h-4 w-4 animate-spin' />
                 {userBid ? 'Updating...' : 'Placing...'}
               </>
             ) : (
               <>
-                <Edit3 className="mr-2 h-4 w-4" />
+                <Edit3 className='mr-2 h-4 w-4' />
                 {userBid ? 'Update Bid' : 'Place Bid'}
               </>
             )}
           </LendrButton>
 
           {userBid && (
-            <p className="text-sm text-slate-400 text-center">
+            <p className='text-sm text-slate-400 text-center'>
               You can edit your bid at any time before the auction ends.
             </p>
           )}

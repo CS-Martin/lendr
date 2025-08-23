@@ -18,7 +18,6 @@ import dynamic from 'next/dynamic';
 import { api } from '../../../../convex/_generated/api';
 import { usePaginatedQuery } from 'convex/react';
 import { Doc } from '../../../../convex/_generated/dataModel';
-import { useProgress } from '@bprogress/next';
 const RentalPostCard = dynamic(
   () => import('@/features/rental/components/rental-post-card').then((mod) => mod.RentalPostCard),
   {

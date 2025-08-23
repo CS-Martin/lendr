@@ -2,12 +2,10 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Separator } from '@/components/ui/separator';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ExternalLink, Copy, Hash, FileText, ImageIcon, Link, Clock, Loader2 } from 'lucide-react';
-import Image from 'next/image';
+import { FileText } from 'lucide-react';
 import { Session } from 'next-auth';
 import { OwnedNft } from 'alchemy-sdk';
 import { ImageSection } from '@/components/shared/nft-components/image-section';

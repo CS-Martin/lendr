@@ -125,7 +125,6 @@ export const ListNFTDrawer = ({ nft, isOpen, onClose, session, profileAddress }:
       if (createdNft && createdRentalPost) {
         toast.success('Rental post created successfully');
       }
-
     } catch (error) {
       console.error('Error creating NFT rental listing:', error);
       toast.error('Failed to create NFT rental listing', {
@@ -137,7 +136,6 @@ export const ListNFTDrawer = ({ nft, isOpen, onClose, session, profileAddress }:
       onClose();
     }
   };
-
 
   const categories = [
     'Gaming',
