@@ -3,8 +3,8 @@
 import { useQuery } from 'convex/react';
 import BiddingSidebar from '@/features/bidding/components/bidding-sidebar';
 import BidsList from '@/features/bidding/components/bids-list';
-import { Id } from '../../../../../convex/_generated/dataModel';
-import { api } from '../../../../../convex/_generated/api';
+import { Id } from '@convex/_generated/dataModel';
+import { api } from '@convex/_generated/api';
 import { useParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import NotFound from '@/app/not-found';

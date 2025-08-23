@@ -280,7 +280,7 @@ export const RentalPostCard = ({ post, viewMode, onViewRentalPost }: RentalPostC
                   whileHover={{ x: '100%' }}
                   transition={{ duration: 0.6 }}
                 />
-                <span className='relative z-10'>{post.status === 'AVAILABLE' ? 'Manage Bids' : 'Unavailable'}</span>
+                <span className='relative z-10'>Manage Bids</span>
               </LendrButton>
             </motion.div>
 

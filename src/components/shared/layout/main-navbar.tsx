@@ -3,11 +3,16 @@
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import { HolographicText } from '@/components/shared/holographic-text';
-import { Zap } from 'lucide-react';
-import { WalletConnectButton } from './wallet-connect-btn';
+import { MessageCircle, Zap } from 'lucide-react';
 import Link from 'next/link';
+import { ChatSheet } from '@/features/chat/components/chat-sheet';
+import { WalletConnectButton } from '../wallet-connect-btn';
+import LendrButton from '../lendr-btn';
+import { useChatSheetStore } from '@/stores/chat-sheet.store';
 
 export default function NavBar() {
+  const { openChatSheet } = useChatSheetStore();
+
   return (
     <nav
       className={cn(
@@ -64,9 +69,15 @@ export default function NavBar() {
           </Link>
         </div>
 
-        <div className='relative z-50'>
+        <div className='relative z-50 flex items-center gap-4'>
+          <LendrButton variant={'ghost'} onClick={() => openChatSheet()} className='text-white hover:text-lendr-400 hover:bg-slate-800 transition-colors duration-300 border border-slate-800'>
+            <MessageCircle className='w-5 h-5 mr-2 text-slate-400' />
+            <span className='text-slate-400'>Messages</span>
+          </LendrButton>
           <WalletConnectButton />
         </div>
+
+        <ChatSheet />
       </div>
     </nav>
   );

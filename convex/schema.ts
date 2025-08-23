@@ -5,6 +5,8 @@ import { user } from './user';
 import { bids } from './bids';
 import { escrowSmartContract } from './escrowSmartContract';
 import { escrowSmartContractStep } from './escrowSmartContractStep';
+import { conversations } from './conversations';
+import { messages } from './messages';
 
 export default defineSchema({
   users: user,
@@ -13,4 +15,6 @@ export default defineSchema({
   bids: bids,
   escrowSmartContracts: escrowSmartContract,
   escrowSmartContractSteps: escrowSmartContractStep,
+  conversations: conversations,
+  messages: messages,
 });

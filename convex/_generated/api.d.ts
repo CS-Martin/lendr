@@ -14,8 +14,10 @@ import type {
   FunctionReference,
 } from "convex/server";
 import type * as bids from "../bids.js";
+import type * as conversations from "../conversations.js";
 import type * as escrowSmartContract from "../escrowSmartContract.js";
 import type * as escrowSmartContractStep from "../escrowSmartContractStep.js";
+import type * as messages from "../messages.js";
 import type * as nft from "../nft.js";
 import type * as rentalpost from "../rentalpost.js";
 import type * as user from "../user.js";
@@ -30,8 +32,10 @@ import type * as user from "../user.js";
  */
 declare const fullApi: ApiFromModules<{
   bids: typeof bids;
+  conversations: typeof conversations;
   escrowSmartContract: typeof escrowSmartContract;
   escrowSmartContractStep: typeof escrowSmartContractStep;
+  messages: typeof messages;
   nft: typeof nft;
   rentalpost: typeof rentalpost;
   user: typeof user;

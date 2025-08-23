@@ -1,4 +1,4 @@
-import { Footer } from '@/components/shared/footer';
+import { Footer } from '@/components/shared/layout/footer';
 import NavBar from '@/components/shared/home-navbar';
 import { ReactNode } from 'react';
 
