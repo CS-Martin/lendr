@@ -139,10 +139,11 @@ export function Message({ message, currentUser, otherParticipant, isOtherPartici
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.9 }}
-              className={`relative rounded-2xl p-3 backdrop-blur-sm border ${isAuthor
+              className={`relative rounded-2xl p-3 backdrop-blur-sm border ${
+                isAuthor
                   ? 'bg-gradient-to-r from-lendr-yellow/20 to-lendr-green/20 border-lendr-yellow/30 text-white'
                   : 'bg-slate-800/80 border-white/10 text-white'
-                }`}>
+              }`}>
               <div className='relative z-10'>
                 <p className='text-sm leading-relaxed'>{message.body}</p>
               </div>
@@ -157,5 +158,3 @@ export function Message({ message, currentUser, otherParticipant, isOtherPartici
     </motion.div>
   );
 }
-
-

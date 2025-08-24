@@ -25,7 +25,7 @@ export function ChatView({ conversationId, onBack }: ChatViewProps) {
   const { address } = useAccount();
   const { ref, inView } = useInView({
     triggerOnce: false,
-    rootMargin: "200px 0px"
+    rootMargin: '200px 0px',
   });
 
   const messageContainerRef = useRef<HTMLDivElement>(null);
@@ -36,19 +36,12 @@ export function ChatView({ conversationId, onBack }: ChatViewProps) {
     loadMore,
     status,
     isLoading,
-  } = usePaginatedQuery(
-    api.messages.listMessagesPaginated,
-    { conversationId },
-    { initialNumItems: MESSAGES_PER_PAGE }
-  );
-  const conversation = useQuery(
-    api.conversations.get,
-    address ? { conversationId, address } : 'skip'
-  );
+  } = usePaginatedQuery(api.messages.listMessagesPaginated, { conversationId }, { initialNumItems: MESSAGES_PER_PAGE });
+  const conversation = useQuery(api.conversations.get, address ? { conversationId, address } : 'skip');
 
   // Load more messages when sentinel comes into view
   useEffect(() => {
-    if (inView && status === "CanLoadMore") {
+    if (inView && status === 'CanLoadMore') {
       loadMore(MESSAGES_PER_PAGE);
     }
   }, [inView, status, loadMore]);
@@ -61,7 +54,6 @@ export function ChatView({ conversationId, onBack }: ChatViewProps) {
   const isTyping = conversation?.participant?._id
     ? (typingUsers?.includes(conversation.participant._id) ?? false)
     : false;
-
 
   useEffect(() => {
     const container = messageContainerRef.current;
@@ -81,7 +73,7 @@ export function ChatView({ conversationId, onBack }: ChatViewProps) {
 
       // --- Case 1: User loaded OLDER messages ---
       // Check if new messages were prepended (older ones)
-      if (prevFirstMessageId !== undefined && messages.find(m => m._id === prevFirstMessageId)) {
+      if (prevFirstMessageId !== undefined && messages.find((m) => m._id === prevFirstMessageId)) {
         const oldScrollHeight = container.scrollHeight;
         requestAnimationFrame(() => {
           const newScrollHeight = container.scrollHeight;
@@ -90,8 +82,7 @@ export function ChatView({ conversationId, onBack }: ChatViewProps) {
       }
       // --- Case 2: New message arrived at bottom ---
       else {
-        const isNearBottom =
-          container.scrollHeight - container.scrollTop - container.clientHeight < 100; // px threshold
+        const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 100; // px threshold
 
         if (isNearBottom) {
           container.scrollTop = container.scrollHeight; // only scroll if user is near bottom
@@ -101,7 +92,6 @@ export function ChatView({ conversationId, onBack }: ChatViewProps) {
 
     prevMessageCount.current = messages.length;
   }, [messages]);
-
 
   return (
     <div className='flex flex-col h-full'>
@@ -148,37 +138,48 @@ export function ChatView({ conversationId, onBack }: ChatViewProps) {
       {/* Messages Area */}
       <div
         ref={messageContainerRef}
-        className='flex-1 p-4 overflow-y-auto flex flex-col bg-gradient-to-b from-transparent to-slate-900/20'>
+        className='flex-1 p-4 overflow-y-auto flex flex-col bg-gradient-to-b from-transparent to-slate-900/20'
+      >
         {messages.length === 0 && status === 'Exhausted' ? (
           <div className='flex items-center justify-center h-full'>
             <p className='text-gray-400'>No messages yet</p>
           </div>
         ) : (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className='space-y-4'>
-            {status === "CanLoadMore" && <div ref={ref} />} {/* sentinel always at the very top */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className='space-y-4'
+          >
+            {/* Top loader + sentinel */}
+            {status === 'CanLoadMore' && (
+              <div ref={ref} className="flex justify-center py-2">
+                {isLoading && <MessageSkeleton />}
+              </div>
+            )}
+
             {messages
               .slice()
-
-              // Reverse the messages (newer messages should be at bottom)
               .sort((a, b) => a._creationTime - b._creationTime)
               .map((message, index) => (
                 <Fragment key={message._id}>
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3, delay: index * 0.05 }}>
+                    transition={{ duration: 0.3, delay: index * 0.05 }}
+                  >
                     <Message
                       message={message}
-                      currentUser={currentUser}
-                      otherParticipant={conversation?.participant}
+                      currentUser={currentUser as Doc<'users'>}
+                      otherParticipant={conversation?.participant as Doc<'users'>}
+                      isOtherParticipantOnline={isOnline || false}
                     />
                   </motion.div>
                 </Fragment>
               ))}
-            {isLoading && <MessageSkeleton />}
           </motion.div>
         )}
       </div>
+
 
       {/* Message Input */}
       <motion.div
