@@ -61,13 +61,7 @@ export function MessageInput({ conversationId }: MessageInputProps) {
       onSubmit={handleSubmit}
       className='relative'>
       <div className='flex items-center gap-3 p-3 bg-slate-800/80 backdrop-blur-sm border border-white/10 rounded-2xl focus-within:border-lendr-yellow/50 transition-colors duration-200'>
-        <Button
-          type='button'
-          variant='ghost'
-          size='sm'
-          className='text-gray-400 hover:text-white hover:bg-white/10 p-2 flex-shrink-0'>
-          <Paperclip className='w-4 h-4' />
-        </Button>
+
 
         <div className='flex-1 relative'>
           <Input
@@ -80,14 +74,6 @@ export function MessageInput({ conversationId }: MessageInputProps) {
         </div>
 
         <div className='flex items-center gap-2'>
-          <Button
-            type='button'
-            variant='ghost'
-            size='sm'
-            className='text-gray-400 hover:text-white hover:bg-white/10 p-2'>
-            <Smile className='w-4 h-4' />
-          </Button>
-
           {body.trim() ? (
             <motion.div
               initial={{ scale: 0 }}
@@ -97,7 +83,7 @@ export function MessageInput({ conversationId }: MessageInputProps) {
                 type='submit'
                 size='sm'
                 disabled={isLoading}
-                className='bg-gradient-to-r from-lendr-yellow to-lendr-green text-black hover:opacity-90 p-2 rounded-xl'>
+                className='bg-lendr-500 text-white hover:opacity-90 p-2 rounded-lg'>
                 {isLoading ? (
                   <motion.div
                     animate={{ rotate: 360 }}

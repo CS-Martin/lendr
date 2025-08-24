@@ -22,9 +22,10 @@ interface MessageProps {
   message: Doc<'messages'>;
   currentUser: Doc<'users'> | null;
   otherParticipant: Doc<'users'> | null;
+  isOtherParticipantOnline: boolean;
 }
 
-export function Message({ message, currentUser, otherParticipant }: MessageProps) {
+export function Message({ message, currentUser, otherParticipant, isOtherParticipantOnline }: MessageProps) {
   const { address } = useAccount();
   const [isEditing, setIsEditing] = useState(false);
   const [editedBody, setEditedBody] = useState(message.body);
@@ -65,8 +66,40 @@ export function Message({ message, currentUser, otherParticipant }: MessageProps
         <UserAvatar
           avatarUrl={author?.avatarUrl || '/avatar-placeholder.png'}
           username={author?.username || author?.address}
+          isOnline={isOtherParticipantOnline}
           size='sm'
+          className='mt-1'
         />
+      )}
+
+      {/* Edit button */}
+      {isAuthor && (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant='ghost'
+              size='sm'
+              className={
+                'opacity-0 group-hover:opacity-100 transition-opacity duration-200 text-gray-400 hover:text-white hover:bg-white/10 p-2'
+              }>
+              <MoreHorizontal className='w-4 h-4' />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className='bg-slate-800 border-white/10 text-white'>
+            <DropdownMenuItem
+              onClick={() => setIsEditing(true)}
+              className='hover:bg-white/10 focus:bg-white/10'>
+              <Edit3 className='w-4 h-4 mr-2' />
+              Edit
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={handleDelete}
+              className='hover:bg-red-500/20 focus:bg-red-500/20 text-red-400'>
+              <Trash2 className='w-4 h-4 mr-2' />
+              Delete
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       )}
 
       <div className={`max-w-[70%] flex flex-col ${isAuthor ? 'items-end' : 'items-start'}`}>
@@ -106,11 +139,10 @@ export function Message({ message, currentUser, otherParticipant }: MessageProps
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.9 }}
-              className={`relative rounded-2xl p-3 backdrop-blur-sm border ${
-                isAuthor
-                  ? 'bg-gradient-to-r from-lendr-yellow/20 to-lendr-green/20 border-lendr-yellow/30 text-white'
-                  : 'bg-slate-800/80 border-white/10 text-white'
-              }`}>
+              className={`relative rounded-2xl p-3 backdrop-blur-sm border ${isAuthor
+                ? 'bg-gradient-to-r from-lendr-yellow/20 to-lendr-green/20 border-lendr-yellow/30 text-white'
+                : 'bg-slate-800/80 border-white/10 text-white'
+                }`}>
               <div className='relative z-10'>
                 <p className='text-sm leading-relaxed'>{message.body}</p>
               </div>
@@ -123,34 +155,7 @@ export function Message({ message, currentUser, otherParticipant }: MessageProps
         </div>
       </div>
 
-      {isAuthor && (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant='ghost'
-              size='sm'
-              className={
-                'opacity-0 group-hover:opacity-100 transition-opacity duration-200 text-gray-400 hover:text-white hover:bg-white/10 p-2'
-              }>
-              <MoreHorizontal className='w-4 h-4' />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent className='bg-slate-800 border-white/10 text-white'>
-            <DropdownMenuItem
-              onClick={() => setIsEditing(true)}
-              className='hover:bg-white/10 focus:bg-white/10'>
-              <Edit3 className='w-4 h-4 mr-2' />
-              Edit
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={handleDelete}
-              className='hover:bg-red-500/20 focus:bg-red-500/20 text-red-400'>
-              <Trash2 className='w-4 h-4 mr-2' />
-              Delete
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      )}
+
     </motion.div>
   );
 }

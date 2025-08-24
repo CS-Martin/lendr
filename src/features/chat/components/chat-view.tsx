@@ -23,8 +23,9 @@ const MESSAGES_PER_PAGE = 10;
 export function ChatView({ conversationId, onBack }: ChatViewProps) {
   const { address } = useAccount();
   const { ref, inView } = useInView();
+  const messageContainerRef = useRef<HTMLDivElement>(null);
+
   const [messages, setMessages] = useState<Doc<'messages'>[]>([]);
-  const messagesRef = useRef<Doc<'messages'>[]>([]);
   const [cursor, setCursor] = useState<string | null>(null);
   const [hasNextPage, setHasNextPage] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
@@ -52,26 +53,21 @@ export function ChatView({ conversationId, onBack }: ChatViewProps) {
     : false;
 
   useEffect(() => {
-    if (paginatedMessages && !isLoading) {
-      const newMessages = paginatedMessages.page.filter(
-        (msg) => !messagesRef.current.some((m) => m._id === msg._id)
-      );
-      messagesRef.current = [...newMessages, ...messagesRef.current];
-      setMessages(messagesRef.current);
+    if (paginatedMessages) {
+      setMessages((prev) => [...paginatedMessages.page, ...prev]);
       setCursor(paginatedMessages.continueCursor);
       setHasNextPage(!paginatedMessages.isDone);
     }
-  }, [paginatedMessages, isLoading]);
+  }, [paginatedMessages]);
 
   useEffect(() => {
     if (latestMessages) {
-      const newMessages = latestMessages.filter(
-        (msg) => !messagesRef.current.some((m) => m._id === msg._id)
-      );
-      if (newMessages.length > 0) {
-        messagesRef.current = [...messagesRef.current, ...newMessages];
-        setMessages(messagesRef.current);
-      }
+      setMessages((prev) => {
+        const newMessages = latestMessages.filter(
+          (msg) => !prev.some((m) => m._id === msg._id)
+        );
+        return [...prev, ...newMessages];
+      });
     }
   }, [latestMessages]);
 
@@ -86,6 +82,12 @@ export function ChatView({ conversationId, onBack }: ChatViewProps) {
       setIsLoading(false);
     }
   }, [isLoading]);
+
+  useEffect(() => {
+    if (messageContainerRef.current) {
+      messageContainerRef.current.scrollTop = messageContainerRef.current.scrollHeight;
+    }
+  }, [messages]);
 
   return (
     <div className='flex flex-col h-full'>
@@ -130,19 +132,21 @@ export function ChatView({ conversationId, onBack }: ChatViewProps) {
       </motion.div>
 
       {/* Messages Area */}
-      <div className='flex-1 p-4 overflow-y-auto flex flex-col bg-gradient-to-b from-transparent to-slate-900/20'>
+      <div
+        ref={messageContainerRef}
+        className='flex-1 p-4 overflow-y-auto flex flex-col-reverse bg-gradient-to-b from-transparent to-slate-900/20'>
         {messages.length === 0 && !hasNextPage ? (
           <div className='flex items-center justify-center h-full'>
             <p className='text-gray-400'>No messages yet</p>
           </div>
         ) : (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className='space-y-4'>
-            {isLoading && <MessageSkeleton />}
             {messages
               .slice()
               .sort((a, b) => a._creationTime - b._creationTime)
-              .map((message, index, arr) => (
-                <Fragment key={message._id}>
+              .map((message, index) => (
+                <Fragment key={index}>
+                  {index === messages.length - 1 && hasNextPage && <div ref={ref} />}
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -151,11 +155,12 @@ export function ChatView({ conversationId, onBack }: ChatViewProps) {
                       message={message}
                       currentUser={currentUser as Doc<'users'>}
                       otherParticipant={conversation?.participant as Doc<'users'>}
+                      isOtherParticipantOnline={isOnline || false}
                     />
                   </motion.div>
-                  {index === arr.length - 1 && hasNextPage && <div ref={ref} />}
                 </Fragment>
               ))}
+            {isLoading && <MessageSkeleton />}
           </motion.div>
         )}
       </div>
