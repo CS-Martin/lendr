@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useMutation } from 'convex/react';
 import { api } from '@convex/_generated/api';
 import type { Doc } from '@convex/_generated/dataModel';
-
+import { useAccount } from 'wagmi';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -20,11 +20,12 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 interface MessageProps {
   message: Doc<'messages'>;
-  author: Doc<'users'> | null;
-  currentUserAddress?: `0x${string}`;
+  currentUser: Doc<'users'> | null;
+  otherParticipant: Doc<'users'> | null;
 }
 
-export function Message({ message, author, currentUserAddress }: MessageProps) {
+export function Message({ message, currentUser, otherParticipant }: MessageProps) {
+  const { address } = useAccount();
   const [isEditing, setIsEditing] = useState(false);
   const [editedBody, setEditedBody] = useState(message.body);
 
@@ -32,21 +33,23 @@ export function Message({ message, author, currentUserAddress }: MessageProps) {
   const deleteMessage = useMutation(api.messages.deleteMessage);
 
   const handleUpdate = async () => {
-    if (!currentUserAddress) return;
+    if (!address) return;
     await updateMessage({
       messageId: message._id,
       body: editedBody,
-      authorAddress: currentUserAddress,
+      authorAddress: address,
     });
     setIsEditing(false);
   };
 
   const handleDelete = async () => {
-    if (!currentUserAddress) return;
-    await deleteMessage({ messageId: message._id, authorAddress: currentUserAddress });
+    if (!address) return;
+    await deleteMessage({ messageId: message._id, authorAddress: address });
   };
 
-  const isAuthor = author?.address === currentUserAddress;
+  const isAuthor = message.authorId === currentUser?._id;
+
+  const author = isAuthor ? currentUser : otherParticipant;
 
   const messageDate = new Date(message._creationTime);
   const timeString = messageDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });

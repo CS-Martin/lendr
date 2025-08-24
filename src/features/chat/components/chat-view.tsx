@@ -8,7 +8,7 @@ import { MessageInput } from './message-input';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
 import { ArrowLeft, MoreVertical } from 'lucide-react';
-import { Fragment, useEffect, useState } from 'react';
+import { Fragment, useEffect, useRef, useState } from 'react';
 import { useAccount } from 'wagmi';
 import { useInView } from 'react-intersection-observer';
 import { UserAvatar } from '@/components/shared/user-avatar';
@@ -23,7 +23,8 @@ const MESSAGES_PER_PAGE = 10;
 export function ChatView({ conversationId, onBack }: ChatViewProps) {
   const { address } = useAccount();
   const { ref, inView } = useInView();
-  const [messages, setMessages] = useState<Doc<"messages">[]>([]);
+  const [messages, setMessages] = useState<Doc<'messages'>[]>([]);
+  const messagesRef = useRef<Doc<'messages'>[]>([]);
   const [cursor, setCursor] = useState<string | null>(null);
   const [hasNextPage, setHasNextPage] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
@@ -33,26 +34,46 @@ export function ChatView({ conversationId, onBack }: ChatViewProps) {
     paginationOpts: { numItems: MESSAGES_PER_PAGE, cursor },
   });
 
+  const latestMessages = useQuery(api.messages.listMessages, { conversationId });
+
   const conversation = useQuery(
     api.conversations.get,
     address ? { conversationId, address } : 'skip'
   );
+
+  const currentUser = useQuery(api.user.getUser, { address });
 
   const onlineUsers = useQuery(api.presence.listOnlineUsers);
   const typingUsers = useQuery(api.presence.getTypingStatus, { conversationId });
 
   const isOnline = onlineUsers?.includes(conversation?.participant?.address || '');
   const isTyping = conversation?.participant?._id
-    ? typingUsers?.includes(conversation.participant._id) ?? false
+    ? (typingUsers?.includes(conversation.participant._id) ?? false)
     : false;
 
   useEffect(() => {
     if (paginatedMessages && !isLoading) {
-      setMessages((prev) => [...paginatedMessages.page, ...prev]);
+      const newMessages = paginatedMessages.page.filter(
+        (msg) => !messagesRef.current.some((m) => m._id === msg._id)
+      );
+      messagesRef.current = [...newMessages, ...messagesRef.current];
+      setMessages(messagesRef.current);
       setCursor(paginatedMessages.continueCursor);
       setHasNextPage(!paginatedMessages.isDone);
     }
   }, [paginatedMessages, isLoading]);
+
+  useEffect(() => {
+    if (latestMessages) {
+      const newMessages = latestMessages.filter(
+        (msg) => !messagesRef.current.some((m) => m._id === msg._id)
+      );
+      if (newMessages.length > 0) {
+        messagesRef.current = [...messagesRef.current, ...newMessages];
+        setMessages(messagesRef.current);
+      }
+    }
+  }, [latestMessages]);
 
   useEffect(() => {
     if (inView && hasNextPage && !isLoading) {
@@ -62,8 +83,6 @@ export function ChatView({ conversationId, onBack }: ChatViewProps) {
 
   useEffect(() => {
     if (isLoading) {
-      // The query will be re-run with the new cursor
-      // and the result will be processed in the first useEffect
       setIsLoading(false);
     }
   }, [isLoading]);
@@ -111,29 +130,32 @@ export function ChatView({ conversationId, onBack }: ChatViewProps) {
       </motion.div>
 
       {/* Messages Area */}
-      <div className='flex-1 p-4 overflow-y-auto flex flex-col-reverse bg-gradient-to-b from-transparent to-slate-900/20'>
+      <div className='flex-1 p-4 overflow-y-auto flex flex-col bg-gradient-to-b from-transparent to-slate-900/20'>
         {messages.length === 0 && !hasNextPage ? (
           <div className='flex items-center justify-center h-full'>
             <p className='text-gray-400'>No messages yet</p>
           </div>
         ) : (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className='space-y-4'>
-            {messages.map((message, index) => (
-              <Fragment key={message._id}>
-                {index === 0 && hasNextPage && <div ref={ref} />}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3, delay: index * 0.05 }}>
-                  <Message
-                    message={message}
-                    author={message.authorId === conversation?.participant?._id ? conversation?.participant as Doc<'users'> : null}
-                    currentUserAddress={address}
-                  />
-                </motion.div>
-              </Fragment>
-            ))}
             {isLoading && <MessageSkeleton />}
+            {messages
+              .slice()
+              .sort((a, b) => a._creationTime - b._creationTime)
+              .map((message, index, arr) => (
+                <Fragment key={message._id}>
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3, delay: index * 0.05 }}>
+                    <Message
+                      message={message}
+                      currentUser={currentUser as Doc<'users'>}
+                      otherParticipant={conversation?.participant as Doc<'users'>}
+                    />
+                  </motion.div>
+                  {index === arr.length - 1 && hasNextPage && <div ref={ref} />}
+                </Fragment>
+              ))}
           </motion.div>
         )}
       </div>
