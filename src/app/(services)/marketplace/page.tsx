@@ -158,7 +158,7 @@ export default function MarketplacePage() {
           {sidebarOpen && (
             <motion.div
               ref={sidebarRef}
-              className='w-64 p-6 space-y-8 border-r border-slate-800/50 fixed md:relative h-full md:h-auto z-40 overflow-y-auto'
+              className='w-64 p-3 space-y-8 border-r border-slate-800/50 fixed md:relative h-full md:h-auto z-40 overflow-y-auto'
               initial={{ x: -300, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               exit={{ x: -300, opacity: 0 }}
@@ -204,7 +204,7 @@ export default function MarketplacePage() {
         </AnimatePresence>
 
         {/* Main Content */}
-        <div className='flex-1 p-6'>
+        <div className='flex-1 px-2 py-6'>
           {/* Search and Controls */}
           <div className='mb-8 space-y-4'>
             <div className='flex flex-col md:flex-row md:items-center md:justify-between gap-4'>

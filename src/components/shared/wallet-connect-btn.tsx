@@ -92,7 +92,7 @@ export const WalletConnectButton = () => {
                         <div
                           className={`hidden md:block w-2 h-2 rounded-full ${unsupportedChain ? 'md:bg-red-400' : 'md:bg-green-400'}`}
                         />
-                        <Wallet className='block md:hidden w-4 h-4' />
+                        <Wallet className='block md:hidden w-4.5 h-4.5 text-neutral-300' />
                         <span className='hidden md:block text-sm font-medium'>{account.displayName}</span>
                       </div>
                       {!unsupportedChain && <ChevronDown className='w-4 h-4' />}
@@ -102,33 +102,33 @@ export const WalletConnectButton = () => {
                   {!unsupportedChain && (
                     <DropdownMenuContent
                       side='bottom'
-                      align='end'
+                      align='start'
                       sideOffset={5}
                       alignOffset={20}
-                      className='w-56 bg-gray-900 border-gray-700 text-white'>
+                      className='w-56 bg-gray-900/80 border-gray-700 text-white'>
                       <DropdownMenuLabel>My Account</DropdownMenuLabel>
                       <DropdownMenuSeparator className='bg-gray-700' />
-                      <DropdownMenuItem className='cursor-pointer focus:bg-gray-700/50'>
+                      <DropdownMenuItem className='cursor-pointer focus:text-white focus:bg-white/20'>
                         <Link
                           href={`/${account.address}`}
                           className='flex items-center gap-2 w-full'>
-                          <User className='w-4 h-4' />
+                          <User className='w-4 h-4 text-white' />
                           <span>Profile</span>
                         </Link>
                       </DropdownMenuItem>
-                      <DropdownMenuItem className='cursor-pointer focus:bg-gray-700/50'>
+                      <DropdownMenuItem className='cursor-pointer focus:text-white focus:bg-white/20'>
                         <Link
                           href='/settings'
                           className='flex items-center gap-2 w-full'>
-                          <Settings className='w-4 h-4' />
+                          <Settings className='w-4 h-4 text-white' />
                           <span>Settings</span>
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuSeparator className='bg-gray-700' />
                       <DropdownMenuItem
-                        className='cursor-pointer focus:bg-gray-700/50'
+                        className='cursor-pointer focus:text-white focus:bg-white/20'
                         onClick={openAccountModal}>
-                        <Wallet className='w-4 h-4 mr-2' />
+                        <Wallet className='w-4 h-4 mr-2 text-white' />
                         <span>Disconnect</span>
                       </DropdownMenuItem>
                     </DropdownMenuContent>
