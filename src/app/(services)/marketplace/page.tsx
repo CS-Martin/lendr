@@ -158,7 +158,7 @@ export default function MarketplacePage() {
           {sidebarOpen && (
             <motion.div
               ref={sidebarRef}
-              className='w-64 p-6 space-y-8 border-r border-slate-800/50 fixed md:relative h-full md:h-auto z-40 overflow-y-auto'
+              className='w-64 p-3 space-y-8 border-r border-slate-800/50 fixed md:relative h-full md:h-auto z-40 overflow-y-auto'
               initial={{ x: -300, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               exit={{ x: -300, opacity: 0 }}

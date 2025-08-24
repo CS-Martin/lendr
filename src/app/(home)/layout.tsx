@@ -1,19 +1,11 @@
-'use client';
 
-import { Footer } from '@/components/shared/layout/footer';
-import NavBar from '@/components/shared/layout/home-navbar';
-import { ReactNode } from 'react';
+import NavBar from '@/components/shared/layout/main-navbar';
 
-interface HomeLayoutProps {
-  children: ReactNode;
-}
-
-export default function HomeLayout({ children }: HomeLayoutProps) {
+export default function HomeLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className='flex flex-col min-h-screen'>
+    <main>
       <NavBar />
-      <main>{children}</main>
-      <Footer />
-    </div>
+      {children}
+    </main>
   );
 }

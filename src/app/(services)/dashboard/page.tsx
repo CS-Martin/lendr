@@ -6,7 +6,7 @@ import MyBorrowsSection from '@/features/dashboard/components/my-borrows-section
 
 const DashboardPage = () => {
   return (
-    <div className='min-h-screen bg-slate-950 overflow-hidden'>
+    <div className='min-h-screen bg-slate-950 overflow-hidden px-2 md:px-0'>
       <div className='container max-w-7xl mx-auto'>
         <div className='flex justify-between items-center my-8'>
           <div>
