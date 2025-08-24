@@ -42,7 +42,6 @@ export default function NavBar() {
           'flex items-center justify-between py-2.5 transition-all duration-500 w-full mx-auto',
           pathname === '/marketplace' ? 'w-full' : 'max-w-7xl',
         )}>
-
         {/* Mobile Sidebar Trigger */}
         <div className='lg:hidden border rounded-md border-slate-800'>
           <MobileSidebar />
@@ -87,7 +86,6 @@ export default function NavBar() {
               </motion.div>
               <HolographicText className=' hidden md:flex font-semibold text-lendr-400'>Lendr</HolographicText>
             </motion.div>
-
           </Link>
 
           {/* Desktop Navigation */}
@@ -114,7 +112,6 @@ export default function NavBar() {
             </Link>
           </div>
         </div>
-
 
         {/* Desktop Actions */}
         <div className='relative z-50 flex items-center gap-2 md:gap-4'>

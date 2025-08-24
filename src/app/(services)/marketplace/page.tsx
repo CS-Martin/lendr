@@ -204,7 +204,7 @@ export default function MarketplacePage() {
         </AnimatePresence>
 
         {/* Main Content */}
-        <div className='flex-1 p-6'>
+        <div className='flex-1 px-2 py-6'>
           {/* Search and Controls */}
           <div className='mb-8 space-y-4'>
             <div className='flex flex-col md:flex-row md:items-center md:justify-between gap-4'>

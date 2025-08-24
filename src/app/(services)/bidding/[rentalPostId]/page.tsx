@@ -40,11 +40,11 @@ export default function BiddingPage() {
 
   return (
     <div className='min-h-screen bg-slate-950 overflow-hidden'>
-      <div className='container max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 py-8'>
+      <div className='container max-w-7xl mx-auto px-2 lg:px-0 grid grid-cols-1 md:grid-cols-3 gap-8 py-8'>
         <div className='col-span-1'>
           <BiddingSidebar post={rentalPost} />
         </div>
-        <div className='col-span-2'>
+        <div className='col-span-1 md:col-span-2'>
           <BidsList post={rentalPost} />
         </div>
       </div>

@@ -35,14 +35,14 @@ export default function SettingsPage() {
         <div className='absolute top-1/2 left-0 w-64 h-64 bg-lendr-400/10 rounded-full blur-3xl animate-pulse delay-500' />
       </div>
 
-      <div className='relative z-10 max-w-7xl mt-20 mx-auto px-6 py-8'>
+      <div className='relative z-10 max-w-7xl mt-10 md:mt-20 mx-auto px-2 lg:px-0'>
         {/* Header */}
         <motion.div
           className='mb-8'
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}>
-          <h1 className='text-4xl font-bold bg-gradient-to-r from-lendr-400 to-purple-400 bg-clip-text text-transparent mb-2'>
+          <h1 className='text-2xl md:text-4xl font-bold bg-gradient-to-r from-lendr-400 to-purple-400 bg-clip-text text-transparent mb-2'>
             Profile Settings
           </h1>
           <p className='text-gray-400'>Manage your account settings and preferences</p>
@@ -51,30 +51,35 @@ export default function SettingsPage() {
         <Tabs
           value={activeTab}
           onValueChange={setActiveTab}
-          className='w-full'>
-          <TabsList className='grid w-full grid-cols-4 bg-gray-900/50 backdrop-blur-sm border border-gray-800/50'>
+          className="w-full"
+        >
+          <TabsList className="flex w-full overflow-x-auto no-scrollbar bg-gray-900/50 backdrop-blur-sm border border-gray-800/50 h-11">
             <TabsTrigger
-              value='profile'
-              className='data-[state=active]:bg-lendr-400/20 data-[state=active]:text-lendr-400 text-white'>
-              <User className='w-4 h-4 mr-2' />
+              value="profile"
+              className="flex-shrink-0 data-[state=active]:bg-lendr-400/20 data-[state=active]:text-lendr-400 text-white px-4 py-2"
+            >
+              <User className="w-4 h-4 mr-2" />
               Profile
             </TabsTrigger>
             <TabsTrigger
-              value='security'
-              className='data-[state=active]:bg-lendr-400/20 data-[state=active]:text-lendr-400 text-white'>
-              <Shield className='w-4 h-4 mr-2' />
+              value="security"
+              className="flex-shrink-0 data-[state=active]:bg-lendr-400/20 data-[state=active]:text-lendr-400 text-white px-4 py-2"
+            >
+              <Shield className="w-4 h-4 mr-2" />
               Security
             </TabsTrigger>
             <TabsTrigger
-              value='notifications'
-              className='data-[state=active]:bg-lendr-400/20 data-[state=active]:text-lendr-400 text-white'>
-              <Bell className='w-4 h-4 mr-2' />
+              value="notifications"
+              className="flex-shrink-0 data-[state=active]:bg-lendr-400/20 data-[state=active]:text-lendr-400 text-white px-4 py-2"
+            >
+              <Bell className="w-4 h-4 mr-2" />
               Notifications
             </TabsTrigger>
             <TabsTrigger
-              value='preferences'
-              className='data-[state=active]:bg-lendr-400/20 data-[state=active]:text-lendr-400 text-white'>
-              <Palette className='w-4 h-4 mr-2' />
+              value="preferences"
+              className="flex-shrink-0 data-[state=active]:bg-lendr-400/20 data-[state=active]:text-lendr-400 text-white px-4 py-2"
+            >
+              <Palette className="w-4 h-4 mr-2" />
               Preferences
             </TabsTrigger>
           </TabsList>
