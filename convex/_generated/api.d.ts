@@ -21,7 +21,9 @@ import type * as messages from "../messages.js";
 import type * as nft from "../nft.js";
 import type * as presence from "../presence.js";
 import type * as rentalpost from "../rentalpost.js";
+import type * as typingIndicators from "../typingIndicators.js";
 import type * as user from "../user.js";
+import type * as userConversations from "../userConversations.js";
 
 /**
  * A utility for referencing Convex functions in your app's API.
@@ -40,7 +42,9 @@ declare const fullApi: ApiFromModules<{
   nft: typeof nft;
   presence: typeof presence;
   rentalpost: typeof rentalpost;
+  typingIndicators: typeof typingIndicators;
   user: typeof user;
+  userConversations: typeof userConversations;
 }>;
 export declare const api: FilterApi<
   typeof fullApi,

@@ -3,8 +3,8 @@
 import { useState } from 'react';
 import { useMutation } from 'convex/react';
 import { api } from '@convex/_generated/api';
-import type { Id } from '@convex/_generated/dataModel';
-import { useAccount } from 'wagmi';
+import type { Doc } from '@convex/_generated/dataModel';
+
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -15,18 +15,16 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MoreHorizontal, Edit3, Trash2, Check, X } from 'lucide-react';
+import { UserAvatar } from '@/components/shared/user-avatar';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface MessageProps {
-  message: {
-    _id: Id<'messages'>;
-    body: string;
-    authorId: Id<'users'>;
-    updatedAt?: number;
-  };
+  message: Doc<'messages'>;
+  author: Doc<'users'> | null;
+  currentUserAddress?: `0x${string}`;
 }
 
-export function Message({ message }: MessageProps) {
-  const { address } = useAccount();
+export function Message({ message, author, currentUserAddress }: MessageProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editedBody, setEditedBody] = useState(message.body);
 
@@ -34,23 +32,24 @@ export function Message({ message }: MessageProps) {
   const deleteMessage = useMutation(api.messages.deleteMessage);
 
   const handleUpdate = async () => {
-    if (!address) return;
+    if (!currentUserAddress) return;
     await updateMessage({
       messageId: message._id,
       body: editedBody,
-      authorAddress: address,
+      authorAddress: currentUserAddress,
     });
     setIsEditing(false);
   };
 
   const handleDelete = async () => {
-    if (!address) return;
-    await deleteMessage({ messageId: message._id, authorAddress: address });
+    if (!currentUserAddress) return;
+    await deleteMessage({ messageId: message._id, authorAddress: currentUserAddress });
   };
 
-  // A real app would look up the author's address and compare it to the current user's address.
-  // For now, we'll assume a simplified check.
-  const isAuthor = true; // Replace with actual author check
+  const isAuthor = author?.address === currentUserAddress;
+
+  const messageDate = new Date(message._creationTime);
+  const timeString = messageDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
   return (
     <motion.div
@@ -60,12 +59,14 @@ export function Message({ message }: MessageProps) {
       exit={{ opacity: 0, scale: 0.8 }}
       className={`flex items-start gap-3 group ${isAuthor ? 'justify-end' : 'justify-start'}`}>
       {!isAuthor && (
-        <div className='w-8 h-8 rounded-full bg-gradient-to-r from-lendr-yellow/20 to-lendr-green/20 flex items-center justify-center flex-shrink-0'>
-          <div className='w-3 h-3 bg-lendr-green rounded-full' />
-        </div>
+        <UserAvatar
+          avatarUrl={author?.avatarUrl || '/avatar-placeholder.png'}
+          username={author?.username || author?.address}
+          size='sm'
+        />
       )}
 
-      <div className={`max-w-[70%] ${isAuthor ? 'order-1' : ''}`}>
+      <div className={`max-w-[70%] flex flex-col ${isAuthor ? 'items-end' : 'items-start'}`}>
         <AnimatePresence mode='wait'>
           {isEditing ? (
             <motion.div
@@ -73,7 +74,7 @@ export function Message({ message }: MessageProps) {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.9 }}
-              className='bg-slate-800/80 backdrop-blur-sm border border-white/10 rounded-2xl p-4 space-y-3'>
+              className='bg-slate-800/80 backdrop-blur-sm border border-white/10 rounded-2xl p-4 space-y-3 w-full'>
               <Input
                 value={editedBody}
                 onChange={(e) => setEditedBody(e.target.value)}
@@ -102,30 +103,21 @@ export function Message({ message }: MessageProps) {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.9 }}
-              className={`relative rounded-2xl p-4 backdrop-blur-sm border ${
+              className={`relative rounded-2xl p-3 backdrop-blur-sm border ${
                 isAuthor
                   ? 'bg-gradient-to-r from-lendr-yellow/20 to-lendr-green/20 border-lendr-yellow/30 text-white'
                   : 'bg-slate-800/80 border-white/10 text-white'
               }`}>
-              {/* Message glow effect */}
-              <div
-                className={`absolute inset-0 rounded-2xl blur-xl opacity-20 ${
-                  isAuthor ? 'bg-gradient-to-r from-lendr-yellow to-lendr-green' : 'bg-slate-600'
-                }`}
-              />
-
               <div className='relative z-10'>
                 <p className='text-sm leading-relaxed'>{message.body}</p>
-                {message.updatedAt && (
-                  <p className='text-xs text-gray-400 mt-2 flex items-center gap-1'>
-                    <Edit3 className='w-3 h-3' />
-                    Edited
-                  </p>
-                )}
               </div>
             </motion.div>
           )}
         </AnimatePresence>
+        <div className='text-xs text-gray-400 mt-1 px-2'>
+          {timeString}
+          {message.updatedAt && !isEditing && <span className='text-gray-500 italic'> (edited)</span>}
+        </div>
       </div>
 
       {isAuthor && (
@@ -134,7 +126,9 @@ export function Message({ message }: MessageProps) {
             <Button
               variant='ghost'
               size='sm'
-              className={`opacity-0 group-hover:opacity-100 transition-opacity duration-200 text-gray-400 hover:text-white hover:bg-white/10 p-2 ${isAuthor ? 'order-2' : ''}`}>
+              className={
+                'opacity-0 group-hover:opacity-100 transition-opacity duration-200 text-gray-400 hover:text-white hover:bg-white/10 p-2'
+              }>
               <MoreHorizontal className='w-4 h-4' />
             </Button>
           </DropdownMenuTrigger>
@@ -154,12 +148,18 @@ export function Message({ message }: MessageProps) {
           </DropdownMenuContent>
         </DropdownMenu>
       )}
-
-      {isAuthor && (
-        <div className='w-8 h-8 rounded-full bg-gradient-to-r from-lendr-yellow/20 to-lendr-green/20 flex items-center justify-center flex-shrink-0 order-3'>
-          <div className='w-3 h-3 bg-lendr-yellow rounded-full' />
-        </div>
-      )}
     </motion.div>
+  );
+}
+
+export function MessageSkeleton() {
+  return (
+    <div className='flex items-center gap-3'>
+      <Skeleton className='w-8 h-8 rounded-full' />
+      <div className='flex-1 space-y-2'>
+        <Skeleton className='h-4 w-3/4' />
+        <Skeleton className='h-4 w-1/2' />
+      </div>
+    </div>
   );
 }

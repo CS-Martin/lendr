@@ -43,7 +43,8 @@ const BidCard = ({ bid, index, hasAcceptedBid }: BidCardProps) => {
     try {
       console.log('Creating conversation between:', currentUser._id, 'and', bidderUser._id);
       const conversationId = await createOrGetConversation({
-        participants: [currentUser._id, bidderUser._id],
+        otherParticipantId: bidderUser._id,
+        address: currentUser.address,
       });
 
       console.log('Opening chat sheet with conversationId:', conversationId);

@@ -1,8 +1,7 @@
 'use client';
 
 import type React from 'react';
-
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useMutation } from 'convex/react';
 import { api } from '@convex/_generated/api';
 import type { Id } from '@convex/_generated/dataModel';
@@ -21,6 +20,7 @@ export function MessageInput({ conversationId }: MessageInputProps) {
   const [isLoading, setIsLoading] = useState(false);
   const { address } = useAccount();
   const sendMessage = useMutation(api.messages.sendMessage);
+  const updateTypingStatus = useMutation(api.presence.updateTypingStatus);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,6 +40,19 @@ export function MessageInput({ conversationId }: MessageInputProps) {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (!address) return;
+    let typingTimer: NodeJS.Timeout;
+    if (body.length > 0) {
+      updateTypingStatus({ conversationId, address });
+      typingTimer = setTimeout(() => {
+        // This is a bit of a hack to signal that the user has stopped typing.
+        // In a real app, you might want a more robust solution.
+      }, 2000);
+    }
+    return () => clearTimeout(typingTimer);
+  }, [body, conversationId, address, updateTypingStatus]);
 
   return (
     <motion.form

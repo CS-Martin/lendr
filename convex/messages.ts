@@ -1,4 +1,4 @@
-import { defineTable } from 'convex/server';
+import { defineTable, paginationOptsValidator } from 'convex/server';
 import { v } from 'convex/values';
 import { mutation, query } from './_generated/server';
 
@@ -106,5 +106,19 @@ export const listMessages = query({
       .collect();
 
     return messages;
+  },
+});
+
+export const listMessagesPaginated = query({
+  args: {
+    conversationId: v.id('conversations'),
+    paginationOpts: paginationOptsValidator,
+  },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query('messages')
+      .withIndex('by_conversation', (q) => q.eq('conversationId', args.conversationId))
+      .order('desc')
+      .paginate(args.paginationOpts);
   },
 });

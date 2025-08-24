@@ -1,100 +1,134 @@
 import { defineTable } from 'convex/server';
 import { v } from 'convex/values';
 import { mutation, query } from './_generated/server';
+import { ConvexError } from 'convex/values';
+import { paginationOptsValidator } from 'convex/server';
 
-export const conversations = defineTable({
-  participants: v.array(v.id('users')),
-}).index('by_participants', ['participants']);
+export const conversations = defineTable({});
 
 export const createOrGetConversation = mutation({
-  args: { participants: v.array(v.id('users')) },
+  args: {
+    otherParticipantId: v.id('users'),
+    address: v.string(),
+  },
   handler: async (ctx, args) => {
-    const { participants } = args;
+    const { otherParticipantId, address } = args;
 
-    const existingConversation = await ctx.db
-      .query('conversations')
-      .withIndex('by_participants', (q) => q.eq('participants', participants))
-      .first();
-
-    if (existingConversation) {
-      return existingConversation._id;
+    if (!address) {
+      throw new ConvexError('Not authenticated');
     }
 
-    const conversationId = await ctx.db.insert('conversations', {
-      participants,
+    const user = await ctx.db
+      .query('users')
+      .withIndex('by_address', (q) => q.eq('address', address))
+      .unique();
+
+    if (!user) {
+      throw new ConvexError('User not found');
+    }
+
+    const existingConversations = await ctx.db
+      .query('userConversations')
+      .withIndex('by_userId', (q) => q.eq('userId', user._id))
+      .collect();
+
+    for (const userConversation of existingConversations) {
+      const conversation = await ctx.db.get(userConversation.conversationId);
+      if (conversation) {
+        const otherParticipants = await ctx.db
+          .query('userConversations')
+          .withIndex('by_conversationId', (q) => q.eq('conversationId', conversation._id))
+          .filter((q) => q.neq(q.field('userId'), user._id))
+          .collect();
+        if (otherParticipants.some((p) => p.userId === otherParticipantId)) {
+          return conversation._id;
+        }
+      }
+    }
+
+    const conversationId = await ctx.db.insert('conversations', {});
+
+    await ctx.db.insert('userConversations', {
+      userId: user._id,
+      conversationId,
+    });
+
+    await ctx.db.insert('userConversations', {
+      userId: otherParticipantId,
+      conversationId,
     });
 
     return conversationId;
   },
 });
 
-/**
- * Retrieves all conversations for the currently authenticated user.
- *
- * It fetches the user's conversations and, for each conversation,
- * retrieves the details of the other participant.
- *
- * @param {object} args - The arguments for the query.
- * @param {string} args.address - The address of the user.
- * @returns {Promise<Array<object>>} A promise that resolves to an array of conversations with participant details.
- */
 export const list = query({
-  args: { address: v.string() },
+  args: {
+    address: v.string(),
+    paginationOpts: paginationOptsValidator,
+  },
   handler: async (ctx, args) => {
-    if (!args.address) {
-      return [];
-    }
-
     const user = await ctx.db
       .query('users')
       .withIndex('by_address', (q) => q.eq('address', args.address))
       .unique();
 
     if (!user) {
-      return [];
+      throw new ConvexError('User not found');
     }
 
-    // TODO: This is inefficient and should be refactored to use a proper relational model.
-    // This is a temporary solution to get the feature working.
-    // This might cause performance issues as the number of conversations grows.
-    const allConversations = await ctx.db.query('conversations').collect();
+    const paginatedUserConversations = await ctx.db
+      .query('userConversations')
+      .withIndex('by_userId', (q) => q.eq('userId', user._id))
+      .order('desc')
+      .paginate(args.paginationOpts);
 
-    const userConversations = allConversations.filter((conversation) =>
-      conversation.participants.includes(user._id),
-    );
-
-    const conversationsWithParticipantDetails = await Promise.all(
-      userConversations.map(async (conversation) => {
-        const participantId = conversation.participants.find((id) => id !== user._id);
-
-        if (!participantId) {
+    const conversations = await Promise.all(
+      paginatedUserConversations.page.map(async (userConversation) => {
+        const conversation = await ctx.db.get(userConversation.conversationId);
+        if (!conversation) {
           return null;
         }
 
-        const participant = await ctx.db.get(participantId);
+        const otherParticipant = await ctx.db
+          .query('userConversations')
+          .withIndex('by_conversationId', (q) =>
+            q.eq('conversationId', userConversation.conversationId)
+          )
+          .filter((q) => q.neq(q.field('userId'), user._id))
+          .first();
+
+        if (!otherParticipant) {
+          return null;
+        }
+
+        const participantDetails = await ctx.db.get(otherParticipant.userId);
 
         return {
           ...conversation,
-          participant,
+          participant: participantDetails,
         };
-      }),
+      })
     );
 
-    return conversationsWithParticipantDetails.filter(Boolean);
+    return {
+      page: conversations.filter(Boolean),
+      isDone: paginatedUserConversations.isDone,
+      continueCursor: paginatedUserConversations.continueCursor,
+    };
   },
 });
 
-/**
- * Retrieves a single conversation with the details of the other participant.
- *
- * @param {object} args - The arguments for the query.
- * @param {string} args.conversationId - The ID of the conversation to retrieve.
- * @param {string} args.address - The address of the user.
- * @returns {Promise<object|null>} A promise that resolves to the conversation with participant details, or null if not found.
- */
 export const get = query({
-  args: { conversationId: v.id('conversations'), address: v.string() },
+  args: {
+    conversationId: v.id('conversations'),
+    address: v.string(),
+  },
   handler: async (ctx, args) => {
+    if (!args.address) {
+      return null;
+    }
+
     const user = await ctx.db
       .query('users')
       .withIndex('by_address', (q) => q.eq('address', args.address))
@@ -105,22 +139,25 @@ export const get = query({
     }
 
     const conversation = await ctx.db.get(args.conversationId);
-
     if (!conversation) {
       return null;
     }
 
-    const participantId = conversation.participants.find((id) => id !== user._id);
+    const otherParticipant = await ctx.db
+      .query('userConversations')
+      .withIndex('by_conversationId', (q) => q.eq('conversationId', args.conversationId))
+      .filter((q) => q.neq(q.field('userId'), user._id))
+      .first();
 
-    if (!participantId) {
+    if (!otherParticipant) {
       return null;
     }
 
-    const participant = await ctx.db.get(participantId);
+    const participantDetails = await ctx.db.get(otherParticipant.userId);
 
     return {
       ...conversation,
-      participant,
+      participant: participantDetails,
     };
   },
 });
