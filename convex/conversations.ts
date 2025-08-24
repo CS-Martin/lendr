@@ -28,7 +28,17 @@ export const createOrGetConversation = mutation({
   },
 });
 
-export const getConversations = query({
+/**
+ * Retrieves all conversations for the currently authenticated user.
+ *
+ * It fetches the user's conversations and, for each conversation,
+ * retrieves the details of the other participant.
+ *
+ * @param {object} args - The arguments for the query.
+ * @param {string} args.address - The address of the user.
+ * @returns {Promise<Array<object>>} A promise that resolves to an array of conversations with participant details.
+ */
+export const list = query({
   args: { address: v.string() },
   handler: async (ctx, args) => {
     if (!args.address) {
@@ -44,35 +54,13 @@ export const getConversations = query({
       return [];
     }
 
-    const conversations = await ctx.db
-      .query('conversations')
-      .filter((q) => q.eq(q.field('participants'), [user._id]))
-      .collect();
+    // TODO: This is inefficient and should be refactored to use a proper relational model.
+    // This is a temporary solution to get the feature working.
+    // This might cause performance issues as the number of conversations grows.
+    const allConversations = await ctx.db.query('conversations').collect();
 
-    return conversations;
-  },
-});
-
-export const getConversationsWithParticipantDetails = query({
-  args: { address: v.string() },
-  handler: async (ctx, args) => {
-    if (!args.address) {
-      return [];
-    }
-
-    const user = await ctx.db
-      .query('users')
-      .withIndex('by_address', (q) => q.eq('address', args.address))
-      .unique();
-
-    if (!user) {
-      return [];
-    }
-
-    const conversations = await ctx.db.query('conversations').collect();
-
-    const userConversations = conversations.filter((conversation) =>
-      conversation.participants.includes(user._id)
+    const userConversations = allConversations.filter((conversation) =>
+      conversation.participants.includes(user._id),
     );
 
     const conversationsWithParticipantDetails = await Promise.all(
@@ -89,14 +77,22 @@ export const getConversationsWithParticipantDetails = query({
           ...conversation,
           participant,
         };
-      })
+      }),
     );
 
     return conversationsWithParticipantDetails.filter(Boolean);
   },
 });
 
-export const getConversationWithParticipantDetails = query({
+/**
+ * Retrieves a single conversation with the details of the other participant.
+ *
+ * @param {object} args - The arguments for the query.
+ * @param {string} args.conversationId - The ID of the conversation to retrieve.
+ * @param {string} args.address - The address of the user.
+ * @returns {Promise<object|null>} A promise that resolves to the conversation with participant details, or null if not found.
+ */
+export const get = query({
   args: { conversationId: v.id('conversations'), address: v.string() },
   handler: async (ctx, args) => {
     const user = await ctx.db

@@ -7,18 +7,43 @@ import type { Id } from '@convex/_generated/dataModel';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { motion } from 'framer-motion';
 import { MessageCircle, Clock, User } from 'lucide-react';
+import { useSession } from 'next-auth/react';
+import { UserAvatar } from '@/components/shared/user-avatar';
 
 interface ConversationListViewProps {
   onConversationSelect: (conversationId: Id<'conversations'>) => void;
 }
 
 export function ConversationListView({ onConversationSelect }: ConversationListViewProps) {
-  const { address } = useAccount();
+  const { data: session } = useSession();
+  const address = session?.user?.address;
+
+  // Get user's conversation
   const conversations = useQuery(
-    api.conversations.getConversationsWithParticipantDetails,
+    api.conversations.list,
     address ? { address } : 'skip',
   );
+
+  console.log(conversations)
+
+  // Get online users
   const onlineUsers = useQuery(api.presence.listOnlineUsers);
+
+  if (address === undefined) {
+    return (
+      <div className='flex flex-col items-center justify-center h-full p-8 text-center'>
+        <motion.div
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{ duration: 0.5, ease: 'backOut' }}
+          className='p-6 rounded-full bg-slate-700/50 backdrop-blur-sm mb-4'>
+          <MessageCircle className='w-12 h-12 text-slate-500' />
+        </motion.div>
+        <h3 className='text-xl font-semibold text-white mb-2'>Please sign in</h3>
+        <p className='text-gray-400 text-sm'>Please sign in to see your conversations</p>
+      </div>
+    );
+  }
 
   if (conversations === undefined) {
     return (
@@ -67,15 +92,13 @@ export function ConversationListView({ onConversationSelect }: ConversationListV
 
               <div className='relative z-10 flex items-center gap-4 w-full'>
                 <div className='relative'>
-                  <Avatar className='w-12 h-12 border-2 border-lendr-yellow/30'>
-                    <AvatarImage src={conversation?.participant?.avatarUrl || '/placeholder.svg'} />
-                    <AvatarFallback className='bg-gradient-to-r from-lendr-yellow/20 to-lendr-green/20 text-white'>
-                      {conversation?.participant?.username?.[0] || <User className='w-5 h-5' />}
-                    </AvatarFallback>
-                  </Avatar>
-                  {isOnline && (
-                    <div className='absolute -bottom-1 -right-1 w-4 h-4 bg-lendr-green rounded-full border-2 border-slate-900' />
-                  )}
+                  <UserAvatar
+                    avatarUrl={conversation?.participant?.avatarUrl || '/avatar-placeholder.png'}
+                    username={conversation?.participant?.username}
+                    isOnline={isOnline}
+                    size='md'
+                    className='mr-2'
+                  />
                 </div>
 
                 <div className='flex-1 min-w-0'>
@@ -89,15 +112,6 @@ export function ConversationListView({ onConversationSelect }: ConversationListV
                     </div>
                   </div>
                   <p className='text-sm text-gray-400 truncate'>Last message preview...</p>
-                </div>
-
-                <div className='flex flex-col items-end gap-2'>
-                  <div className='w-2 h-2 bg-lendr-yellow rounded-full animate-pulse' />
-                  <motion.div
-                    className='opacity-0 group-hover:opacity-100 transition-opacity duration-200'
-                    whileHover={{ scale: 1.1 }}>
-                    <MessageCircle className='w-4 h-4 text-lendr-yellow' />
-                  </motion.div>
                 </div>
               </div>
             </div>

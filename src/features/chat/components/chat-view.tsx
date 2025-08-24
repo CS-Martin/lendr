@@ -18,12 +18,14 @@ interface ChatViewProps {
 }
 
 export function ChatView({ conversationId, onBack }: ChatViewProps) {
-  const messages = useQuery(api.messages.listMessages, { conversationId });
   const { address } = useAccount();
-  const conversation = useQuery(
-    api.conversations.getConversationWithParticipantDetails,
-    { conversationId, address: address || '' },
-  );
+
+  const messages = useQuery(api.messages.listMessages, { conversationId });
+  const conversation = useQuery(api.conversations.get, {
+    conversationId,
+    address: address || '',
+  });
+
   const onlineUsers = useQuery(api.presence.listOnlineUsers);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -36,6 +38,8 @@ export function ChatView({ conversationId, onBack }: ChatViewProps) {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  console.log(conversation);
 
   return (
     <div className='flex flex-col h-full'>
@@ -57,11 +61,13 @@ export function ChatView({ conversationId, onBack }: ChatViewProps) {
               avatarUrl={conversation?.participant?.avatarUrl || '/avatar-placeholder.png'}
               username={conversation?.participant?.username}
               isOnline={isOnline}
-              size="md"
-              className="mr-2"
+              size='md'
+              className='mr-2'
             />
             <div>
-              <h3 className='font-semibold text-white text-sm'>{conversation?.participant?.username || 'Anonymous User'}</h3>
+              <h3 className='font-semibold text-white text-sm'>
+                {conversation?.participant?.username || 'Anonymous User'}
+              </h3>
               <p className='text-xs text-gray-400'>{isOnline ? 'Online' : 'Offline'}</p>
             </div>
           </div>
