@@ -13,7 +13,6 @@ import LendrButton from '@/components/shared/lendr-btn';
 import { useChatSheetStore } from '@/stores/chat-sheet.store';
 import { useMutation, useQuery } from 'convex/react';
 import { api } from '@convex/_generated/api';
-import { useAccount } from 'wagmi';
 import { useSession } from 'next-auth/react';
 
 interface BidCardProps {
@@ -67,11 +66,10 @@ const BidCard = ({ bid, index, hasAcceptedBid }: BidCardProps) => {
       transition={{ duration: 0.5, delay: index * 0.1 }}>
       <Card
         className={`relative transition-all duration-300
-        ${
-          bid.isAccepted
+        ${bid.isAccepted
             ? 'bg-green-900/30 border-green-500 shadow-lg shadow-green-500/30'
             : 'bg-slate-900/50 border-slate-800 hover:border-purple-500/50'
-        }`}>
+          }`}>
         <CardContent className='py-6'>
           {/* Accepted badge */}
           {bid.isAccepted && (

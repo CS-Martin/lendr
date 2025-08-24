@@ -138,8 +138,7 @@ export function ChatView({ conversationId, onBack }: ChatViewProps) {
       {/* Messages Area */}
       <div
         ref={messageContainerRef}
-        className='flex-1 p-4 overflow-y-auto flex flex-col bg-gradient-to-b from-transparent to-slate-900/20'
-      >
+        className='flex-1 p-4 overflow-y-auto flex flex-col bg-gradient-to-b from-transparent to-slate-900/20'>
         {messages.length === 0 && status === 'Exhausted' ? (
           <div className='flex items-center justify-center h-full'>
             <p className='text-gray-400'>No messages yet</p>
@@ -148,11 +147,12 @@ export function ChatView({ conversationId, onBack }: ChatViewProps) {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className='space-y-4'
-          >
+            className='space-y-4'>
             {/* Top loader + sentinel */}
             {status === 'CanLoadMore' && (
-              <div ref={ref} className="flex justify-center py-2">
+              <div
+                ref={ref}
+                className='flex justify-center py-2'>
                 {isLoading && <MessageSkeleton />}
               </div>
             )}
@@ -165,8 +165,7 @@ export function ChatView({ conversationId, onBack }: ChatViewProps) {
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3, delay: index * 0.05 }}
-                  >
+                    transition={{ duration: 0.3, delay: index * 0.05 }}>
                     <Message
                       message={message}
                       currentUser={currentUser as Doc<'users'>}
@@ -179,7 +178,6 @@ export function ChatView({ conversationId, onBack }: ChatViewProps) {
           </motion.div>
         )}
       </div>
-
 
       {/* Message Input */}
       <motion.div
