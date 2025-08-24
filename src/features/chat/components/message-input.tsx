@@ -61,8 +61,6 @@ export function MessageInput({ conversationId }: MessageInputProps) {
       onSubmit={handleSubmit}
       className='relative'>
       <div className='flex items-center gap-3 p-3 bg-slate-800/80 backdrop-blur-sm border border-white/10 rounded-2xl focus-within:border-lendr-yellow/50 transition-colors duration-200'>
-
-
         <div className='flex-1 relative'>
           <Input
             value={body}

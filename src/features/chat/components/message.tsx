@@ -140,8 +140,8 @@ export function Message({ message, currentUser, otherParticipant, isOtherPartici
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.9 }}
               className={`relative rounded-2xl p-3 backdrop-blur-sm border ${isAuthor
-                ? 'bg-gradient-to-r from-lendr-yellow/20 to-lendr-green/20 border-lendr-yellow/30 text-white'
-                : 'bg-slate-800/80 border-white/10 text-white'
+                  ? 'bg-gradient-to-r from-lendr-yellow/20 to-lendr-green/20 border-lendr-yellow/30 text-white'
+                  : 'bg-slate-800/80 border-white/10 text-white'
                 }`}>
               <div className='relative z-10'>
                 <p className='text-sm leading-relaxed'>{message.body}</p>
@@ -154,20 +154,8 @@ export function Message({ message, currentUser, otherParticipant, isOtherPartici
           {message.updatedAt && !isEditing && <span className='text-gray-500 italic'> (edited)</span>}
         </div>
       </div>
-
-
     </motion.div>
   );
 }
 
-export function MessageSkeleton() {
-  return (
-    <div className='flex items-center gap-3'>
-      <Skeleton className='w-8 h-8 rounded-full' />
-      <div className='flex-1 space-y-2'>
-        <Skeleton className='h-4 w-3/4' />
-        <Skeleton className='h-4 w-1/2' />
-      </div>
-    </div>
-  );
-}
+

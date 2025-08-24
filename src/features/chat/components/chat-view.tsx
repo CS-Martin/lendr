@@ -1,9 +1,9 @@
 'use client';
 
-import { useQuery } from 'convex/react';
+import { usePaginatedQuery, useQuery } from 'convex/react';
 import { api } from '@convex/_generated/api';
 import type { Doc, Id } from '@convex/_generated/dataModel';
-import { Message, MessageSkeleton } from './message';
+import { Message } from './message';
 import { MessageInput } from './message-input';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
@@ -12,6 +12,7 @@ import { Fragment, useEffect, useRef, useState } from 'react';
 import { useAccount } from 'wagmi';
 import { useInView } from 'react-intersection-observer';
 import { UserAvatar } from '@/components/shared/user-avatar';
+import { MessageSkeleton } from './skeletons';
 
 interface ChatViewProps {
   conversationId: Id<'conversations'>;
@@ -22,28 +23,37 @@ const MESSAGES_PER_PAGE = 10;
 
 export function ChatView({ conversationId, onBack }: ChatViewProps) {
   const { address } = useAccount();
-  const { ref, inView } = useInView();
-  const messageContainerRef = useRef<HTMLDivElement>(null);
-
-  const [messages, setMessages] = useState<Doc<'messages'>[]>([]);
-  const [cursor, setCursor] = useState<string | null>(null);
-  const [hasNextPage, setHasNextPage] = useState(true);
-  const [isLoading, setIsLoading] = useState(false);
-
-  const paginatedMessages = useQuery(api.messages.listMessagesPaginated, {
-    conversationId,
-    paginationOpts: { numItems: MESSAGES_PER_PAGE, cursor },
+  const { ref, inView } = useInView({
+    triggerOnce: false,
+    rootMargin: "200px 0px"
   });
 
-  const latestMessages = useQuery(api.messages.listMessages, { conversationId });
+  const messageContainerRef = useRef<HTMLDivElement>(null);
+  const prevMessageCount = useRef(0);
 
+  const {
+    results: messages,
+    loadMore,
+    status,
+    isLoading,
+  } = usePaginatedQuery(
+    api.messages.listMessagesPaginated,
+    { conversationId },
+    { initialNumItems: MESSAGES_PER_PAGE }
+  );
   const conversation = useQuery(
     api.conversations.get,
     address ? { conversationId, address } : 'skip'
   );
 
-  const currentUser = useQuery(api.user.getUser, { address });
+  // Load more messages when sentinel comes into view
+  useEffect(() => {
+    if (inView && status === "CanLoadMore") {
+      loadMore(MESSAGES_PER_PAGE);
+    }
+  }, [inView, status, loadMore]);
 
+  const currentUser = useQuery(api.user.getUser, { address });
   const onlineUsers = useQuery(api.presence.listOnlineUsers);
   const typingUsers = useQuery(api.presence.getTypingStatus, { conversationId });
 
@@ -52,42 +62,46 @@ export function ChatView({ conversationId, onBack }: ChatViewProps) {
     ? (typingUsers?.includes(conversation.participant._id) ?? false)
     : false;
 
-  useEffect(() => {
-    if (paginatedMessages) {
-      setMessages((prev) => [...paginatedMessages.page, ...prev]);
-      setCursor(paginatedMessages.continueCursor);
-      setHasNextPage(!paginatedMessages.isDone);
-    }
-  }, [paginatedMessages]);
 
   useEffect(() => {
-    if (latestMessages) {
-      setMessages((prev) => {
-        const newMessages = latestMessages.filter(
-          (msg) => !prev.some((m) => m._id === msg._id)
-        );
-        return [...prev, ...newMessages];
-      });
-    }
-  }, [latestMessages]);
+    const container = messageContainerRef.current;
+    if (!container) return;
 
-  useEffect(() => {
-    if (inView && hasNextPage && !isLoading) {
-      setIsLoading(true);
+    // First render → always scroll to bottom
+    if (prevMessageCount.current === 0) {
+      container.scrollTop = container.scrollHeight;
+      prevMessageCount.current = messages.length;
+      return;
     }
-  }, [inView, hasNextPage, isLoading]);
 
-  useEffect(() => {
-    if (isLoading) {
-      setIsLoading(false);
-    }
-  }, [isLoading]);
+    // Messages count increased
+    if (messages.length > prevMessageCount.current) {
+      const prevFirstMessageId = messages[0]?._id;
+      const prevLastMessageId = messages[messages.length - 1]?._id;
 
-  useEffect(() => {
-    if (messageContainerRef.current) {
-      messageContainerRef.current.scrollTop = messageContainerRef.current.scrollHeight;
+      // --- Case 1: User loaded OLDER messages ---
+      // Check if new messages were prepended (older ones)
+      if (prevFirstMessageId !== undefined && messages.find(m => m._id === prevFirstMessageId)) {
+        const oldScrollHeight = container.scrollHeight;
+        requestAnimationFrame(() => {
+          const newScrollHeight = container.scrollHeight;
+          container.scrollTop += newScrollHeight - oldScrollHeight; // preserve position
+        });
+      }
+      // --- Case 2: New message arrived at bottom ---
+      else {
+        const isNearBottom =
+          container.scrollHeight - container.scrollTop - container.clientHeight < 100; // px threshold
+
+        if (isNearBottom) {
+          container.scrollTop = container.scrollHeight; // only scroll if user is near bottom
+        }
+      }
     }
+
+    prevMessageCount.current = messages.length;
   }, [messages]);
+
 
   return (
     <div className='flex flex-col h-full'>
@@ -134,28 +148,29 @@ export function ChatView({ conversationId, onBack }: ChatViewProps) {
       {/* Messages Area */}
       <div
         ref={messageContainerRef}
-        className='flex-1 p-4 overflow-y-auto flex flex-col-reverse bg-gradient-to-b from-transparent to-slate-900/20'>
-        {messages.length === 0 && !hasNextPage ? (
+        className='flex-1 p-4 overflow-y-auto flex flex-col bg-gradient-to-b from-transparent to-slate-900/20'>
+        {messages.length === 0 && status === 'Exhausted' ? (
           <div className='flex items-center justify-center h-full'>
             <p className='text-gray-400'>No messages yet</p>
           </div>
         ) : (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className='space-y-4'>
+            {status === "CanLoadMore" && <div ref={ref} />} {/* sentinel always at the very top */}
             {messages
               .slice()
+
+              // Reverse the messages (newer messages should be at bottom)
               .sort((a, b) => a._creationTime - b._creationTime)
               .map((message, index) => (
-                <Fragment key={index}>
-                  {index === messages.length - 1 && hasNextPage && <div ref={ref} />}
+                <Fragment key={message._id}>
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.3, delay: index * 0.05 }}>
                     <Message
                       message={message}
-                      currentUser={currentUser as Doc<'users'>}
-                      otherParticipant={conversation?.participant as Doc<'users'>}
-                      isOtherParticipantOnline={isOnline || false}
+                      currentUser={currentUser}
+                      otherParticipant={conversation?.participant}
                     />
                   </motion.div>
                 </Fragment>
