@@ -10,6 +10,10 @@ import { Star, MessageSquare } from 'lucide-react';
 import { AcceptBidModal } from './accept-bid-modal';
 import Link from 'next/link';
 import LendrButton from '@/components/shared/lendr-btn';
+import { useChatSheetStore } from '@/stores/chat-sheet.store';
+import { useMutation, useQuery } from 'convex/react';
+import { api } from '@convex/_generated/api';
+import { useSession } from 'next-auth/react';
 
 interface BidCardProps {
   bid: Doc<'bids'>;
@@ -18,8 +22,37 @@ interface BidCardProps {
 }
 
 const BidCard = ({ bid, index, hasAcceptedBid }: BidCardProps) => {
+  const { data: session } = useSession();
+  const user = session?.user;
+
   const [showAcceptModal, setShowAcceptModal] = useState(false);
   const [selectedBid, setSelectedBid] = useState<string | null>(null);
+  const { isOpen, openChatSheet } = useChatSheetStore();
+  const createOrGetConversation = useMutation(api.conversations.createOrGetConversation);
+
+  const currentUser = useQuery(api.user.getUser, user?.address ? { address: user.address } : 'skip');
+  const bidderUser = useQuery(api.user.getUser, { address: bid.bidderAddress });
+
+  const handleSendMessage = async () => {
+    if (!currentUser || !bidderUser) {
+      console.log('Missing user data:', { currentUser, bidderUser });
+      return;
+    }
+
+    try {
+      console.log('Creating conversation between:', currentUser._id, 'and', bidderUser._id);
+      const conversationId = await createOrGetConversation({
+        otherParticipantId: bidderUser._id,
+        address: currentUser.address,
+      });
+
+      console.log('Opening chat sheet with conversationId:', conversationId);
+      openChatSheet(conversationId);
+      console.log('Chat sheet should be open now');
+    } catch (error) {
+      console.error('Error in handleSendMessage:', error);
+    }
+  };
 
   // Mock data for bidder details (replace with actual data from your database)
   const bidderRating = 4.9;
@@ -33,11 +66,10 @@ const BidCard = ({ bid, index, hasAcceptedBid }: BidCardProps) => {
       transition={{ duration: 0.5, delay: index * 0.1 }}>
       <Card
         className={`relative transition-all duration-300
-        ${
-          bid.isAccepted
+        ${bid.isAccepted
             ? 'bg-green-900/30 border-green-500 shadow-lg shadow-green-500/30'
             : 'bg-slate-900/50 border-slate-800 hover:border-purple-500/50'
-        }`}>
+          }`}>
         <CardContent className='py-6'>
           {/* Accepted badge */}
           {bid.isAccepted && (
@@ -127,6 +159,7 @@ const BidCard = ({ bid, index, hasAcceptedBid }: BidCardProps) => {
 
             <LendrButton
               variant='outline'
+              onClick={handleSendMessage}
               className='border-slate-700 rounded-md text-slate-300 hover:text-white hover:bg-slate-800 bg-transparent'>
               <MessageSquare className='w-4 h-4 mr-2' />
               Send a Message
