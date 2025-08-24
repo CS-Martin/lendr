@@ -51,35 +51,30 @@ export default function SettingsPage() {
         <Tabs
           value={activeTab}
           onValueChange={setActiveTab}
-          className="w-full"
-        >
-          <TabsList className="flex w-full overflow-x-auto no-scrollbar bg-gray-900/50 backdrop-blur-sm border border-gray-800/50 h-11">
+          className='w-full'>
+          <TabsList className='flex w-full overflow-x-auto no-scrollbar bg-gray-900/50 backdrop-blur-sm border border-gray-800/50 h-11'>
             <TabsTrigger
-              value="profile"
-              className="flex-shrink-0 data-[state=active]:bg-lendr-400/20 data-[state=active]:text-lendr-400 text-white px-4 py-2"
-            >
-              <User className="w-4 h-4 mr-2" />
+              value='profile'
+              className='flex-shrink-0 data-[state=active]:bg-lendr-400/20 data-[state=active]:text-lendr-400 text-white px-4 py-2'>
+              <User className='w-4 h-4 mr-2' />
               Profile
             </TabsTrigger>
             <TabsTrigger
-              value="security"
-              className="flex-shrink-0 data-[state=active]:bg-lendr-400/20 data-[state=active]:text-lendr-400 text-white px-4 py-2"
-            >
-              <Shield className="w-4 h-4 mr-2" />
+              value='security'
+              className='flex-shrink-0 data-[state=active]:bg-lendr-400/20 data-[state=active]:text-lendr-400 text-white px-4 py-2'>
+              <Shield className='w-4 h-4 mr-2' />
               Security
             </TabsTrigger>
             <TabsTrigger
-              value="notifications"
-              className="flex-shrink-0 data-[state=active]:bg-lendr-400/20 data-[state=active]:text-lendr-400 text-white px-4 py-2"
-            >
-              <Bell className="w-4 h-4 mr-2" />
+              value='notifications'
+              className='flex-shrink-0 data-[state=active]:bg-lendr-400/20 data-[state=active]:text-lendr-400 text-white px-4 py-2'>
+              <Bell className='w-4 h-4 mr-2' />
               Notifications
             </TabsTrigger>
             <TabsTrigger
-              value="preferences"
-              className="flex-shrink-0 data-[state=active]:bg-lendr-400/20 data-[state=active]:text-lendr-400 text-white px-4 py-2"
-            >
-              <Palette className="w-4 h-4 mr-2" />
+              value='preferences'
+              className='flex-shrink-0 data-[state=active]:bg-lendr-400/20 data-[state=active]:text-lendr-400 text-white px-4 py-2'>
+              <Palette className='w-4 h-4 mr-2' />
               Preferences
             </TabsTrigger>
           </TabsList>
