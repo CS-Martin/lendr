@@ -38,7 +38,7 @@ export const AcceptBidModal = ({
 
       // After accepting bid, create escrow smart contract
       createEscrowSmartContract({
-        rentalPost: bid.rentalPostId,
+        rentalPostId: bid.rentalPostId,
         rentalPostRenterAddress: bid.bidderAddress as Id<'users'>,
         rentalPostOwnerAddress: user?.address as Id<'users'>,
         rentalFee: bid.bidAmount,

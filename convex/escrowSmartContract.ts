@@ -1,6 +1,6 @@
 import { defineTable } from 'convex/server';
 import { v } from 'convex/values';
-import { mutation } from './_generated/server';
+import { mutation, query } from './_generated/server';
 
 // Escrow contract lifecycle statuses
 export const EscrowSmartContractStatus = v.union(
@@ -11,7 +11,7 @@ export const EscrowSmartContractStatus = v.union(
 );
 
 export const escrowSmartContract = defineTable({
-  rentalPost: v.id('rentalposts'),
+  rentalPostId: v.id('rentalposts'),
   rentalPostRenterAddress: v.string(),
   rentalPostOwnerAddress: v.string(),
   rentalFee: v.number(),
@@ -19,11 +19,14 @@ export const escrowSmartContract = defineTable({
   status: EscrowSmartContractStatus,
   step2ExpiresAt: v.number(), // Step 2 deadline (lender sends NFT)
   step4ExpiresAt: v.number(), // Step 4 deadline (renter returns NFT)
-});
+})
+  .index('by_rentalPostId', ['rentalPostId'])
+  .index('by_rentalPostRenterAddress', ['rentalPostRenterAddress'])
+  .index('by_rentalPostOwnerAddress', ['rentalPostOwnerAddress']);
 
 export const createEscrowSmartContract = mutation({
   args: {
-    rentalPost: v.id('rentalposts'),
+    rentalPostId: v.id('rentalposts'),
     rentalPostRenterAddress: v.string(),
     rentalPostOwnerAddress: v.string(),
     rentalFee: v.number(),
@@ -36,5 +39,17 @@ export const createEscrowSmartContract = mutation({
       step2ExpiresAt: 24, // 24 hrs eq to 1 day
       step4ExpiresAt: 72, // 72 hrs eq to 3 days
     });
+  },
+});
+
+export const getEscrowSmartContract = query({
+  args: {
+    rentalPostId: v.id('rentalposts'),
+  },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query('escrowSmartContracts')
+      .withIndex('by_rentalPostId', (q) => q.eq('rentalPostId', args.rentalPostId))
+      .unique();
   },
 });

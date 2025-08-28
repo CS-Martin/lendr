@@ -14,6 +14,7 @@ import { useChatSheetStore } from '@/stores/chat-sheet.store';
 import { useMutation, useQuery } from 'convex/react';
 import { api } from '@convex/_generated/api';
 import { useSession } from 'next-auth/react';
+import { useParams, usePathname } from 'next/navigation';
 
 interface BidCardProps {
   bid: Doc<'bids'>;
@@ -22,6 +23,9 @@ interface BidCardProps {
 }
 
 const BidCard = ({ bid, index, hasAcceptedBid }: BidCardProps) => {
+  const params = useParams()
+  const rentalPostId = params.rentalPostId as string;
+
   const { data: session } = useSession();
   const user = session?.user;
 
@@ -40,13 +44,11 @@ const BidCard = ({ bid, index, hasAcceptedBid }: BidCardProps) => {
     }
 
     try {
-      console.log('Creating conversation between:', currentUser._id, 'and', bidderUser._id);
       const conversationId = await createOrGetConversation({
         otherParticipantId: bidderUser._id,
         address: currentUser.address,
       });
 
-      console.log('Opening chat sheet with conversationId:', conversationId);
       openChatSheet(conversationId);
       console.log('Chat sheet should be open now');
     } catch (error) {
@@ -66,11 +68,10 @@ const BidCard = ({ bid, index, hasAcceptedBid }: BidCardProps) => {
       transition={{ duration: 0.5, delay: index * 0.1 }}>
       <Card
         className={`relative transition-all duration-300
-        ${
-          bid.isAccepted
+        ${bid.isAccepted
             ? 'bg-green-900/30 border-green-500 shadow-lg shadow-green-500/30'
             : 'bg-slate-900/50 border-slate-800 hover:border-purple-500/50'
-        }`}>
+          }`}>
         <CardContent className='py-6'>
           {/* Accepted badge */}
           {bid.isAccepted && (
@@ -131,7 +132,7 @@ const BidCard = ({ bid, index, hasAcceptedBid }: BidCardProps) => {
                 asChild
                 variant='outline'
                 className='border-green-500 text-green-400 bg-green-900/40 hover:bg-green-500 cursor-pointer flex-1 hover:scale-101'>
-                <Link href={`/escrow-smart-contract/${bid._id}`}>Proceed to Rental Process</Link>
+                <Link href={`/rentals/${rentalPostId}/escrow`}>Proceed to Rental Process</Link>
               </Button>
             ) : (
               <AcceptBidModal
