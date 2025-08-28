@@ -5,9 +5,12 @@ import { Doc, Id } from '@convex/_generated/dataModel';
 import { useMutation } from 'convex/react';
 import { api } from '@convex/_generated/api';
 import { useSession } from 'next-auth/react';
+import { useProgress } from '@bprogress/next';
+import { toast } from 'sonner';
 
 interface AcceptBidModalProps {
   bid: Doc<'bids'>;
+  rentalPost: Doc<'rentalposts'>
   index: number;
   showAcceptModal: boolean;
   setShowAcceptModal: (show: boolean) => void;
@@ -18,12 +21,14 @@ interface AcceptBidModalProps {
 
 export const AcceptBidModal = ({
   bid,
+  rentalPost,
   showAcceptModal,
   setShowAcceptModal,
   selectedBid,
   setSelectedBid,
   disabled,
 }: AcceptBidModalProps) => {
+  const { start, stop } = useProgress()
   const { data: session } = useSession();
   const user = session?.user;
 
@@ -31,27 +36,78 @@ export const AcceptBidModal = ({
   const createEscrowSmartContract = useMutation(api.escrowSmartContract.createEscrowSmartContract);
   const updateRentalPost = useMutation(api.rentalpost.updateRentalPost);
 
-  const handleAcceptBid = () => {
-    Promise.all([
-      // Accepts bid
-      acceptBid({ bidId: bid._id }),
+  const handleAcceptBid = async () => {
+    start();
 
-      // After accepting bid, create escrow smart contract
-      createEscrowSmartContract({
-        rentalPostId: bid.rentalPostId,
-        rentalPostRenterAddress: bid.bidderAddress as Id<'users'>,
-        rentalPostOwnerAddress: user?.address as Id<'users'>,
-        rentalFee: bid.bidAmount,
-        collateral: bid.bidAmount,
-        status: 'ACTIVE',
-      }),
+    try {
+      // Validate required data
+      if (!user?.address) {
+        throw new Error('User address is not available. Please ensure you are logged in.');
+      }
 
-      // Change rental post status to accepted
-      updateRentalPost({ id: bid.rentalPostId, status: 'RENTED', isBiddable: false }),
-    ]);
+      if (!rentalPost) {
+        throw new Error('Rental post information is missing. Please try refreshing the page.');
+      }
 
-    setShowAcceptModal(false);
+      // Execute all operations in a transaction-like manner
+      await Promise.all([
+        // 1. Accept the bid
+        acceptBid({ bidId: bid._id }).catch(error => {
+          throw new Error(`Failed to accept bid: ${error.message}`);
+        }),
+
+        // 2. Create escrow smart contract
+        createEscrowSmartContract({
+          bidId: bid._id,
+          rentalPostId: bid.rentalPostId,
+          rentalPostRenterAddress: bid.bidderAddress as Id<'users'>,
+          rentalPostOwnerAddress: user.address as Id<'users'>,
+          status: 'ACTIVE',
+        }).catch(error => {
+          throw new Error(`Failed to create escrow: ${error.message}`);
+        }),
+
+        // 3. Update rental post status
+        updateRentalPost({
+          id: bid.rentalPostId,
+          status: 'RENTED',
+          isBiddable: false,
+          // biddingStarttime: 0,
+          // biddingEndtime: 0,
+        }).catch(error => {
+          throw new Error(`Failed to update rental post: ${error.message}`);
+        }),
+      ]);
+
+      // Success - close modal and show success message
+      toast.success('Bid accepted successfully!');
+      setShowAcceptModal(false);
+
+      // Optional: Redirect to escrow page
+      // router.push(`/rentals/${bid.rentalPostId}/escrow`);
+
+    } catch (error) {
+      console.error('Error accepting bid:', error);
+
+      // User-friendly error messages
+      const errorMessage = error instanceof Error
+        ? error.message
+        : 'An unexpected error occurred while processing your request.';
+
+      toast.error(`Error: ${errorMessage}`, {
+        duration: 5000,
+        position: 'top-right',
+      });
+
+      // Re-throw the error for error boundaries or additional error handling
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Detailed error:', error);
+      }
+    } finally {
+      stop();
+    }
   };
+
   return (
     <Dialog
       open={showAcceptModal && selectedBid === bid._id}

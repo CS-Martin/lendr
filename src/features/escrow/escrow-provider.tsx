@@ -1,18 +1,20 @@
 'use client';
 
-import { useState, useEffect } from "react";
-import { EscrowDetails } from "./escrow-details";
-import { EscrowLifecycle } from "./escrow-lifecycle";
-import { useParams } from "next/navigation";
-import { useQuery } from "convex/react";
-import { api } from "@convex/_generated/api";
-import { Id } from "@convex/_generated/dataModel";
+import { useState, useEffect } from 'react';
+import { EscrowDetails } from './escrow-details';
+import { EscrowLifecycle } from './escrow-lifecycle';
+import { useParams } from 'next/navigation';
+import { useQuery } from 'convex/react';
+import { api } from '@convex/_generated/api';
+import { Id } from '@convex/_generated/dataModel';
 
 export function EscrowProvider() {
   const { rentalPostId } = useParams<{ rentalPostId: string }>();
-  const escrowData = useQuery(api.escrowSmartContract.getEscrowSmartContract, { rentalPostId: rentalPostId as Id<'rentalposts'> })
+  const escrowData = useQuery(api.escrowSmartContract.getEscrowSmartContract, {
+    rentalPostId: rentalPostId as Id<'rentalposts'>,
+  });
 
-  console.log(escrowData)
+  console.log(escrowData);
 
   const [timeRemaining, setTimeRemaining] = useState({
     step2: { days: 0, hours: 0, minutes: 0, seconds: 0 },
@@ -31,9 +33,7 @@ export function EscrowProvider() {
           ...prev,
           step2: {
             days: Math.floor(step2Diff / (1000 * 60 * 60 * 24)),
-            hours: Math.floor(
-              (step2Diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
-            ),
+            hours: Math.floor((step2Diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
             minutes: Math.floor((step2Diff % (1000 * 60 * 60)) / (1000 * 60)),
             seconds: Math.floor((step2Diff % (1000 * 60)) / 1000),
           },
@@ -47,9 +47,7 @@ export function EscrowProvider() {
           ...prev,
           step4: {
             days: Math.floor(step4Diff / (1000 * 60 * 60 * 24)),
-            hours: Math.floor(
-              (step4Diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
-            ),
+            hours: Math.floor((step4Diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
             minutes: Math.floor((step4Diff % (1000 * 60 * 60)) / (1000 * 60)),
             seconds: Math.floor((step4Diff % (1000 * 60)) / 1000),
           },
@@ -71,7 +69,7 @@ export function EscrowProvider() {
   }
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <div className='grid grid-cols-1 lg:grid-cols-2 gap-8'>
       <EscrowDetails escrowData={escrowData} />
       {/* <EscrowLifecycle escrowData={escrowData} timeRemaining={timeRemaining} /> */}
     </div>

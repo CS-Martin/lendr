@@ -15,16 +15,16 @@ import { useMutation, useQuery } from 'convex/react';
 import { api } from '@convex/_generated/api';
 import { useSession } from 'next-auth/react';
 import { useParams, usePathname } from 'next/navigation';
+import { rentalpost } from '../../../../convex/rentalpost';
 
 interface BidCardProps {
   bid: Doc<'bids'>;
   index: number;
   hasAcceptedBid: boolean;
+  rentalPost: Doc<'rentalposts'>
 }
 
-const BidCard = ({ bid, index, hasAcceptedBid }: BidCardProps) => {
-  const params = useParams()
-  const rentalPostId = params.rentalPostId as string;
+const BidCard = ({ bid, index, hasAcceptedBid, rentalPost }: BidCardProps) => {
 
   const { data: session } = useSession();
   const user = session?.user;
@@ -132,7 +132,7 @@ const BidCard = ({ bid, index, hasAcceptedBid }: BidCardProps) => {
                 asChild
                 variant='outline'
                 className='border-green-500 text-green-400 bg-green-900/40 hover:bg-green-500 cursor-pointer flex-1 hover:scale-101'>
-                <Link href={`/rentals/${rentalPostId}/escrow`}>Proceed to Rental Process</Link>
+                <Link href={`/rentals/${rentalPost._id}/escrow`}>Proceed to Rental Process</Link>
               </Button>
             ) : (
               <AcceptBidModal
@@ -143,6 +143,7 @@ const BidCard = ({ bid, index, hasAcceptedBid }: BidCardProps) => {
                 selectedBid={selectedBid}
                 setSelectedBid={setSelectedBid}
                 disabled={hasAcceptedBid}
+                rentalPost={rentalPost}
               />
             )}
 

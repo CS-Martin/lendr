@@ -45,7 +45,7 @@ export default function BiddingPage() {
           <BiddingSidebar post={rentalPost} />
         </div>
         <div className='col-span-1 md:col-span-2'>
-          <BidsList post={rentalPost} />
+          <BidsList rentalPost={rentalPost} />
         </div>
       </div>
     </div>

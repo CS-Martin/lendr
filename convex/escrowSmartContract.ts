@@ -11,11 +11,10 @@ export const EscrowSmartContractStatus = v.union(
 );
 
 export const escrowSmartContract = defineTable({
+  bidId: v.id('bids'),
   rentalPostId: v.id('rentalposts'),
   rentalPostRenterAddress: v.string(),
   rentalPostOwnerAddress: v.string(),
-  rentalFee: v.number(),
-  collateral: v.number(),
   status: EscrowSmartContractStatus,
   step2ExpiresAt: v.number(), // Step 2 deadline (lender sends NFT)
   step4ExpiresAt: v.number(), // Step 4 deadline (renter returns NFT)
@@ -26,14 +25,23 @@ export const escrowSmartContract = defineTable({
 
 export const createEscrowSmartContract = mutation({
   args: {
+    bidId: v.id('bids'),
     rentalPostId: v.id('rentalposts'),
     rentalPostRenterAddress: v.string(),
     rentalPostOwnerAddress: v.string(),
-    rentalFee: v.number(),
-    collateral: v.number(),
     status: EscrowSmartContractStatus,
   },
   handler: async (ctx, args) => {
+    // Check if rental post already has an escrow contract
+    const existingContract = await ctx.db
+      .query('escrowSmartContracts')
+      .withIndex('by_rentalPostId', (q) => q.eq('rentalPostId', args.rentalPostId))
+      .unique();
+
+    if (existingContract) {
+      throw new Error('This rental post is already associated with an escrow contract.');
+    }
+
     return await ctx.db.insert('escrowSmartContracts', {
       ...args,
       step2ExpiresAt: 24, // 24 hrs eq to 1 day
