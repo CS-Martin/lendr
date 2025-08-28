@@ -15,6 +15,7 @@ import { api } from '@convex/_generated/api';
 import { ImageSection } from '@/components/shared/nft-components/image-section';
 import { rentalpost } from '../../../convex/rentalpost';
 import { NftMetadata } from 'alchemy-sdk';
+import { truncateText } from '@/lib/utils';
 
 interface EscrowDetailsProps {
   escrowData: Doc<'escrowSmartContracts'>;
@@ -26,13 +27,14 @@ const copyToClipboard = (text: string) => {
 
 export function EscrowDetails({ escrowData }: EscrowDetailsProps) {
   const rentalPost = useQuery(api.rentalpost.getOneRentalPost, { id: escrowData.rentalPostId });
+  const bid = useQuery(api.bids.getBidById, { bidId: escrowData.bidId })
   console.log(rentalPost);
 
   if (rentalPost === undefined) {
     return <div>Loading...</div>;
   }
 
-  if (!rentalPost) {
+  if (!rentalPost || !bid) {
     return null;
   }
 
@@ -52,8 +54,8 @@ export function EscrowDetails({ escrowData }: EscrowDetailsProps) {
           {/* NFT Preview */}
           <div className='text-center'>
             <ImageSection nft={rentalPost.nftMetadata} />
-            <h3 className='text-lg font-semibold text-white mt-4'>{rentalPost.nftMetadata.title}</h3>
-            <Badge className='mt-2 bg-purple-500'>{rentalPost.nftMetadata.category}</Badge>
+            <h3 className='text-lg font-semibold text-white mt-4'>{rentalPost.name}</h3>
+            <Badge className='mt-2 bg-purple-500'>{rentalPost.category}</Badge>
           </div>
 
           <Separator className='bg-slate-800' />
@@ -62,11 +64,11 @@ export function EscrowDetails({ escrowData }: EscrowDetailsProps) {
           <div className='space-y-3 text-sm'>
             <div className='flex justify-between'>
               <span className='text-slate-400'>Lender (Owner)</span>
-              <span className='text-white font-mono'>{escrowData.rentalPostOwnerAddress}</span>
+              <span className='text-white font-mono'>{truncateText(escrowData.rentalPostOwnerAddress)}</span>
             </div>
             <div className='flex justify-between'>
               <span className='text-slate-400'>Renter (Borrower)</span>
-              <span className='text-white font-mono'>{escrowData.rentalPostRenterAddress}</span>
+              <span className='text-white font-mono'>{truncateText(escrowData.rentalPostRenterAddress)}</span>
             </div>
             <div className='flex justify-between'>
               <span className='text-slate-400'>Token ID</span>
@@ -80,11 +82,11 @@ export function EscrowDetails({ escrowData }: EscrowDetailsProps) {
           <div className='bg-slate-800 rounded-lg p-4 space-y-2'>
             <div className='flex justify-between text-sm'>
               <span className='text-slate-400'>Rental Fee</span>
-              <span className='text-white'>{escrowData.rentalFee} ETH</span>
+              <span className='text-white'>{bid?.totalBidAmount} ETH</span>
             </div>
             <div className='flex justify-between text-sm'>
               <span className='text-slate-400'>Collateral</span>
-              <span className='text-cyan-400'>{escrowData.collateral} ETH</span>
+              <span className='text-cyan-400'>{rentalPost.collateral} ETH</span>
             </div>
             <div className='flex justify-between text-sm'>
               <span className='text-slate-400'>Platform Fee</span>
@@ -93,7 +95,7 @@ export function EscrowDetails({ escrowData }: EscrowDetailsProps) {
             <Separator className='bg-slate-700' />
             <div className='flex justify-between text-sm font-semibold'>
               <span className='text-white'>Total Locked</span>
-              <span className='text-purple-400'>{(escrowData.rentalFee + escrowData.collateral).toFixed(5)} ETH</span>
+              <span className='text-purple-400'>{(bid?.totalBidAmount + rentalPost.collateral)} ETH</span>
             </div>
           </div>
 

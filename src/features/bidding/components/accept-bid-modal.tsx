@@ -10,7 +10,7 @@ import { toast } from 'sonner';
 
 interface AcceptBidModalProps {
   bid: Doc<'bids'>;
-  rentalPost: Doc<'rentalposts'>
+  rentalPost: Doc<'rentalposts'>;
   index: number;
   showAcceptModal: boolean;
   setShowAcceptModal: (show: boolean) => void;
@@ -28,7 +28,7 @@ export const AcceptBidModal = ({
   setSelectedBid,
   disabled,
 }: AcceptBidModalProps) => {
-  const { start, stop } = useProgress()
+  const { start, stop } = useProgress();
   const { data: session } = useSession();
   const user = session?.user;
 
@@ -52,7 +52,7 @@ export const AcceptBidModal = ({
       // Execute all operations in a transaction-like manner
       await Promise.all([
         // 1. Accept the bid
-        acceptBid({ bidId: bid._id }).catch(error => {
+        acceptBid({ bidId: bid._id }).catch((error) => {
           throw new Error(`Failed to accept bid: ${error.message}`);
         }),
 
@@ -63,7 +63,7 @@ export const AcceptBidModal = ({
           rentalPostRenterAddress: bid.bidderAddress as Id<'users'>,
           rentalPostOwnerAddress: user.address as Id<'users'>,
           status: 'ACTIVE',
-        }).catch(error => {
+        }).catch((error) => {
           throw new Error(`Failed to create escrow: ${error.message}`);
         }),
 
@@ -74,7 +74,7 @@ export const AcceptBidModal = ({
           isBiddable: false,
           // biddingStarttime: 0,
           // biddingEndtime: 0,
-        }).catch(error => {
+        }).catch((error) => {
           throw new Error(`Failed to update rental post: ${error.message}`);
         }),
       ]);
@@ -85,14 +85,12 @@ export const AcceptBidModal = ({
 
       // Optional: Redirect to escrow page
       // router.push(`/rentals/${bid.rentalPostId}/escrow`);
-
     } catch (error) {
       console.error('Error accepting bid:', error);
 
       // User-friendly error messages
-      const errorMessage = error instanceof Error
-        ? error.message
-        : 'An unexpected error occurred while processing your request.';
+      const errorMessage =
+        error instanceof Error ? error.message : 'An unexpected error occurred while processing your request.';
 
       toast.error(`Error: ${errorMessage}`, {
         duration: 5000,

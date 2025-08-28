@@ -123,6 +123,15 @@ export const getUserBidForRentalPost = query({
   },
 });
 
+export const getBidById = query({
+  args: {
+    bidId: v.id('bids'),
+  },
+  handler: async (ctx, { bidId }) => {
+    return await ctx.db.get(bidId);
+  },
+});
+
 export const getHighestBid = query({
   args: {
     rentalPostId: v.id('rentalposts'),
@@ -168,7 +177,7 @@ export const acceptBid = mutation({
   },
 });
 
-export const rejectsssss = mutation({
+export const rejects = mutation({
   args: { bidId: v.id('bids') },
   handler: async (ctx, { bidId }) => {
     return await ctx.db.patch(bidId, { isAccepted: false });
