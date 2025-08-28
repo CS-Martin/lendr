@@ -4,17 +4,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import Image from 'next/image';
 import { Shield, Copy } from 'lucide-react';
-import { EscrowSmartContract } from './types';
 import { getStatusBadge } from './components';
 import { motion } from 'framer-motion';
 import { Doc } from '@convex/_generated/dataModel';
 import { useQuery } from 'convex/react';
 import { api } from '@convex/_generated/api';
 import { ImageSection } from '@/components/shared/nft-components/image-section';
-import { rentalpost } from '../../../convex/rentalpost';
-import { NftMetadata } from 'alchemy-sdk';
 import { truncateText } from '@/lib/utils';
 
 interface EscrowDetailsProps {
@@ -27,7 +23,7 @@ const copyToClipboard = (text: string) => {
 
 export function EscrowDetails({ escrowData }: EscrowDetailsProps) {
   const rentalPost = useQuery(api.rentalpost.getOneRentalPost, { id: escrowData.rentalPostId });
-  const bid = useQuery(api.bids.getBidById, { bidId: escrowData.bidId })
+  const bid = useQuery(api.bids.getBidById, { bidId: escrowData.bidId });
   console.log(rentalPost);
 
   if (rentalPost === undefined) {
@@ -95,7 +91,7 @@ export function EscrowDetails({ escrowData }: EscrowDetailsProps) {
             <Separator className='bg-slate-700' />
             <div className='flex justify-between text-sm font-semibold'>
               <span className='text-white'>Total Locked</span>
-              <span className='text-purple-400'>{(bid?.totalBidAmount + rentalPost.collateral)} ETH</span>
+              <span className='text-purple-400'>{bid?.totalBidAmount + rentalPost.collateral} ETH</span>
             </div>
           </div>
 

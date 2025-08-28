@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { EscrowDetails } from './escrow-details';
-import { EscrowLifecycle } from './escrow-lifecycle';
 import { useParams } from 'next/navigation';
 import { useQuery } from 'convex/react';
 import { api } from '@convex/_generated/api';
