@@ -7,9 +7,10 @@ import { MockData, StepStatus } from './types';
 import { useMemo } from 'react';
 import { getStepIcon } from './components';
 import { Badge } from '@/components/ui/badge';
+import { Doc } from '@convex/_generated/dataModel';
 
 interface EscrowLifecycleProps {
-  escrowData: MockData;
+  escrowData: Doc<'escrowSmartContracts'>;
   timeRemaining: {
     step2: { days: number; hours: number; minutes: number; seconds: number };
     step4: { days: number; hours: number; minutes: number; seconds: number };
@@ -94,13 +95,12 @@ export function EscrowLifecycle({ escrowData, timeRemaining }: EscrowLifecyclePr
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: index * 0.1 }}>
             <Card
-              className={`border-slate-800 ${
-                step.status === 'COMPLETED'
+              className={`border-slate-800 ${step.status === 'COMPLETED'
                   ? 'bg-green-900/20 border-green-800'
                   : step.status === 'ACTIVE'
                     ? 'bg-blue-900/20 border-blue-800'
                     : 'bg-slate-900/50'
-              }`}>
+                }`}>
               <CardContent className='p-6'>
                 <div className='flex items-start space-x-4'>
                   <div className='flex-shrink-0 mt-1'>{getStepIcon(step.status as StepStatus)}</div>

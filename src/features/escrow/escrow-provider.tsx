@@ -6,6 +6,7 @@ import { useParams } from 'next/navigation';
 import { useQuery } from 'convex/react';
 import { api } from '@convex/_generated/api';
 import { Id } from '@convex/_generated/dataModel';
+import { EscrowLifecycle } from './escrow-lifecycle';
 
 export function EscrowProvider() {
   const { rentalPostId } = useParams<{ rentalPostId: string }>();
