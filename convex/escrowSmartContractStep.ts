@@ -54,7 +54,9 @@ export const completeStep = mutation({
     await ctx.db.patch(currentStep._id, {
       status: 'COMPLETED',
       timestamp: Date.now(),
-      txHash,
+
+      // Hardcode for now
+      txHash: '0xabc123de...89abc123',
     });
 
     // If there is a next step, update it to ACTIVE
@@ -64,6 +66,16 @@ export const completeStep = mutation({
       .filter((q) => q.eq(q.field('escrowId'), escrowId))
       .filter((q) => q.eq(q.field('stepNumber'), nextStepNumber))
       .unique();
+
+    // If step 2, update escrowSmartContract step2ExpiresAt to 24 hours from now
+    if (nextStepNumber === 2) {
+      await ctx.db.patch(escrowId, { step2ExpiresAt: Date.now() + 24 * 60 * 60 * 1000 });
+    }
+
+    // If step 4, update escrowSmartContract step4ExpiresAt to 72 hours from now
+    if (nextStepNumber === 4) {
+      await ctx.db.patch(escrowId, { step4ExpiresAt: Date.now() + 72 * 60 * 60 * 1000 });
+    }
 
     if (nextStep) {
       await ctx.db.patch(nextStep._id, { status: 'ACTIVE', timestamp: Date.now() });

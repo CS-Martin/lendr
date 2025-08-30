@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/button';
+import { truncateText } from '@/lib/utils';
 import { Copy, ExternalLink } from 'lucide-react';
 
 interface TransactionDetailsProps {
@@ -16,21 +17,18 @@ export function TransactionDetails({ txHash, timestamp }: TransactionDetailsProp
       <div className='flex items-center justify-between'>
         <span className='text-xs text-slate-400'>Transaction Hash</span>
         <div className='flex items-center space-x-2'>
-          <code className='text-xs text-slate-300 font-mono'>
-            {txHash.substring(0, 10)}...
-            {txHash.substring(txHash.length - 8)}
-          </code>
+          <code className='text-xs text-slate-300 font-mono'>{truncateText(txHash)}</code>
           <Button
             size='sm'
             variant='ghost'
             onClick={() => copyToClipboard(txHash!)}
-            className='text-slate-400 hover:text-white p-1'>
+            className='hidden md:block text-slate-400 hover:text-white p-1'>
             <Copy className='w-3 h-3' />
           </Button>
           <Button
             size='sm'
             variant='ghost'
-            className='text-slate-400 hover:text-white p-1'>
+            className='hidden md:block text-slate-400 hover:text-white p-1'>
             <ExternalLink className='w-3 h-3' />
           </Button>
         </div>

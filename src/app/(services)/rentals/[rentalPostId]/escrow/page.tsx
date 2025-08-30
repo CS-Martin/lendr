@@ -1,12 +1,10 @@
 'use client';
 
 import { useParams } from 'next/navigation';
-import { useQuery } from 'convex/react';
-import { api } from '@convex/_generated/api';
 import { Id } from '@convex/_generated/dataModel';
 import { EscrowLifecycle } from '@/features/escrow/components/escrow-lifecycle';
 import { EscrowDetails } from '@/features/escrow/components/escrow-details';
-import { EscrowLifecycleProvider, useEscrowLifecycle } from '@/features/escrow/providers/escrow-provider';
+import { useEscrowLifecycle } from '@/features/escrow/providers/escrow-provider';
 import { useEffect } from 'react';
 
 export default function EscrowPage() {

@@ -22,7 +22,7 @@ export function EscrowLifecycleHeader({ completedSteps, progress, steps }: Escro
         </div>
         <Progress
           value={progress}
-          className='h-2'
+          className='h-2 bg-white/90 [&>div]:bg-purple-500 [&>div]:rounded-full'
         />
         <div className='mt-2 text-sm text-slate-400'>
           {completedSteps} of {totalSteps} steps completed

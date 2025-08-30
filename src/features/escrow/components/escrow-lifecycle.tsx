@@ -45,8 +45,8 @@ export function EscrowLifecycle() {
 
       {currentStep.stepNumber === 2 && (
         <Card className='bg-gradient-to-r from-orange-900/50 to-red-900/50 border-orange-800'>
-          <CardContent className='p-6 text-center'>
-            <h3 className='text-xl font-semibold text-white mb-2'>⚠️ Deadline Approaching</h3>
+          <CardContent className='p-2 text-center'>
+            <h3 className='text-base lg:text-xl font-semibold text-white mb-2'>⚠️ Deadline Approaching</h3>
             <p className='text-orange-200 mb-4'>Lender must send NFT within:</p>
             <DeadlineTimer />
             <div className='text-sm text-red-300'>

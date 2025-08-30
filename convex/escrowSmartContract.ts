@@ -16,8 +16,8 @@ export const escrowSmartContract = defineTable({
   rentalPostRenterAddress: v.string(),
   rentalPostOwnerAddress: v.string(),
   status: EscrowSmartContractStatus,
-  step2ExpiresAt: v.number(), // Step 2 deadline (lender sends NFT)
-  step4ExpiresAt: v.number(), // Step 4 deadline (renter returns NFT)
+  step2ExpiresAt: v.optional(v.number()), // Step 2 deadline (lender sends NFT)
+  step4ExpiresAt: v.optional(v.number()), // Step 4 deadline (renter returns NFT)
 })
   .index('by_rentalPostId', ['rentalPostId'])
   .index('by_rentalPostRenterAddress', ['rentalPostRenterAddress'])
@@ -44,8 +44,6 @@ export const createEscrowSmartContract = mutation({
 
     const escrowId = await ctx.db.insert('escrowSmartContracts', {
       ...args,
-      step2ExpiresAt: 24, // 24 hrs eq to 1 day
-      step4ExpiresAt: 72, // 72 hrs eq to 3 days
     });
 
     // Create the steps

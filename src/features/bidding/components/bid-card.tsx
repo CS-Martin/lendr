@@ -65,11 +65,10 @@ const BidCard = ({ bid, index, hasAcceptedBid, rentalPost }: BidCardProps) => {
       transition={{ duration: 0.5, delay: index * 0.1 }}>
       <Card
         className={`relative transition-all duration-300
-        ${
-          bid.isAccepted
+        ${bid.isAccepted
             ? 'bg-green-900/30 border-green-500 shadow-lg shadow-green-500/30'
             : 'bg-slate-900/50 border-slate-800 hover:border-purple-500/50'
-        }`}>
+          }`}>
         <CardContent className='py-6'>
           {/* Accepted badge */}
           {bid.isAccepted && (
@@ -122,6 +121,18 @@ const BidCard = ({ bid, index, hasAcceptedBid, rentalPost }: BidCardProps) => {
               </div>
             </div>
           </div>
+
+          {bid.message && (
+            <div className='bg-slate-800/50 rounded-lg p-3 mb-4'>
+              <div className='flex items-start space-x-2'>
+                <MessageSquare className='w-4 h-4 text-slate-400 mt-0.5' />
+                <div>
+                  <div className='text-xs text-slate-400 mb-1'>Message from bidder:</div>
+                  <div className='text-sm text-slate-300 italic'>&apos;{bid.message}&apos;</div>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Actions */}
           <div className='flex flex-col sm:flex-row gap-3'>

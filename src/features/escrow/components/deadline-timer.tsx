@@ -1,42 +1,33 @@
 import { useState, useEffect } from 'react';
 import { useEscrowLifecycle } from '../providers/escrow-provider';
+import { CountdownTimer } from '@/features/marketplace/components/countdown-timer';
 
 export function DeadlineTimer() {
-  const { timeRemainingStep2 } = useEscrowLifecycle();
+  const { escrow, defaultEscrow } = useEscrowLifecycle();
 
-  const [timeLeft, setTimeLeft] = useState(timeRemainingStep2);
+  const endTime = escrow?.step2ExpiresAt ? new Date(escrow.step2ExpiresAt).getTime() : 0;
+  const [timeLeft, setTimeLeft] = useState(endTime - Date.now());
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      setTimeLeft(timeRemainingStep2 - Date.now());
+    if (timeLeft <= 0) {
+      defaultEscrow(escrow!._id);
+      return;
+    }
+
+    const interval = setInterval(() => {
+      const newTimeLeft = endTime - Date.now();
+      setTimeLeft(newTimeLeft);
+
+      if (newTimeLeft <= 0) {
+        clearInterval(interval);
+        defaultEscrow(escrow!._id);
+      }
     }, 1000);
 
-    return () => clearInterval(timer);
-  }, [timeRemainingStep2]);
+    return () => clearInterval(interval);
+  }, [endTime, escrow, defaultEscrow, timeLeft]);
 
-  const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
-  const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-  const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
-  const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+  if (timeLeft <= 0) return <span>Expired</span>;
 
-  return (
-    <div className='grid grid-cols-4 gap-4 mb-4'>
-      <div>
-        <div className='text-3xl font-bold text-orange-400'>{days}</div>
-        <div className='text-sm text-slate-400'>Days</div>
-      </div>
-      <div>
-        <div className='text-3xl font-bold text-orange-400'>{hours}</div>
-        <div className='text-sm text-slate-400'>Hours</div>
-      </div>
-      <div>
-        <div className='text-3xl font-bold text-orange-400'>{minutes}</div>
-        <div className='text-sm text-slate-400'>Minutes</div>
-      </div>
-      <div>
-        <div className='text-3xl font-bold text-orange-400'>{seconds}</div>
-        <div className='text-sm text-slate-400'>Seconds</div>
-      </div>
-    </div>
-  );
+  return <CountdownTimer biddingEndTime={new Date(endTime)} />;
 }

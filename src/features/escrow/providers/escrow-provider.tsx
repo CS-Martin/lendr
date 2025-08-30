@@ -4,10 +4,14 @@ import { createContext, useContext, useState, ReactNode, useMemo, useEffect } fr
 import { useMutation, useQuery } from 'convex/react';
 import { api } from '../../../../convex/_generated/api';
 import { Doc, Id } from '../../../../convex/_generated/dataModel';
+import { useAccount } from 'wagmi';
+import { useProgress } from '@bprogress/next';
 
 interface EscrowLifecycleContextType {
   escrow: Doc<'escrowSmartContracts'> | null;
   steps: Doc<'escrowSmartContractSteps'>[];
+  isLender: boolean;
+  isRenter: boolean;
   currentStep: Doc<'escrowSmartContractSteps'> | null;
   rentalPost: Doc<'rentalposts'> | null;
   bid: Doc<'bids'> | null;
@@ -25,11 +29,11 @@ interface EscrowLifecycleContextType {
 const EscrowLifecycleContext = createContext<EscrowLifecycleContextType | undefined>(undefined);
 
 export const EscrowLifecycleProvider = ({ children }: { children: ReactNode }) => {
+  const { start, stop } = useProgress();
+  const { address } = useAccount();
   const [rentalPostId, setRentalPostId] = useState<Id<'rentalposts'> | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
-  const [timeRemainingStep2, setTimeRemainingStep2] = useState(0);
-  const [timeRemainingStep4, setTimeRemainingStep4] = useState(0);
 
   const escrowData = useQuery(api.escrowSmartContract.getEscrowSmartContract, rentalPostId ? { rentalPostId } : 'skip');
   const rentalPost = useQuery(api.rentalpost.get, escrowData?.rentalPostId ? { id: escrowData.rentalPostId } : 'skip');
@@ -47,25 +51,8 @@ export const EscrowLifecycleProvider = ({ children }: { children: ReactNode }) =
   const steps = useMemo(() => (escrowData ? escrowData.steps : []), [escrowData]);
   const currentStep = useMemo(() => steps.find((step) => step.status === 'ACTIVE') || null, [steps]);
 
-  useEffect(() => {
-    if (escrowData?.step2ExpiresAt) {
-      const interval = setInterval(() => {
-        const remaining = escrowData.step2ExpiresAt - Date.now();
-        setTimeRemainingStep2(Math.max(0, remaining));
-      }, 1000);
-      return () => clearInterval(interval);
-    }
-  }, [escrowData?.step2ExpiresAt]);
-
-  useEffect(() => {
-    if (escrowData?.step4ExpiresAt) {
-      const interval = setInterval(() => {
-        const remaining = escrowData.step4ExpiresAt - Date.now();
-        setTimeRemainingStep4(Math.max(0, remaining));
-      }, 1000);
-      return () => clearInterval(interval);
-    }
-  }, [escrowData?.step4ExpiresAt]);
+  const isLender = address === escrowData?.rentalPostOwnerAddress;
+  const isRenter = address === escrowData?.rentalPostRenterAddress;
 
   const completeStep = async (args: { escrowId: Id<'escrowSmartContracts'>; stepNumber: number; txHash?: string }) => {
     setIsLoading(true);
@@ -111,14 +98,25 @@ export const EscrowLifecycleProvider = ({ children }: { children: ReactNode }) =
     }
   };
 
+  // Run bProgress if loading
+  useEffect(() => {
+    if (isLoading) {
+      start();
+    } else {
+      stop();
+    }
+  }, [isLoading, start, stop]);
+
   const value = {
     escrow: escrowData || null,
     steps,
     currentStep,
+    isLender,
+    isRenter,
     rentalPost: rentalPost || null,
     bid: bid || null,
-    timeRemainingStep2,
-    timeRemainingStep4,
+    timeRemainingStep2: escrowData?.step2ExpiresAt || 0,
+    timeRemainingStep4: escrowData?.step4ExpiresAt || 0,
     isLoading: isLoading || (escrowData === undefined && rentalPostId !== null),
     error,
     setRentalPostId,
