@@ -25,11 +25,11 @@ export function EscrowStep({ step, index }: EscrowStepProps) {
         if (step.status === 'COMPLETED') return <Step1Completed />;
         return null;
       case 2:
-        return step.status === 'ACTIVE' ? <Step2Active step={step} /> : null;
+        return step.status === 'ACTIVE' ? <Step2Active /> : null;
       case 3:
         return step.status === 'PENDING' ? <Step3Pending /> : null;
       case 4:
-        return step.status === 'PENDING' ? <Step4Pending step={step} /> : null;
+        return step.status === 'PENDING' ? <Step4Pending /> : null;
       case 5:
         return step.status === 'PENDING' ? <Step5Pending /> : null;
       default:
@@ -44,13 +44,12 @@ export function EscrowStep({ step, index }: EscrowStepProps) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: index * 0.1 }}>
       <Card
-        className={`border-slate-800 ${
-          step.status === 'COMPLETED'
-            ? 'bg-green-900/20 border-green-800'
-            : step.status === 'ACTIVE'
-              ? 'bg-blue-900/20 border-blue-800'
-              : 'bg-slate-900/50'
-        }`}>
+        className={`border-slate-800 ${step.status === 'COMPLETED'
+          ? 'bg-green-900/20 border-green-800'
+          : step.status === 'ACTIVE'
+            ? 'bg-blue-900/20 border-blue-800'
+            : 'bg-slate-900/50'
+          }`}>
         <CardContent className='p-6'>
           <div className='flex flex-col lg:flex-row items-start space-y-4 md:space-y-0 space-x-4'>
             <div className='flex-shrink-0 mt-1'>{getStepIcon(step.status as StepStatus)}</div>
