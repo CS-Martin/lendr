@@ -1,5 +1,5 @@
 import { CheckCircle, Clock, AlertCircle, XCircle } from 'lucide-react';
-import { StepStatus } from '../types/step-status';
+import { StepStatus } from '../types/escrow-step';
 
 export const getStepIcon = (status: StepStatus) => {
   switch (status) {

@@ -7,13 +7,12 @@ import { HelpSection } from './help-section';
 import { Card, CardContent } from '@/components/ui/card';
 import { useQuery } from 'convex/react';
 import { api } from '@convex/_generated/api';
-import { useEscrowLifecycle } from '../contexts/escrow-lifecycle-context';
+import { useEscrowLifecycle } from '../providers/escrow-provider';
 
 export function EscrowLifecycle() {
-  const { escrowData, timeRemaining } = useEscrowLifecycle();
-  const steps = useQuery(api.escrowSmartContractStep.getEscrowSmartContractSteps, {
-    escrowId: escrowData._id,
-  });
+  const { escrow } = useEscrowLifecycle();
+
+  const steps = useQuery(api.escrowSmartContractStep.getEscrowSmartContractSteps, escrow?._id ? { escrowId: escrow._id } : 'skip');
 
   const { completedSteps, progress, currentStep } = useMemo(() => {
     if (!steps) {
@@ -57,7 +56,7 @@ export function EscrowLifecycle() {
           <CardContent className='p-6 text-center'>
             <h3 className='text-xl font-semibold text-white mb-2'>⚠️ Deadline Approaching</h3>
             <p className='text-orange-200 mb-4'>Lender must send NFT within:</p>
-            <DeadlineTimer deadline={escrowData.step2ExpiresAt} />
+            <DeadlineTimer />
             <div className='text-sm text-red-300'>
               If deadline passes → Escrow will be CANCELLED and funds returned to renter
             </div>

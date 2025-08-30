@@ -1,6 +1,5 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { useEscrowLifecycle } from '../contexts/escrow-lifecycle-context';
 import { Doc } from '@convex/_generated/dataModel';
 
 interface EscrowLifecycleHeaderProps {

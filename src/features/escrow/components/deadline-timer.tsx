@@ -1,19 +1,18 @@
 import { useState, useEffect } from 'react';
+import { useEscrowLifecycle } from '../providers/escrow-provider';
 
-interface DeadlineTimerProps {
-  deadline: number;
-}
+export function DeadlineTimer() {
+  const { timeRemainingStep2 } = useEscrowLifecycle();
 
-export function DeadlineTimer({ deadline }: DeadlineTimerProps) {
-  const [timeLeft, setTimeLeft] = useState(deadline - Date.now());
+  const [timeLeft, setTimeLeft] = useState(timeRemainingStep2);
 
   useEffect(() => {
     const timer = setInterval(() => {
-      setTimeLeft(deadline - Date.now());
+      setTimeLeft(timeRemainingStep2 - Date.now());
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [deadline]);
+  }, [timeRemainingStep2]);
 
   const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
   const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));

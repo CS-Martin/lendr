@@ -54,9 +54,15 @@ export const updateRentalPost = mutation({
     biddingEndtime: v.optional(v.number()),
     status: v.optional(RentalListingStatus),
   },
+  handler: async (ctx, { id }) => {
+    return await ctx.db.get(id);
+  },
+});
+
+export const get = query({
+  args: { id: v.id('rentalposts') },
   handler: async (ctx, args) => {
-    const { id, ...rest } = args;
-    return await ctx.db.patch(id, rest);
+    return await ctx.db.get(args.id);
   },
 });
 
@@ -69,7 +75,7 @@ export const deleteRentalPost = mutation({
 
 export const getOneRentalPost = query({
   args: {
-    id: v.optional(v.id('rentalposts')),
+    id: v.id('rentalposts'),
   },
   handler: async (ctx, args) => {
     const rentalPost = await ctx.db.get(args.id as Id<'rentalposts'>);

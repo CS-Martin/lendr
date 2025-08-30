@@ -1,9 +1,13 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { useEscrowLifecycle } from '../contexts/escrow-lifecycle-context';
+import { useEscrowLifecycle } from '../providers/escrow-provider';
 
 export function HelpSection() {
-  const { escrowData } = useEscrowLifecycle();
+  const { escrow } = useEscrowLifecycle();
+
+  if (!escrow) {
+    return null;
+  }
 
   return (
     <Card className='bg-slate-900/50 border-slate-800'>
@@ -28,7 +32,7 @@ export function HelpSection() {
         </div>
         <div className='mt-4 p-3 bg-purple-900/20 border border-purple-800 rounded-lg'>
           <div className='text-sm text-purple-300'>
-            <strong>Current Status:</strong> {escrowData.status}
+            <strong>Current Status:</strong> {escrow.status}
           </div>
         </div>
         <Button

@@ -1,5 +1,6 @@
 import { Footer } from '@/components/shared/layout/footer';
 import MainNavbar from '@/components/shared/layout/main-navbar';
+import { EscrowLifecycleProvider } from '@/features/escrow/providers/escrow-provider';
 import { ReactNode } from 'react';
 
 interface ServicesLayoutProps {
@@ -8,12 +9,14 @@ interface ServicesLayoutProps {
 
 export default function ServicesLayout({ children }: ServicesLayoutProps) {
   return (
-    <div className='flex flex-col min-h-screen'>
-      <MainNavbar />
+    <EscrowLifecycleProvider>
+      <div className='flex flex-col min-h-screen'>
+        <MainNavbar />
 
-      <main>{children}</main>
+        <main>{children}</main>
 
-      <Footer />
-    </div>
+        <Footer />
+      </div>
+    </EscrowLifecycleProvider>
   );
 }

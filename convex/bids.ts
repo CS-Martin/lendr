@@ -126,7 +126,7 @@ export const getUserBidForRentalPost = query({
 
 export const getBidById = query({
   args: {
-    bidId: v.optional(v.id('bids')),
+    bidId: v.id('bids'),
   },
   handler: async (ctx, { bidId }) => {
     return await ctx.db.get(bidId as Id<'bids'>);

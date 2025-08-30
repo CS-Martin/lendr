@@ -1,4 +1,4 @@
-import { useEscrowLifecycle } from '../../contexts/escrow-lifecycle-context';
+import { useEscrowLifecycle } from '../../providers/escrow-provider';
 
 export function Step5Pending() {
   const { rentalPost } = useEscrowLifecycle();

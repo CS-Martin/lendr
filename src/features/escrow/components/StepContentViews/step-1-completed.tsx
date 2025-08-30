@@ -1,8 +1,8 @@
 import { CheckCircle } from 'lucide-react';
-import { useEscrowLifecycle } from '../../contexts/escrow-lifecycle-context';
+import { useEscrowLifecycle } from '../../providers/escrow-provider';
 
 export function Step1Completed() {
-  const { rentalPost, escrowData } = useEscrowLifecycle();
+  const { rentalPost } = useEscrowLifecycle();
 
   return (
     <div className='bg-green-900/20 border border-green-800 rounded-lg p-4'>

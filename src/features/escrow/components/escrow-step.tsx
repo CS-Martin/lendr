@@ -9,8 +9,8 @@ import { Step4Pending } from './StepContentViews/step-4-pending';
 import { Step5Pending } from './StepContentViews/step-5-pending';
 import { TransactionDetails } from './transaction-details';
 import { Doc } from '@convex/_generated/dataModel';
-import { StepStatus } from '../types/step-status';
-import { useEscrowLifecycle } from '../contexts/escrow-lifecycle-context';
+import { StepStatus } from '../types/escrow-step';
+import { useEscrowLifecycle } from '../providers/escrow-provider';
 
 interface EscrowStepProps {
   step: Doc<'escrowSmartContractSteps'>;
@@ -18,7 +18,7 @@ interface EscrowStepProps {
 }
 
 export function EscrowStep({ step, index }: EscrowStepProps) {
-  const { escrowData } = useEscrowLifecycle();
+  const { escrow } = useEscrowLifecycle();
 
   const renderStepContent = () => {
     switch (step.stepNumber) {
@@ -45,10 +45,10 @@ export function EscrowStep({ step, index }: EscrowStepProps) {
       transition={{ duration: 0.5, delay: index * 0.1 }}>
       <Card
         className={`border-slate-800 ${step.status === 'COMPLETED'
-            ? 'bg-green-900/20 border-green-800'
-            : step.status === 'ACTIVE'
-              ? 'bg-blue-900/20 border-blue-800'
-              : 'bg-slate-900/50'
+          ? 'bg-green-900/20 border-green-800'
+          : step.status === 'ACTIVE'
+            ? 'bg-blue-900/20 border-blue-800'
+            : 'bg-slate-900/50'
           }`}>
         <CardContent className='p-6'>
           <div className='flex items-start space-x-4'>
