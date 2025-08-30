@@ -7,7 +7,7 @@ import { HelpSection } from './help-section';
 import { Card, CardContent } from '@/components/ui/card';
 import { useQuery } from 'convex/react';
 import { api } from '@convex/_generated/api';
-import { useEscrowLifecycle } from './escrow-lifecycle-context';
+import { useEscrowLifecycle } from '../contexts/escrow-lifecycle-context';
 
 export function EscrowLifecycle() {
   const { escrowData, timeRemaining } = useEscrowLifecycle();

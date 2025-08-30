@@ -11,7 +11,7 @@ import { useQuery } from 'convex/react';
 import { api } from '@convex/_generated/api';
 import { ImageSection } from '@/components/shared/nft-components/image-section';
 import { truncateText } from '@/lib/utils';
-import { useEscrowLifecycle } from './escrow-lifecycle-context';
+import { useEscrowLifecycle } from '../contexts/escrow-lifecycle-context';
 
 const copyToClipboard = (text: string) => {
   navigator.clipboard.writeText(text);

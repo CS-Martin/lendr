@@ -2,6 +2,7 @@
 import { defineTable, paginationOptsValidator } from 'convex/server';
 import { v } from 'convex/values';
 import { mutation, query } from './_generated/server';
+import { Id } from './_generated/dataModel';
 
 export const bids = defineTable({
   rentalPostId: v.id('rentalposts'),
@@ -125,10 +126,10 @@ export const getUserBidForRentalPost = query({
 
 export const getBidById = query({
   args: {
-    bidId: v.id('bids'),
+    bidId: v.optional(v.id('bids')),
   },
   handler: async (ctx, { bidId }) => {
-    return await ctx.db.get(bidId);
+    return await ctx.db.get(bidId as Id<'bids'>);
   },
 });
 

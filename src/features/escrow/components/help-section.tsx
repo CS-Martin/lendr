@@ -1,6 +1,6 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { useEscrowLifecycle } from './escrow-lifecycle-context';
+import { useEscrowLifecycle } from '../contexts/escrow-lifecycle-context';
 
 export function HelpSection() {
   const { escrowData } = useEscrowLifecycle();
