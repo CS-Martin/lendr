@@ -1,8 +1,5 @@
-import { motion } from 'framer-motion';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { getStepIcon } from './utils'; // Assuming you have a utils file for getStepIcon
 import { Step1Completed } from './StepContentViews/step-1-completed';
+import { Step1Active } from './StepContentViews/step-1-active';
 import { Step2Active } from './StepContentViews/step-2-active';
 import { Step3Pending } from './StepContentViews/step-3-pending';
 import { Step4Pending } from './StepContentViews/step-4-pending';
@@ -10,7 +7,10 @@ import { Step5Pending } from './StepContentViews/step-5-pending';
 import { TransactionDetails } from './transaction-details';
 import { Doc } from '@convex/_generated/dataModel';
 import { StepStatus } from '../types/escrow-step';
-import { useEscrowLifecycle } from '../providers/escrow-provider';
+import { Card, CardContent } from '@/components/ui/card';
+import { motion } from 'framer-motion';
+import { getStepIcon } from './utils';
+import { Badge } from '@/components/ui/badge';
 
 interface EscrowStepProps {
   step: Doc<'escrowSmartContractSteps'>;
@@ -18,12 +18,13 @@ interface EscrowStepProps {
 }
 
 export function EscrowStep({ step, index }: EscrowStepProps) {
-  const { escrow } = useEscrowLifecycle();
 
   const renderStepContent = () => {
     switch (step.stepNumber) {
       case 1:
-        return step.status === 'COMPLETED' ? <Step1Completed /> : null;
+        if (step.status === 'ACTIVE') return <Step1Active />;
+        if (step.status === 'COMPLETED') return <Step1Completed />;
+        return null;
       case 2:
         return step.status === 'ACTIVE' ? <Step2Active step={step} /> : null;
       case 3:
@@ -44,13 +45,12 @@ export function EscrowStep({ step, index }: EscrowStepProps) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: index * 0.1 }}>
       <Card
-        className={`border-slate-800 ${
-          step.status === 'COMPLETED'
-            ? 'bg-green-900/20 border-green-800'
-            : step.status === 'ACTIVE'
-              ? 'bg-blue-900/20 border-blue-800'
-              : 'bg-slate-900/50'
-        }`}>
+        className={`border-slate-800 ${step.status === 'COMPLETED'
+          ? 'bg-green-900/20 border-green-800'
+          : step.status === 'ACTIVE'
+            ? 'bg-blue-900/20 border-blue-800'
+            : 'bg-slate-900/50'
+          }`}>
         <CardContent className='p-6'>
           <div className='flex items-start space-x-4'>
             <div className='flex-shrink-0 mt-1'>{getStepIcon(step.status as StepStatus)}</div>

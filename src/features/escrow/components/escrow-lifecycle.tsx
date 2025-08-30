@@ -5,40 +5,29 @@ import { EscrowStep } from './escrow-step';
 import { DeadlineTimer } from './deadline-timer';
 import { HelpSection } from './help-section';
 import { Card, CardContent } from '@/components/ui/card';
-import { useQuery } from 'convex/react';
-import { api } from '@convex/_generated/api';
 import { useEscrowLifecycle } from '../providers/escrow-provider';
 
 export function EscrowLifecycle() {
-  const { escrow } = useEscrowLifecycle();
+  const { steps, currentStep } = useEscrowLifecycle();
 
-  const steps = useQuery(
-    api.escrowSmartContractStep.getEscrowSmartContractSteps,
-    escrow?._id ? { escrowId: escrow._id } : 'skip',
-  );
-
-  const { completedSteps, progress, currentStep } = useMemo(() => {
+  const { completedSteps, progress } = useMemo(() => {
     if (!steps) {
       return {
         completedSteps: 0,
         progress: 0,
-        currentStep: { stepNumber: 0, status: 'PENDING' as const },
       };
     }
 
     const completed = steps.filter((step) => step.status === 'COMPLETED').length;
     const progress = (completed / steps.length) * 100;
-    const current = steps.find((step) => step.status === 'ACTIVE') ||
-      steps[0] || { stepNumber: 0, status: 'PENDING' as const };
 
     return {
       completedSteps: completed,
       progress,
-      currentStep: current,
     };
   }, [steps]);
 
-  if (!steps) {
+  if (!steps || !currentStep) {
     return null;
   }
 

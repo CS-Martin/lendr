@@ -2,7 +2,11 @@ import { CheckCircle } from 'lucide-react';
 import { useEscrowLifecycle } from '../../providers/escrow-provider';
 
 export function Step1Completed() {
-  const { rentalPost } = useEscrowLifecycle();
+  const { bid } = useEscrowLifecycle();
+
+  if (!bid) {
+    return null;
+  }
 
   return (
     <div className='bg-green-900/20 border border-green-800 rounded-lg p-4'>
@@ -10,7 +14,7 @@ export function Step1Completed() {
         <CheckCircle className='w-4 h-4' />
         <span className='font-semibold'>Payment Successful</span>
       </div>
-      <div className='text-sm text-slate-300'>Total deposited: 123123 ETH</div>
+      <div className='text-sm text-slate-300'>Total deposited: {bid?.bidAmount} ETH</div>
     </div>
   );
 }
