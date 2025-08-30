@@ -63,13 +63,13 @@ export function Step2Active() {
                     {/* Get deadline from now + rentalDuration, in Thursday, 24, 2025 12:00:00 */}
                     {bid?.rentalDuration
                       ? new Date(Date.now() + bid.rentalDuration * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', {
-                          weekday: 'long',
-                          month: 'long',
-                          day: 'numeric',
-                          year: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })
+                        weekday: 'long',
+                        month: 'long',
+                        day: 'numeric',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })
                       : 'N/A'}
                   </span>
                 </div>

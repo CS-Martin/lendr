@@ -1,6 +1,5 @@
 import { AlertCircle } from 'lucide-react';
 
-
 export function Step4Pending() {
   return (
     <div className='bg-slate-800 rounded-lg p-4'>
