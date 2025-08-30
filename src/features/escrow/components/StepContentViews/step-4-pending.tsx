@@ -1,4 +1,3 @@
-
 import { AlertCircle } from 'lucide-react';
 import { Doc } from '@convex/_generated/dataModel';
 

@@ -9,11 +9,7 @@ interface EscrowLifecycleHeaderProps {
   steps: Doc<'escrowSmartContractSteps'>[];
 }
 
-export function EscrowLifecycleHeader({
-  completedSteps,
-  progress,
-  steps,
-}: EscrowLifecycleHeaderProps) {
+export function EscrowLifecycleHeader({ completedSteps, progress, steps }: EscrowLifecycleHeaderProps) {
   const currentStep = steps?.find((step) => step.status === 'ACTIVE') || steps?.[0];
   const currentStepNumber = currentStep?.stepNumber ?? 0;
   const totalSteps = steps?.length || 0;

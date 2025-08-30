@@ -2,7 +2,7 @@ import { CheckCircle } from 'lucide-react';
 import { useEscrowLifecycle } from '../escrow-lifecycle-context';
 
 export function Step1Completed() {
-  const { escrowData } = useEscrowLifecycle();
+  const { rentalPost, escrowData } = useEscrowLifecycle();
 
   return (
     <div className='bg-green-900/20 border border-green-800 rounded-lg p-4'>
@@ -11,8 +11,7 @@ export function Step1Completed() {
         <span className='font-semibold'>Payment Successful</span>
       </div>
       <div className='text-sm text-slate-300'>
-        Total deposited:{' '}
-        {(escrowData.escrowContract.rentalFee + escrowData.escrowContract.collateral).toFixed(5)} ETH
+        Total deposited: 123123 ETH
       </div>
     </div>
   );

@@ -1,4 +1,3 @@
-
 import { Button } from '@/components/ui/button';
 import { Copy, ExternalLink } from 'lucide-react';
 
@@ -38,8 +37,7 @@ export function TransactionDetails({ txHash, timestamp }: TransactionDetailsProp
       </div>
       {timestamp > 0 && (
         <div className='text-xs text-slate-500 mt-1'>
-          {new Date(timestamp).toLocaleDateString()} at{' '}
-          {new Date(timestamp).toLocaleTimeString()}
+          {new Date(timestamp).toLocaleDateString()} at {new Date(timestamp).toLocaleTimeString()}
         </div>
       )}
     </div>

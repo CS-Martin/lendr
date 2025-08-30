@@ -1,4 +1,3 @@
-
 import { AlertCircle } from 'lucide-react';
 
 export function Step3Pending() {
@@ -8,9 +7,7 @@ export function Step3Pending() {
         <AlertCircle className='w-4 h-4' />
         <span className='font-semibold'>Awaiting Step 2 Completion</span>
       </div>
-      <div className='text-sm text-slate-400'>
-        Rental period will begin once NFT is received in escrow
-      </div>
+      <div className='text-sm text-slate-400'>Rental period will begin once NFT is received in escrow</div>
     </div>
   );
 }

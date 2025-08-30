@@ -11,8 +11,15 @@ import { EscrowLifecycleProvider } from './escrow-lifecycle-context';
 
 export function EscrowProvider() {
   const { rentalPostId } = useParams<{ rentalPostId: string }>();
+
+  // Get escrow data
   const escrowData = useQuery(api.escrowSmartContract.getEscrowSmartContract, {
     rentalPostId: rentalPostId as Id<'rentalposts'>,
+  });
+
+  // Get rental post
+  const rentalPost = useQuery(api.rentalpost.getOneRentalPost, {
+    id: escrowData?.rentalPostId as Id<'rentalposts'>,
   });
 
   console.log(escrowData);
@@ -59,13 +66,15 @@ export function EscrowProvider() {
     return () => clearInterval(timer);
   }, [escrowData]);
 
-  // Show loading state while data is being fetched
-  if (!escrowData) {
-    return <div>Loading escrow data...</div>;
+  if (!rentalPost || !escrowData) {
+    return null;
   }
 
   return (
-    <EscrowLifecycleProvider escrowData={escrowData} timeRemaining={timeRemaining}>
+    <EscrowLifecycleProvider
+      rentalPost={rentalPost}
+      escrowData={escrowData}
+      timeRemaining={timeRemaining}>
       <div className='grid grid-cols-1 lg:grid-cols-3 gap-6'>
         <div className='lg:col-span-2'>
           <EscrowLifecycle />

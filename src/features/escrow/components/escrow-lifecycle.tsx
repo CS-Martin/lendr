@@ -20,18 +20,19 @@ export function EscrowLifecycle() {
       return {
         completedSteps: 0,
         progress: 0,
-        currentStep: { stepNumber: 0, status: 'PENDING' as const }
+        currentStep: { stepNumber: 0, status: 'PENDING' as const },
       };
     }
 
     const completed = steps.filter((step) => step.status === 'COMPLETED').length;
     const progress = (completed / steps.length) * 100;
-    const current = steps.find((step) => step.status === 'ACTIVE') || steps[0] || { stepNumber: 0, status: 'PENDING' as const };
+    const current = steps.find((step) => step.status === 'ACTIVE') ||
+      steps[0] || { stepNumber: 0, status: 'PENDING' as const };
 
     return {
       completedSteps: completed,
       progress,
-      currentStep: current
+      currentStep: current,
     };
   }, [steps]);
 

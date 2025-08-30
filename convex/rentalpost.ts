@@ -1,6 +1,7 @@
 import { v } from 'convex/values';
 import { mutation, query } from './_generated/server';
 import { defineTable, paginationOptsValidator } from 'convex/server';
+import { Id } from './_generated/dataModel';
 
 export const RentalListingStatus = v.union(v.literal('AVAILABLE'), v.literal('RENTED'));
 
@@ -68,10 +69,10 @@ export const deleteRentalPost = mutation({
 
 export const getOneRentalPost = query({
   args: {
-    id: v.id('rentalposts'),
+    id: v.optional(v.id('rentalposts')),
   },
   handler: async (ctx, args) => {
-    const rentalPost = await ctx.db.get(args.id);
+    const rentalPost = await ctx.db.get(args.id as Id<'rentalposts'>);
 
     if (!rentalPost) {
       throw new Error('Rental post not found');

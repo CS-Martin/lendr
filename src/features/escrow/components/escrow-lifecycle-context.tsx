@@ -1,8 +1,8 @@
-
 import { createContext, useContext, ReactNode } from 'react';
 import { Doc } from '@convex/_generated/dataModel';
 
 interface EscrowLifecycleContextProps {
+  rentalPost: Doc<'rentalposts'>;
   escrowData: Doc<'escrowSmartContracts'>;
   timeRemaining: {
     step2: { days: number; hours: number; minutes: number; seconds: number };
@@ -22,6 +22,7 @@ export const useEscrowLifecycle = () => {
 
 interface EscrowLifecycleProviderProps {
   children: ReactNode;
+  rentalPost: Doc<'rentalposts'>;
   escrowData: Doc<'escrowSmartContracts'>;
   timeRemaining: {
     step2: { days: number; hours: number; minutes: number; seconds: number };
@@ -29,10 +30,8 @@ interface EscrowLifecycleProviderProps {
   };
 }
 
-export const EscrowLifecycleProvider = ({ children, escrowData, timeRemaining }: EscrowLifecycleProviderProps) => {
+export const EscrowLifecycleProvider = ({ children, rentalPost, escrowData, timeRemaining }: EscrowLifecycleProviderProps) => {
   return (
-    <EscrowLifecycleContext.Provider value={{ escrowData, timeRemaining }}>
-      {children}
-    </EscrowLifecycleContext.Provider>
+    <EscrowLifecycleContext.Provider value={{ rentalPost, escrowData, timeRemaining }}>{children}</EscrowLifecycleContext.Provider>
   );
 };
