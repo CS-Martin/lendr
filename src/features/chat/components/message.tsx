@@ -16,7 +16,6 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { MoreHorizontal, Edit3, Trash2, Check, X } from 'lucide-react';
 import { UserAvatar } from '@/components/shared/user-avatar';
-import { Skeleton } from '@/components/ui/skeleton';
 
 interface MessageProps {
   message: Doc<'messages'>;

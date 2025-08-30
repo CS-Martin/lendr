@@ -6,10 +6,10 @@ import { usePaginatedQuery } from 'convex/react';
 import { api } from '@convex/_generated/api';
 import BidCard from './bid-card';
 
-const BidsList = ({ post }: { post: Doc<'rentalposts'> }) => {
+const BidsList = ({ rentalPost }: { rentalPost: Doc<'rentalposts'> }) => {
   const { results, status, loadMore } = usePaginatedQuery(
     api.bids.getBidsByRentalPost,
-    { rentalPostId: post._id },
+    { rentalPostId: rentalPost._id },
     { initialNumItems: 5 },
   );
 
@@ -17,13 +17,13 @@ const BidsList = ({ post }: { post: Doc<'rentalposts'> }) => {
 
   const hasAcceptedBid = bids.some((bid) => bid.isAccepted);
 
-  // Before rendering your list of bids
+  // Before rendering list of bids
   const sortedBids = [...bids].sort((a, b) => {
     // Accepted bid always comes first
     if (a.isAccepted && !b.isAccepted) return -1;
     if (!a.isAccepted && b.isAccepted) return 1;
 
-    // Otherwise, keep your normal sorting logic (e.g., by bidAmount or updatedTime)
+    // Otherwise, keep normal sorting logic (e.g., by bidAmount or updatedTime)
     return b.bidAmount - a.bidAmount;
   });
 
@@ -44,6 +44,7 @@ const BidsList = ({ post }: { post: Doc<'rentalposts'> }) => {
             bid={bid}
             index={index}
             hasAcceptedBid={hasAcceptedBid}
+            rentalPost={rentalPost}
           />
         ))}
       </div>

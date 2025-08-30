@@ -7,7 +7,6 @@ export const LoadingProgressProvider = ({ children }: { children: React.ReactNod
     <ProgressProvider
       height='4px'
       color='#e9b815'
-      shallowRouting
       options={{ showSpinner: true }}>
       {children}
     </ProgressProvider>

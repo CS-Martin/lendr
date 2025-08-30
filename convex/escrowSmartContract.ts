@@ -1,6 +1,6 @@
 import { defineTable } from 'convex/server';
 import { v } from 'convex/values';
-import { mutation } from './_generated/server';
+import { mutation, query } from './_generated/server';
 
 // Escrow contract lifecycle statuses
 export const EscrowSmartContractStatus = v.union(
@@ -11,30 +11,149 @@ export const EscrowSmartContractStatus = v.union(
 );
 
 export const escrowSmartContract = defineTable({
-  rentalPost: v.id('rentalposts'),
+  bidId: v.id('bids'),
+  rentalPostId: v.id('rentalposts'),
   rentalPostRenterAddress: v.string(),
   rentalPostOwnerAddress: v.string(),
-  rentalFee: v.number(),
-  collateral: v.number(),
   status: EscrowSmartContractStatus,
-  step2ExpiresAt: v.number(), // Step 2 deadline (lender sends NFT)
-  step4ExpiresAt: v.number(), // Step 4 deadline (renter returns NFT)
-});
+  step2ExpiresAt: v.optional(v.number()), // Step 2 deadline (lender sends NFT)
+  step4ExpiresAt: v.optional(v.number()), // Step 4 deadline (renter returns NFT)
+})
+  .index('by_rentalPostId', ['rentalPostId'])
+  .index('by_rentalPostRenterAddress', ['rentalPostRenterAddress'])
+  .index('by_rentalPostOwnerAddress', ['rentalPostOwnerAddress']);
 
 export const createEscrowSmartContract = mutation({
   args: {
-    rentalPost: v.id('rentalposts'),
+    bidId: v.id('bids'),
+    rentalPostId: v.id('rentalposts'),
     rentalPostRenterAddress: v.string(),
     rentalPostOwnerAddress: v.string(),
-    rentalFee: v.number(),
-    collateral: v.number(),
     status: EscrowSmartContractStatus,
   },
   handler: async (ctx, args) => {
-    return await ctx.db.insert('escrowSmartContracts', {
+    // Check if rental post already has an escrow contract
+    const existingContract = await ctx.db
+      .query('escrowSmartContracts')
+      .withIndex('by_rentalPostId', (q) => q.eq('rentalPostId', args.rentalPostId))
+      .unique();
+
+    if (existingContract) {
+      throw new Error('This rental post is already associated with an escrow contract.');
+    }
+
+    const escrowId = await ctx.db.insert('escrowSmartContracts', {
       ...args,
-      step2ExpiresAt: 24, // 24 hrs eq to 1 day
-      step4ExpiresAt: 72, // 72 hrs eq to 3 days
     });
+
+    // Create the steps
+    const steps = [
+      {
+        escrowId,
+        stepNumber: 1,
+        status: 'ACTIVE' as const,
+        title: 'Renter Pays',
+        description: 'Renter deposits collateral and rental fee into escrow.',
+        details: 'The renter must pay the total amount to proceed.',
+        timestamp: Date.now(),
+      },
+      {
+        escrowId,
+        stepNumber: 2,
+        status: 'PENDING' as const,
+        title: 'Lender Sends NFT',
+        description: 'Lender must send the NFT to the escrow contract.',
+        details: 'The lender has 24 hours to send the NFT.',
+        warning: 'If the deadline is missed, the escrow will be cancelled.',
+        timestamp: 0,
+      },
+      {
+        escrowId,
+        stepNumber: 3,
+        status: 'PENDING' as const,
+        title: 'Rental Period',
+        description: 'The rental period begins.',
+        details: 'The NFT is held in escrow during the rental period.',
+        timestamp: 0,
+      },
+      {
+        escrowId,
+        stepNumber: 4,
+        status: 'PENDING' as const,
+        title: 'Renter Returns NFT',
+        description: 'Renter must return the NFT to the lender.',
+        details: 'The renter has 3 days to return the NFT after the rental period ends.',
+        warning: 'If the deadline is missed, the collateral will be forfeited.',
+        timestamp: 0,
+      },
+      {
+        escrowId,
+        stepNumber: 5,
+        status: 'PENDING' as const,
+        title: 'Settlement',
+        description: 'Payouts are distributed.',
+        details: 'The rental fee is sent to the lender and the collateral is returned to the renter.',
+        timestamp: 0,
+      },
+    ];
+
+    for (const step of steps) {
+      await ctx.db.insert('escrowSmartContractSteps', step);
+    }
+
+    return escrowId;
+  },
+});
+
+export const getEscrowSmartContract = query({
+  args: {
+    rentalPostId: v.id('rentalposts'),
+  },
+  handler: async (ctx, args) => {
+    const escrow = await ctx.db
+      .query('escrowSmartContracts')
+      .withIndex('by_rentalPostId', (q) => q.eq('rentalPostId', args.rentalPostId))
+      .unique();
+
+    if (!escrow) {
+      return null;
+    }
+
+    const steps = await ctx.db
+      .query('escrowSmartContractSteps')
+      .filter((q) => q.eq(q.field('escrowId'), escrow._id))
+      .collect();
+
+    return {
+      ...escrow,
+      steps,
+    };
+  },
+});
+
+export const cancelEscrow = mutation({
+  args: {
+    id: v.id('escrowSmartContracts'),
+  },
+  handler: async (ctx, args) => {
+    await ctx.db.patch(args.id, { status: 'CANCELLED' });
+  },
+});
+
+export const defaultEscrow = mutation({
+  args: {
+    id: v.id('escrowSmartContracts'),
+  },
+  handler: async (ctx, args) => {
+    await ctx.db.patch(args.id, { status: 'DEFAULTED' });
+  },
+});
+
+export const settleEscrow = mutation({
+  args: {
+    id: v.id('escrowSmartContracts'),
+  },
+  handler: async (ctx, args) => {
+    await ctx.db.patch(args.id, { status: 'COMPLETED' });
   },
 });

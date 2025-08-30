@@ -9,7 +9,7 @@ import { useAccount } from 'wagmi';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
-import { Send, Paperclip, Smile, Mic } from 'lucide-react';
+import { Send, Mic } from 'lucide-react';
 
 interface MessageInputProps {
   conversationId: Id<'conversations'>;

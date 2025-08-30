@@ -19,15 +19,16 @@ interface BidCardProps {
   bid: Doc<'bids'>;
   index: number;
   hasAcceptedBid: boolean;
+  rentalPost: Doc<'rentalposts'>;
 }
 
-const BidCard = ({ bid, index, hasAcceptedBid }: BidCardProps) => {
+const BidCard = ({ bid, index, hasAcceptedBid, rentalPost }: BidCardProps) => {
   const { data: session } = useSession();
   const user = session?.user;
 
   const [showAcceptModal, setShowAcceptModal] = useState(false);
   const [selectedBid, setSelectedBid] = useState<string | null>(null);
-  const { isOpen, openChatSheet } = useChatSheetStore();
+  const { openChatSheet } = useChatSheetStore();
   const createOrGetConversation = useMutation(api.conversations.createOrGetConversation);
 
   const currentUser = useQuery(api.user.getUser, user?.address ? { address: user.address } : 'skip');
@@ -40,13 +41,11 @@ const BidCard = ({ bid, index, hasAcceptedBid }: BidCardProps) => {
     }
 
     try {
-      console.log('Creating conversation between:', currentUser._id, 'and', bidderUser._id);
       const conversationId = await createOrGetConversation({
         otherParticipantId: bidderUser._id,
         address: currentUser.address,
       });
 
-      console.log('Opening chat sheet with conversationId:', conversationId);
       openChatSheet(conversationId);
       console.log('Chat sheet should be open now');
     } catch (error) {
@@ -66,10 +65,11 @@ const BidCard = ({ bid, index, hasAcceptedBid }: BidCardProps) => {
       transition={{ duration: 0.5, delay: index * 0.1 }}>
       <Card
         className={`relative transition-all duration-300
-        ${bid.isAccepted
+        ${
+          bid.isAccepted
             ? 'bg-green-900/30 border-green-500 shadow-lg shadow-green-500/30'
             : 'bg-slate-900/50 border-slate-800 hover:border-purple-500/50'
-          }`}>
+        }`}>
         <CardContent className='py-6'>
           {/* Accepted badge */}
           {bid.isAccepted && (
@@ -123,6 +123,18 @@ const BidCard = ({ bid, index, hasAcceptedBid }: BidCardProps) => {
             </div>
           </div>
 
+          {bid.message && (
+            <div className='bg-slate-800/50 rounded-lg p-3 mb-4'>
+              <div className='flex items-start space-x-2'>
+                <MessageSquare className='w-4 h-4 text-slate-400 mt-0.5' />
+                <div>
+                  <div className='text-xs text-slate-400 mb-1'>Message from bidder:</div>
+                  <div className='text-sm text-slate-300 italic'>&apos;{bid.message}&apos;</div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Actions */}
           <div className='flex flex-col sm:flex-row gap-3'>
             {bid.isAccepted ? (
@@ -130,7 +142,7 @@ const BidCard = ({ bid, index, hasAcceptedBid }: BidCardProps) => {
                 asChild
                 variant='outline'
                 className='border-green-500 text-green-400 bg-green-900/40 hover:bg-green-500 cursor-pointer flex-1 hover:scale-101'>
-                <Link href={`/escrow-smart-contract/${bid._id}`}>Proceed to Rental Process</Link>
+                <Link href={`/rentals/${rentalPost._id}/escrow`}>Proceed to Rental Process</Link>
               </Button>
             ) : (
               <AcceptBidModal
@@ -141,6 +153,7 @@ const BidCard = ({ bid, index, hasAcceptedBid }: BidCardProps) => {
                 selectedBid={selectedBid}
                 setSelectedBid={setSelectedBid}
                 disabled={hasAcceptedBid}
+                rentalPost={rentalPost}
               />
             )}
 

@@ -8,7 +8,7 @@ import { MessageInput } from './message-input';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
 import { ArrowLeft, MoreVertical } from 'lucide-react';
-import { Fragment, useEffect, useRef, useState } from 'react';
+import { Fragment, useEffect, useRef } from 'react';
 import { useAccount } from 'wagmi';
 import { useInView } from 'react-intersection-observer';
 import { UserAvatar } from '@/components/shared/user-avatar';
@@ -69,7 +69,7 @@ export function ChatView({ conversationId, onBack }: ChatViewProps) {
     // Messages count increased
     if (messages.length > prevMessageCount.current) {
       const prevFirstMessageId = messages[0]?._id;
-      const prevLastMessageId = messages[messages.length - 1]?._id;
+      // const prevLastMessageId = messages[messages.length - 1]?._id;
 
       // --- Case 1: User loaded OLDER messages ---
       // Check if new messages were prepended (older ones)

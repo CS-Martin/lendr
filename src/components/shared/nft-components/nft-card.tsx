@@ -5,7 +5,6 @@ import { useEffect } from 'react';
 import Image from 'next/image';
 import gsap from 'gsap';
 import LendrButton from '../lendr-btn';
-import { Session } from 'next-auth';
 import { Nft } from 'alchemy-sdk';
 
 interface NFTCardProps {

@@ -1,6 +1,7 @@
 import { v } from 'convex/values';
 import { mutation, query } from './_generated/server';
 import { defineTable, paginationOptsValidator } from 'convex/server';
+import { Id } from './_generated/dataModel';
 
 export const RentalListingStatus = v.union(v.literal('AVAILABLE'), v.literal('RENTED'));
 
@@ -53,9 +54,15 @@ export const updateRentalPost = mutation({
     biddingEndtime: v.optional(v.number()),
     status: v.optional(RentalListingStatus),
   },
+  handler: async (ctx, { id }) => {
+    return await ctx.db.get(id);
+  },
+});
+
+export const get = query({
+  args: { id: v.id('rentalposts') },
   handler: async (ctx, args) => {
-    const { id, ...rest } = args;
-    return await ctx.db.patch(id, rest);
+    return await ctx.db.get(args.id);
   },
 });
 
@@ -71,7 +78,7 @@ export const getOneRentalPost = query({
     id: v.id('rentalposts'),
   },
   handler: async (ctx, args) => {
-    const rentalPost = await ctx.db.get(args.id);
+    const rentalPost = await ctx.db.get(args.id as Id<'rentalposts'>);
 
     if (!rentalPost) {
       throw new Error('Rental post not found');
