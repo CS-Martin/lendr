@@ -1,8 +1,7 @@
 import { CheckCircle, Clock, AlertCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { EscrowStatus, StepStatus } from './types';
 
-export const getStepIcon = (status: StepStatus) => {
+export const getStepIcon = (status: string) => {
   switch (status) {
     case 'COMPLETED':
       return <CheckCircle className='w-6 h-6 text-green-400' />;
@@ -15,7 +14,7 @@ export const getStepIcon = (status: StepStatus) => {
   }
 };
 
-export const getStatusBadge = (status: EscrowStatus) => {
+export const getStatusBadge = (status: string) => {
   switch (status) {
     case 'ACTIVE':
       return <Badge className='bg-blue-500 text-white px-4 py-2'>Escrow Active</Badge>;
