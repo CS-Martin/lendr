@@ -1,14 +1,7 @@
 import { useState } from 'react';
 import { useEscrowLifecycle } from '@/features/escrow/providers/escrow-provider';
 import LendrButton from '@/components/shared/lendr-btn';
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { CheckCircle } from 'lucide-react';
 
 export function Step1Active() {
