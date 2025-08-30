@@ -3,6 +3,10 @@ import { useEscrowLifecycle } from '../../providers/escrow-provider';
 export function Step5Pending() {
   const { rentalPost } = useEscrowLifecycle();
 
+  if (!rentalPost) {
+    return null;
+  }
+
   return (
     <div className='bg-slate-800 rounded-lg p-4'>
       <div className='text-sm text-slate-400 mb-3'>Automatic settlement upon successful NFT return:</div>

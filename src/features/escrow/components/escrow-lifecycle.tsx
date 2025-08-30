@@ -12,7 +12,10 @@ import { useEscrowLifecycle } from '../providers/escrow-provider';
 export function EscrowLifecycle() {
   const { escrow } = useEscrowLifecycle();
 
-  const steps = useQuery(api.escrowSmartContractStep.getEscrowSmartContractSteps, escrow?._id ? { escrowId: escrow._id } : 'skip');
+  const steps = useQuery(
+    api.escrowSmartContractStep.getEscrowSmartContractSteps,
+    escrow?._id ? { escrowId: escrow._id } : 'skip',
+  );
 
   const { completedSteps, progress, currentStep } = useMemo(() => {
     if (!steps) {

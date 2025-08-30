@@ -6,9 +6,6 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Shield, Copy } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { Doc } from '@convex/_generated/dataModel';
-import { useQuery } from 'convex/react';
-import { api } from '@convex/_generated/api';
 import { ImageSection } from '@/components/shared/nft-components/image-section';
 import { truncateText } from '@/lib/utils';
 import { useEscrowLifecycle } from '../providers/escrow-provider';
@@ -18,9 +15,9 @@ const copyToClipboard = (text: string) => {
 };
 
 export function EscrowDetails() {
-  const { rentalPost, escrow } = useEscrowLifecycle();
+  const { rentalPost, escrow, bid } = useEscrowLifecycle();
 
-  if (!escrow) {
+  if (!escrow || !rentalPost || !bid) {
     return null;
   }
 
@@ -68,7 +65,7 @@ export function EscrowDetails() {
           <div className='bg-slate-800 rounded-lg p-4 space-y-2'>
             <div className='flex justify-between text-sm'>
               <span className='text-slate-400'>Rental Fee</span>
-              <span className='text-white'>{rentalPost.rentalFee} ETH</span>
+              <span className='text-white'>{bid.bidAmount} ETH</span>
             </div>
             <div className='flex justify-between text-sm'>
               <span className='text-slate-400'>Collateral</span>
@@ -81,7 +78,7 @@ export function EscrowDetails() {
             <Separator className='bg-slate-700' />
             <div className='flex justify-between text-sm font-semibold'>
               <span className='text-white'>Total Locked</span>
-              <span className='text-purple-400'>{rentalPost.collateral + rentalPost.rentalFee} ETH</span>
+              <span className='text-purple-400'>{bid.bidAmount + rentalPost.collateral} ETH</span>
             </div>
           </div>
 
@@ -89,9 +86,7 @@ export function EscrowDetails() {
           <div>
             <div className='text-slate-400 text-sm mb-2'>Smart Contract ID:</div>
             <div className='flex items-center space-x-2'>
-              <code className='text-xs text-white bg-slate-800 px-2 py-1 rounded font-mono flex-1'>
-                {escrow._id}
-              </code>
+              <code className='text-xs text-white bg-slate-800 px-2 py-1 rounded font-mono flex-1'>{escrow._id}</code>
               <Button
                 size='sm'
                 variant='ghost'
