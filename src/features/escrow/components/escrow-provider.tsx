@@ -7,6 +7,7 @@ import { useQuery } from 'convex/react';
 import { api } from '@convex/_generated/api';
 import { Id } from '@convex/_generated/dataModel';
 import { EscrowLifecycle } from './escrow-lifecycle';
+import { EscrowLifecycleProvider } from './escrow-lifecycle-context';
 
 export function EscrowProvider() {
   const { rentalPostId } = useParams<{ rentalPostId: string }>();
@@ -59,19 +60,20 @@ export function EscrowProvider() {
   }, [escrowData]);
 
   // Show loading state while data is being fetched
-  if (escrowData === undefined) {
+  if (!escrowData) {
     return <div>Loading escrow data...</div>;
   }
 
-  // Handle case when no escrow data is found
-  if (escrowData === null) {
-    return <div>No escrow data found for this rental.</div>;
-  }
-
   return (
-    <div className='grid grid-cols-1 lg:grid-cols-2 gap-8'>
-      <EscrowDetails escrowData={escrowData} />
-      {/* <EscrowLifecycle escrowData={escrowData} timeRemaining={timeRemaining} /> */}
-    </div>
+    <EscrowLifecycleProvider escrowData={escrowData} timeRemaining={timeRemaining}>
+      <div className='grid grid-cols-1 lg:grid-cols-3 gap-6'>
+        <div className='lg:col-span-2'>
+          <EscrowLifecycle />
+        </div>
+        <div className='lg:col-span-1'>
+          <EscrowDetails />
+        </div>
+      </div>
+    </EscrowLifecycleProvider>
   );
 }

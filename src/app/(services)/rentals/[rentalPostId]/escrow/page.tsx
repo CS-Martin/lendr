@@ -1,4 +1,4 @@
-import { EscrowProvider } from '@/features/escrow/escrow-provider';
+import { EscrowProvider } from '@/features/escrow/components/escrow-provider';
 
 export default async function EscrowPage() {
   return (

@@ -5,23 +5,20 @@ import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Shield, Copy } from 'lucide-react';
-import { getStatusBadge } from './components';
 import { motion } from 'framer-motion';
 import { Doc } from '@convex/_generated/dataModel';
 import { useQuery } from 'convex/react';
 import { api } from '@convex/_generated/api';
 import { ImageSection } from '@/components/shared/nft-components/image-section';
 import { truncateText } from '@/lib/utils';
-
-interface EscrowDetailsProps {
-  escrowData: Doc<'escrowSmartContracts'>;
-}
+import { useEscrowLifecycle } from './escrow-lifecycle-context';
 
 const copyToClipboard = (text: string) => {
   navigator.clipboard.writeText(text);
 };
 
-export function EscrowDetails({ escrowData }: EscrowDetailsProps) {
+export function EscrowDetails() {
+  const { escrowData } = useEscrowLifecycle();
   const rentalPost = useQuery(api.rentalpost.getOneRentalPost, { id: escrowData.rentalPostId });
   const bid = useQuery(api.bids.getBidById, { bidId: escrowData.bidId });
   console.log(rentalPost);
@@ -113,7 +110,7 @@ export function EscrowDetails({ escrowData }: EscrowDetailsProps) {
           </div>
 
           {/* Status Badge */}
-          <div className='text-center'>{getStatusBadge(escrowData.status)}</div>
+          {/* <div className='text-center'>{getStatusBadge(escrowData.status)}</div> */}
         </CardContent>
       </Card>
     </motion.div>
