@@ -4,8 +4,10 @@ import { alchemyService } from '@/services/alchemy-sdk';
 import { useProgress } from '@bprogress/next';
 import { OwnedNft } from 'alchemy-sdk';
 import { useEffect, useState } from 'react';
+import { useChainId } from 'wagmi';
 
 export const useGetNFTsForAddress = (address: string) => {
+  const chainId = useChainId();
   const { start, stop } = useProgress();
   const [nfts, setNfts] = useState<OwnedNft[] | null>(null);
   const [error, setError] = useState<Error | null>(null);
@@ -14,7 +16,7 @@ export const useGetNFTsForAddress = (address: string) => {
     const fetchData = async () => {
       try {
         start();
-        const { nfts: newNfts } = await alchemyService.getNFTsForAddress(address);
+        const { nfts: newNfts } = await alchemyService.getNFTsForAddress(address, undefined, chainId);
 
         setNfts(newNfts);
       } catch (err) {
@@ -25,13 +27,14 @@ export const useGetNFTsForAddress = (address: string) => {
     };
 
     fetchData();
-  }, [start, stop, address]);
+  }, [start, stop, address, chainId]);
 
   return { nfts, error };
 };
 
 export const useShowMoreNFTs = (walletAddress: string) => {
   const { start, stop } = useProgress();
+  const chainId = useChainId();
   const [nfts, setNfts] = useState<OwnedNft[]>([]);
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
@@ -47,6 +50,7 @@ export const useShowMoreNFTs = (walletAddress: string) => {
       const { nfts: newNfts, pageKey: newPageKey } = await alchemyService.getNFTsForAddress(
         walletAddress,
         initialLoad ? undefined : pageKey,
+        chainId,
       );
 
       setNfts((prev) => (initialLoad ? newNfts : [...prev, ...newNfts]));
@@ -60,10 +64,14 @@ export const useShowMoreNFTs = (walletAddress: string) => {
     }
   };
 
-  // Initial load
+  // Reset state and load when address or chain changes
   useEffect(() => {
+    setNfts([]);
+    setPageKey(undefined);
+    setHasMore(true);
     loadNFTs(true);
-  }, [walletAddress]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [walletAddress, chainId]);
 
   return {
     nfts,
