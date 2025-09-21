@@ -15,14 +15,7 @@ export function getWagmiConfig(): ReturnType<typeof getDefaultConfig> {
   _config = getDefaultConfig({
     appName: 'Lendr',
     projectId,
-    chains: [
-      mainnet,
-      polygon,
-      optimism,
-      arbitrum,
-      base,
-      sepolia,
-    ],
+    chains: [mainnet, polygon, optimism, arbitrum, base, sepolia],
     ssr: true,
   });
 
