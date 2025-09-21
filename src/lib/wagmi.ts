@@ -15,7 +15,14 @@ export function getWagmiConfig(): ReturnType<typeof getDefaultConfig> {
   _config = getDefaultConfig({
     appName: 'Lendr',
     projectId,
-    chains: [mainnet, polygon, optimism, arbitrum, base, sepolia],
+    chains: [
+      mainnet,
+      polygon,
+      optimism,
+      arbitrum,
+      base,
+      ...(process.env.NEXT_PUBLIC_ENABLE_TESTNETS === 'true' ? [sepolia] : []),
+    ],
     ssr: true,
   });
 
