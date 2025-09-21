@@ -1,4 +1,4 @@
-import { Alchemy, Network, OwnedNft, OwnedNftsResponse } from 'alchemy-sdk';
+import { Alchemy, Network, OwnedNft, OwnedNftsResponse, NftFilters } from 'alchemy-sdk';
 
 // Create Alchemy clients per network to ensure requests are made against the
 // currently connected chain. We cache instances by Network for reuse.
@@ -12,6 +12,15 @@ const getAlchemyClient = (network: Network): Alchemy => {
     apiKey: process.env.NEXT_PUBLIC_ALCHEMY_API_KEY || '',
     network,
   });
+
+  if (!process.env.NEXT_PUBLIC_ALCHEMY_API_KEY) {
+    // Warn clearly when the API key is missing so the UI issue is easier to diagnose
+    // without needing to dig through network requests.
+    // This does not throw to keep the app functional, but fetches will fail.
+    // Set NEXT_PUBLIC_ALCHEMY_API_KEY in your .env.local to resolve.
+    // eslint-disable-next-line no-console
+    console.warn('[Alchemy] NEXT_PUBLIC_ALCHEMY_API_KEY is not set. NFT fetching will fail.');
+  }
 
   alchemyClientsByNetwork.set(network, client);
   return client;
@@ -51,24 +60,14 @@ export class AlchemyService {
         pageSize: 50, // fetch more per request to improve UX
         omitMetadata: false,
         pageKey,
+        // Use Alchemy's server-side spam filter rather than client-side checks
+        excludeFilters: [NftFilters.SPAM],
       });
 
-      // Filter out spam NFTs and those without a name
-      const filteredNfts = response.ownedNfts.filter(
-        (nft) => !nft.contract.isSpam && nft.name && nft.name.trim() !== '',
-      );
-
-      // If we don't have enough NFTs after filtering, try to get more
-      if (filteredNfts.length < 10 && response.pageKey) {
-        const nextPage = await this.getNFTsForAddress(walletAddress, response.pageKey, chainId);
-        return {
-          nfts: [...filteredNfts, ...nextPage.nfts].slice(0, 10),
-          pageKey: nextPage.pageKey,
-        };
-      }
-
+      // Do not over-filter results client-side; rely on API filters only
+      // and return a bounded slice for UI rendering.
       return {
-        nfts: filteredNfts.slice(0, 10),
+        nfts: response.ownedNfts.slice(0, 10),
         pageKey: response.pageKey,
       };
     } catch (error) {
