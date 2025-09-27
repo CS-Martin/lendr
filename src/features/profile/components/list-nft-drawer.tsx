@@ -503,7 +503,9 @@ export const ListNFTDrawer = ({ nft, isOpen, onClose, session }: ListNFTDrawerPr
                                     const today = new Date();
                                     today.setHours(0, 0, 0, 0);
                                     const isBeforeToday = date < today;
-                                    const isBeforeStartDate = biddingStartTime ? date.getTime() < biddingStartTime : false;
+                                    const isBeforeStartDate = biddingStartTime
+                                      ? date.getTime() < biddingStartTime
+                                      : false;
                                     return isBeforeToday || isBeforeStartDate;
                                   }}
                                   initialFocus

@@ -225,8 +225,9 @@ export function CompletedEscrowUI({ escrow, bid, rentalPost, steps }: CompletedE
                 transition={{ delay: index * 0.1 }}
                 className='flex items-center space-x-4'>
                 <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center ${step.status === 'COMPLETED' ? 'bg-green-600 text-white' : 'bg-slate-700 text-slate-400'
-                    }`}>
+                  className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                    step.status === 'COMPLETED' ? 'bg-green-600 text-white' : 'bg-slate-700 text-slate-400'
+                  }`}>
                   {step.status === 'COMPLETED' ? (
                     <CheckCircle className='w-4 h-4' />
                   ) : (

@@ -309,8 +309,6 @@ export const createDelegationRentalAgreement = action({
         body: JSON.stringify(args),
       });
 
-      console.log('apiResponse', apiResponse);
-
       if (!apiResponse.ok) {
         throw new Error(`API call failed with status: ${apiResponse.status}`);
       }
@@ -334,43 +332,42 @@ export const createEscrowSmartContractWithAPI = action({
     status: EscrowSmartContractStatus,
   },
   handler: async (ctx, args): Promise<Id<'escrowSmartContracts'>> => {
-    // First, create the escrow smart contract using the mutation
+    // First, get bid and rental post data for API call
+    const bid = await ctx.runQuery(api.bids.getBidById, { bidId: args.bidId });
+    const rentalPost = await ctx.runQuery(api.rentalpost.get, { id: args.rentalPostId });
+
+    if (!bid || !rentalPost) {
+      throw new Error('Bid or rental post not found.');
+    }
+
+    // Call the delegation rental agreement API first
+    const apiResult = await ctx.runAction(api.escrowSmartContract.createDelegationRentalAgreement, {
+      lender: args.rentalPostOwnerAddress,
+      nftContract: rentalPost.nftMetadata.contract?.address || '',
+      tokenId: rentalPost.nftMetadata.tokenId || '',
+      hourlyRentalFee: Math.floor(bid.bidAmount * 1e18).toString(), // Convert to wei with proper rounding
+      rentalDurationInHours: bid.rentalDuration.toString(),
+      nftStandard: 0, // ERC721
+      dealDuration: 0, // SIX_HOURS
+    });
+
+    // If API call is not successful, don't create the escrow
+    if (!apiResult.success) {
+      throw new Error(`Failed to create delegation rental agreement: ${apiResult.error || 'Unknown error'}`);
+    }
+
+    // Only create the escrow smart contract if API call was successful
     const escrowId: Id<'escrowSmartContracts'> = await ctx.runMutation(
       api.escrowSmartContract.createEscrowSmartContract,
       args,
     );
 
-    // Then, try to create the delegation rental agreement and update the escrow
-    try {
-      // Get bid and rental post data for API call
-      const bid = await ctx.runQuery(api.bids.getBidById, { bidId: args.bidId });
-      const rentalPost = await ctx.runQuery(api.rentalpost.get, { id: args.rentalPostId });
-
-      if (!bid || !rentalPost) {
-        throw new Error('Bid or rental post not found.');
-      }
-
-      // Call the delegation rental agreement API
-      const apiResult = await ctx.runAction(api.escrowSmartContract.createDelegationRentalAgreement, {
-        lender: args.rentalPostOwnerAddress,
-        nftContract: rentalPost.nftMetadata.contract?.address || '',
-        tokenId: rentalPost.nftMetadata.tokenId || '',
-        hourlyRentalFee: (bid.bidAmount * 1e18).toString(), // Convert to wei
-        rentalDurationInHours: bid.rentalDuration.toString(),
-        nftStandard: 0, // ERC721
-        dealDuration: 0, // SIX_HOURS
+    // Update the escrow with the smart contract rental ID
+    if (apiResult.smartContractRentalId) {
+      await ctx.runMutation(api.escrowSmartContract.updateEscrowSmartContractRentalId, {
+        escrowId,
+        smartContractRentalId: apiResult.smartContractRentalId,
       });
-
-      if (apiResult.success && apiResult.smartContractRentalId) {
-        // Update the escrow with the smart contract rental ID
-        await ctx.runMutation(api.escrowSmartContract.updateEscrowSmartContractRentalId, {
-          escrowId,
-          smartContractRentalId: apiResult.smartContractRentalId,
-        });
-      }
-    } catch (error) {
-      console.error('Failed to create delegation rental agreement:', error);
-      // Continue without the smart contract ID - the escrow is still created
     }
 
     return escrowId;
