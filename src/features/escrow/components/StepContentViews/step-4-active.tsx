@@ -3,20 +3,22 @@ import { useEscrowLifecycle } from '../../providers/escrow-provider';
 import { useState } from 'react';
 import LendrButton from '@/components/shared/lendr-btn';
 import { toast } from 'sonner';
+import { SettlementConfirmationModal } from '../settlement-confirmation-modal';
 
 export function Step4Active() {
-  const { escrow, isRenter, completeStep4Settlement, isLoading, bid } = useEscrowLifecycle();
-  const [txHash, setTxHash] = useState('');
+  const { escrow, isRenter, completeStep4Settlement, isLoading, bid, rentalPost } = useEscrowLifecycle();
+  const [showConfirmationModal, setShowConfirmationModal] = useState(false);
 
-  const handleCompleteSettlement = async () => {
+  const handleCompleteSettlement = async (txHash?: string) => {
     if (!escrow) return;
 
     try {
       await completeStep4Settlement({
         escrowId: escrow._id,
-        txHash: txHash || undefined,
+        txHash: txHash,
       });
       toast.success('Settlement completed successfully!');
+      setShowConfirmationModal(false);
     } catch (error) {
       toast.error('Failed to complete settlement. Please try again.');
       console.error('Error completing settlement:', error);
@@ -62,40 +64,18 @@ export function Step4Active() {
 
       {isRenter && (
         <div className='space-y-4'>
-          <div>
-            <label className='block text-sm font-medium text-slate-300 mb-2'>Transaction Hash (Optional)</label>
-            <input
-              type='text'
-              value={txHash}
-              onChange={(e) => setTxHash(e.target.value)}
-              placeholder='0x...'
-              className='w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-md text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500'
-            />
-            <p className='text-xs text-slate-500 mt-1'>
-              Provide the transaction hash if you want to track the settlement transaction
-            </p>
-          </div>
-
           <LendrButton
-            onClick={handleCompleteSettlement}
+            onClick={() => setShowConfirmationModal(true)}
             disabled={isLoading}
             className='w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700'>
-            {isLoading ? (
-              <div className='flex items-center space-x-2'>
-                <div className='w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin' />
-                <span>Processing...</span>
-              </div>
-            ) : (
-              <div className='flex items-center space-x-2'>
-                <CheckCircle className='w-4 h-4' />
-                <span>Complete Settlement</span>
-              </div>
-            )}
+            <div className='flex items-center space-x-2'>
+              <CheckCircle className='w-4 h-4' />
+              <span>Complete Settlement</span>
+            </div>
           </LendrButton>
 
           <div className='text-xs text-blue-200 bg-blue-900/30 p-3 rounded-md'>
-            <strong>Note:</strong> This will complete the settlement. The NFT will be automatically returned from the
-            smart contract registry and the rental fee will be distributed.
+            <strong>Note:</strong> Click the button above to review and confirm the settlement details before completion.
           </div>
         </div>
       )}
@@ -106,6 +86,17 @@ export function Step4Active() {
           and the rental fee will be distributed.
         </div>
       )}
+
+      {/* Settlement Confirmation Modal */}
+      <SettlementConfirmationModal
+        isOpen={showConfirmationModal}
+        onClose={() => setShowConfirmationModal(false)}
+        onConfirm={handleCompleteSettlement}
+        isLoading={isLoading}
+        escrow={escrow}
+        bid={bid}
+        rentalPost={rentalPost}
+      />
     </div>
   );
 }

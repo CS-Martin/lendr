@@ -5,7 +5,7 @@ import { useEscrowLifecycle } from '../../providers/escrow-provider';
 import LendrButton from '@/components/shared/lendr-btn';
 
 export function Step2Active() {
-  const { escrow, bid, rentalPost, completeStep, isLoading, isLender, isRenter } = useEscrowLifecycle();
+  const { escrow, bid, rentalPost, rentalStartTime, completeStep, isLoading, isLender, isRenter } = useEscrowLifecycle();
   const [open, setOpen] = useState(false);
 
   if (!escrow || !rentalPost) {
@@ -55,21 +55,21 @@ export function Step2Active() {
                 </div>
                 <div className='flex justify-between'>
                   <span className='text-slate-400'>Rental Duration</span>
-                  <span className='text-white'>{bid?.rentalDuration} day(s)</span>
+                  <span className='text-white'>{bid?.rentalDuration} hour(s)</span>
                 </div>
                 <div className='flex flex-col lg:flex-row justify-between border-t border-slate-700 pt-2'>
                   <span className='text-slate-400'>Deadline</span>
                   <span className='text-orange-400 font-bold'>
-                    {/* Get deadline from now + rentalDuration, in Thursday, 24, 2025 12:00:00 */}
-                    {bid?.rentalDuration
-                      ? new Date(Date.now() + bid.rentalDuration * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', {
-                          weekday: 'long',
-                          month: 'long',
-                          day: 'numeric',
-                          year: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })
+                    {/* Get deadline from rentalStartTime + rentalDuration (in hours) */}
+                    {bid?.rentalDuration && rentalStartTime
+                      ? new Date(rentalStartTime + bid.rentalDuration * 60 * 60 * 1000).toLocaleDateString('en-US', {
+                        weekday: 'long',
+                        month: 'long',
+                        day: 'numeric',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })
                       : 'N/A'}
                   </span>
                 </div>

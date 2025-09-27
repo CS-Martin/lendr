@@ -17,6 +17,7 @@ interface EscrowLifecycleContextType {
   bid: Doc<'bids'> | null;
   timeRemainingStep2: number;
   rentalDuration: number;
+  rentalStartTime: number;
   isLoading: boolean;
   error: Error | null;
   setRentalPostId: (rentalPostId: Id<'rentalposts'>) => void;
@@ -152,6 +153,7 @@ export const EscrowLifecycleProvider = ({ children }: { children: ReactNode }) =
     bid: bid || null,
     timeRemainingStep2: escrowData?.step2ExpiresAt || 0,
     rentalDuration: bid?.rentalDuration || 0,
+    rentalStartTime: escrowData?.rentalStartTime || 0,
     isLoading: isLoading || (escrowData === undefined && rentalPostId !== null),
     error,
     setRentalPostId,

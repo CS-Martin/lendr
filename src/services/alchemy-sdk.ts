@@ -34,6 +34,15 @@ export class AlchemyService {
 
       const alchemy = getAlchemyClient(network);
 
+      console.log('Making Alchemy request:', {
+        walletAddress,
+        network,
+        pageSize: 50,
+        hasPageKey: !!pageKey,
+        isHttps: window.location.protocol === 'https:',
+        userAgent: navigator.userAgent,
+      });
+
       const response: OwnedNftsResponse = await alchemy.nft.getNftsForOwner(walletAddress, {
         pageSize: 50, // fetch more per request to improve UX
         omitMetadata: false,
@@ -48,6 +57,20 @@ export class AlchemyService {
       };
     } catch (error) {
       console.error('Failed to fetch NFTs:', error);
+
+      // Check for specific authentication errors
+      if (error instanceof Error) {
+        if (error.message.includes('Must be authenticated') || error.message.includes('401')) {
+          console.error('Authentication error - check API key and network permissions');
+        }
+        if (error.message.includes('403')) {
+          console.error('Forbidden - API key may not have permission for this network');
+        }
+        if (error.message.includes('429')) {
+          console.error('Rate limited - too many requests');
+        }
+      }
+
       return { nfts: [] };
     }
   }

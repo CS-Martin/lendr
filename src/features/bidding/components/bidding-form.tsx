@@ -82,7 +82,7 @@ export function BiddingForm({ rentalPost }: BiddingFormProps) {
   }, [userBid, reset]);
 
   // Calculate costs
-  const costBreakdown = calculateBidCosts(bidAmount, rentalDuration, rentalPost.collateral);
+  const costBreakdown = calculateBidCosts(bidAmount, rentalDuration);
 
   const handleBidSubmission = async (formData: BidFormValues) => {
     if (!userAddress) {
@@ -94,7 +94,6 @@ export function BiddingForm({ rentalPost }: BiddingFormProps) {
     const validation = validateBidAgainstHighestBid(
       formData.bidAmount,
       formData.rentalDuration,
-      rentalPost.collateral,
       highestBidData ?? null,
       rentalPost,
     );
@@ -197,7 +196,7 @@ export function BiddingForm({ rentalPost }: BiddingFormProps) {
             <Slider
               value={[rentalDuration]}
               onValueChange={([value]) => setValue('rentalDuration', value)}
-              max={rentalPost.rentalDuration || BIDDING_CONSTANTS.MAX_RENTAL_DURATION}
+              max={(rentalPost.rentalDuration) * 24}
               min={BIDDING_CONSTANTS.MIN_RENTAL_DURATION}
               step={1}
               className='mt-2'

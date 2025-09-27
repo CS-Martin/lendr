@@ -71,6 +71,11 @@ export const completeStep = mutation({
       await ctx.db.patch(escrowId, { step2ExpiresAt: Date.now() + 24 * 60 * 60 * 1000 });
     }
 
+    if (nextStepNumber === 3) {
+      // Step 3: Rental period starts - record the start time
+      await ctx.db.patch(escrowId, { rentalStartTime: Date.now() });
+    }
+
     if (nextStep) {
       await ctx.db.patch(nextStep._id, { status: 'ACTIVE', timestamp: Date.now() });
     }

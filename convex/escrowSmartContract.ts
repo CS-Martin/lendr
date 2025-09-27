@@ -17,6 +17,7 @@ export const escrowSmartContract = defineTable({
   rentalPostOwnerAddress: v.string(),
   status: EscrowSmartContractStatus,
   step2ExpiresAt: v.optional(v.number()), // Step 2 deadline (lender sends NFT)
+  rentalStartTime: v.optional(v.number()), // When step 3 (rental period) started
 })
   .index('by_rentalPostId', ['rentalPostId'])
   .index('by_rentalPostRenterAddress', ['rentalPostRenterAddress'])
