@@ -2,19 +2,60 @@ import { useState } from 'react';
 import { useEscrowLifecycle } from '@/features/escrow/providers/escrow-provider';
 import LendrButton from '@/components/shared/lendr-btn';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { CheckCircle } from 'lucide-react';
+import { CheckCircle, Loader2 } from 'lucide-react';
+import { useAction } from 'convex/react';
+import { api } from '@convex/_generated/api';
+import { toast } from 'sonner';
 
 export function Step1Active() {
   const { escrow, bid, rentalPost, completeStep, isLoading, isLender, isRenter } = useEscrowLifecycle();
   const [open, setOpen] = useState(false);
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+
+  const initiatePayment = useAction(api.escrowSmartContract.initiateDelegationRentalPayment);
 
   if (!escrow || !bid || !rentalPost) {
     return null;
   }
 
-  const handleConfirmPayment = () => {
-    completeStep({ escrowId: escrow._id, stepNumber: 1 });
-    setOpen(false);
+  const handleConfirmPayment = async () => {
+    if (!escrow.smartContractRentalId) {
+      toast.error('Smart contract rental ID not found. Please contact support.');
+      return;
+    }
+
+    setIsProcessingPayment(true);
+
+    try {
+      // Calculate payment amount (rental fee in wei)
+      const paymentAmount = Math.floor(bid.bidAmount * 1e18).toString();
+
+      // Call the payment API
+      const paymentResult = await initiatePayment({
+        rentalId: escrow.smartContractRentalId,
+        payment: paymentAmount,
+      });
+
+
+      if (paymentResult.success) {
+        // Payment successful, complete the step
+        await completeStep({
+          escrowId: escrow._id,
+          stepNumber: 1,
+          txHash: paymentResult.result?.txHash || '0xabc123de...89abc123'
+        });
+
+        toast.success('Payment successful! Rental process initiated.');
+        setOpen(false);
+      } else {
+        throw new Error(paymentResult.error || 'Payment failed');
+      }
+    } catch (error) {
+      console.error('Payment error:', error);
+      toast.error(`Payment failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setIsProcessingPayment(false);
+    }
   };
 
   return (
@@ -62,9 +103,9 @@ export function Step1Active() {
                   <span className='text-yellow-400 font-bold'>1 ETH</span>
                 </div>
                 <div className='flex justify-between border-t border-slate-700 pt-2'>
-                  <span className='text-slate-400'>Total to Escrow</span>
+                  <span className='text-slate-400'>Rental Fee</span>
                   <span className='text-purple-400 font-bold'>
-                    {(bid?.bidAmount * bid?.rentalDuration + rentalPost?.collateral + 1).toFixed(3)} ETH
+                    {bid?.bidAmount.toFixed(4)} ETH
                   </span>
                 </div>
               </div>
@@ -84,8 +125,15 @@ export function Step1Active() {
                 </LendrButton>
                 <LendrButton
                   onClick={handleConfirmPayment}
-                  disabled={isLoading}>
-                  {isLoading ? 'Processing...' : 'Confirm & Pay'}
+                  disabled={isLoading || isProcessingPayment}>
+                  {isProcessingPayment ? (
+                    <>
+                      <Loader2 className='w-4 h-4 animate-spin mr-2' />
+                      Processing Payment...
+                    </>
+                  ) : (
+                    'Confirm & Pay'
+                  )}
                 </LendrButton>
               </DialogFooter>
             </DialogContent>

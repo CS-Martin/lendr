@@ -287,6 +287,44 @@ export const updateEscrowSmartContractRentalId = mutation({
   },
 });
 
+// Action to initiate delegation rental payment (Step 1)
+export const initiateDelegationRentalPayment = action({
+  args: {
+    rentalId: v.string(),
+    payment: v.string(), // Payment amount in wei
+  },
+  handler: async (ctx, args) => {
+    try {
+      console.log('Initiate Delegation Rental Payment Request:', args);
+
+      const apiResponse = await fetch('https://lendr.gabcat.dev/delegation/initiate-delegation-rental', {
+        method: 'POST',
+        headers: {
+          accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          rentalId: args.rentalId,
+          payment: args.payment,
+        }),
+      });
+
+      console.log('Initiate Delegation Rental Payment Response:', apiResponse);
+
+      if (!apiResponse.ok) {
+        const errorText = await apiResponse.text();
+        throw new Error(`Payment failed with status: ${apiResponse.status} - ${errorText}`);
+      }
+
+      const result = await apiResponse.json();
+      return { success: true, result };
+    } catch (error) {
+      console.error('Failed to initiate delegation rental payment:', error);
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
+    }
+  },
+});
+
 // Action to create delegation rental agreement via external API
 export const createDelegationRentalAgreement = action({
   args: {
@@ -339,6 +377,12 @@ export const createEscrowSmartContractWithAPI = action({
     if (!bid || !rentalPost) {
       throw new Error('Bid or rental post not found.');
     }
+
+    console.log('rentalPostOwnerAddress', args.rentalPostOwnerAddress);
+    console.log('nftContract', rentalPost.nftMetadata.contract?.address);
+    console.log('tokenId', rentalPost.nftMetadata.tokenId);
+    console.log('hourlyRentalFee', Math.floor(bid.bidAmount * 1e18).toString());
+    console.log('rentalDurationInHours', bid.rentalDuration.toString());
 
     // Call the delegation rental agreement API first
     const apiResult = await ctx.runAction(api.escrowSmartContract.createDelegationRentalAgreement, {
