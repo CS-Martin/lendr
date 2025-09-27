@@ -36,7 +36,9 @@ export function Step4Pending() {
         <Clock className='w-6 h-6 text-blue-500' />
         <div>
           <h3 className='text-lg font-semibold text-white'>Settlement Pending</h3>
-          <p className='text-sm text-slate-400'>The rental period has ended. Settlement will be processed automatically.</p>
+          <p className='text-sm text-slate-400'>
+            The rental period has ended. Settlement will be processed automatically.
+          </p>
         </div>
       </div>
 
@@ -66,8 +68,8 @@ export function Step4Pending() {
           <span className='text-sm font-semibold'>Automatic Processing</span>
         </div>
         <p className='text-xs text-blue-200'>
-          The NFT will be automatically returned from the smart contract registry and the rental fee will be distributed.
-          No additional action required.
+          The NFT will be automatically returned from the smart contract registry and the rental fee will be
+          distributed. No additional action required.
         </p>
       </div>
 
@@ -108,7 +110,8 @@ export function Step4Pending() {
 
       {!isRenter && (
         <div className='text-sm text-slate-400 bg-slate-700/50 p-3 rounded-md'>
-          Settlement will be processed automatically. The NFT will be returned from the smart contract registry and the rental fee will be distributed.
+          Settlement will be processed automatically. The NFT will be returned from the smart contract registry and the
+          rental fee will be distributed.
         </div>
       )}
     </div>
