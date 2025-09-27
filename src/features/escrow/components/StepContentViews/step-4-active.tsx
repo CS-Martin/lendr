@@ -4,7 +4,7 @@ import { useState } from 'react';
 import LendrButton from '@/components/shared/lendr-btn';
 import { toast } from 'sonner';
 
-export function Step4Pending() {
+export function Step4Active() {
   const { escrow, isRenter, completeStep4Settlement, isLoading, bid } = useEscrowLifecycle();
   const [txHash, setTxHash] = useState('');
 
@@ -31,14 +31,12 @@ export function Step4Pending() {
   const totalToLender = rentalFee - platformFee;
 
   return (
-    <div className='bg-slate-800 rounded-lg p-4'>
+    <div className='bg-blue-900/20 border border-blue-800 rounded-lg p-4'>
       <div className='flex items-center space-x-3 mb-4'>
         <Clock className='w-6 h-6 text-blue-500' />
         <div>
-          <h3 className='text-lg font-semibold text-white'>Settlement Pending</h3>
-          <p className='text-sm text-slate-400'>
-            The rental period has ended. Settlement will be processed automatically.
-          </p>
+          <h3 className='text-lg font-semibold text-white'>Settlement Active</h3>
+          <p className='text-sm text-blue-200'>The rental period has ended. Settlement is ready to be processed.</p>
         </div>
       </div>
 
@@ -60,17 +58,6 @@ export function Step4Pending() {
             </div>
           </div>
         </div>
-      </div>
-
-      <div className='bg-blue-900/20 border border-blue-800 p-3 rounded-md mb-4'>
-        <div className='flex items-center space-x-2 text-blue-300 mb-1'>
-          <CheckCircle className='w-4 h-4' />
-          <span className='text-sm font-semibold'>Automatic Processing</span>
-        </div>
-        <p className='text-xs text-blue-200'>
-          The NFT will be automatically returned from the smart contract registry and the rental fee will be
-          distributed. No additional action required.
-        </p>
       </div>
 
       {isRenter && (
@@ -105,13 +92,18 @@ export function Step4Pending() {
               </div>
             )}
           </LendrButton>
+
+          <div className='text-xs text-blue-200 bg-blue-900/30 p-3 rounded-md'>
+            <strong>Note:</strong> This will complete the settlement. The NFT will be automatically returned from the
+            smart contract registry and the rental fee will be distributed.
+          </div>
         </div>
       )}
 
       {!isRenter && (
-        <div className='text-sm text-slate-400 bg-slate-700/50 p-3 rounded-md'>
-          Settlement will be processed automatically. The NFT will be returned from the smart contract registry and the
-          rental fee will be distributed.
+        <div className='text-sm text-blue-200 bg-blue-900/30 p-3 rounded-md'>
+          Settlement is ready to be processed. The NFT will be automatically returned from the smart contract registry
+          and the rental fee will be distributed.
         </div>
       )}
     </div>

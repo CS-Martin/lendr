@@ -1,29 +1,15 @@
 import { Alchemy, Network, OwnedNft, OwnedNftsResponse, NftFilters } from 'alchemy-sdk';
 
-// Create Alchemy clients per network to ensure requests are made against the
-// currently connected chain. We cache instances by Network for reuse.
-const alchemyClientsByNetwork: Map<Network, Alchemy> = new Map();
+const config = {
+  apiKey: process.env.NEXT_PUBLIC_ALCHEMY_API_KEY || '',
+  network: Network.MATIC_AMOY,
+};
 
-const getAlchemyClient = (network: Network): Alchemy => {
-  const existing = alchemyClientsByNetwork.get(network);
-  if (existing) return existing;
-
-  const client = new Alchemy({
-    apiKey: process.env.NEXT_PUBLIC_ALCHEMY_API_KEY || '',
+const getAlchemyClient = (network: Network) => {
+  return new Alchemy({
+    apiKey: config.apiKey,
     network,
   });
-
-  if (!process.env.NEXT_PUBLIC_ALCHEMY_API_KEY) {
-    // Warn clearly when the API key is missing so the UI issue is easier to diagnose
-    // without needing to dig through network requests.
-    // This does not throw to keep the app functional, but fetches will fail.
-    // Set NEXT_PUBLIC_ALCHEMY_API_KEY in your .env.local to resolve.
-    // eslint-disable-next-line no-console
-    console.warn('[Alchemy] NEXT_PUBLIC_ALCHEMY_API_KEY is not set. NFT fetching will fail.');
-  }
-
-  alchemyClientsByNetwork.set(network, client);
-  return client;
 };
 
 // Map wagmi/viem chain ids to Alchemy Network enum. Defaults to ETH_MAINNET.

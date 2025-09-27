@@ -16,11 +16,14 @@ interface EscrowLifecycleContextType {
   rentalPost: Doc<'rentalposts'> | null;
   bid: Doc<'bids'> | null;
   timeRemainingStep2: number;
-  timeRemainingStep4: number;
+  rentalDuration: number;
   isLoading: boolean;
   error: Error | null;
   setRentalPostId: (rentalPostId: Id<'rentalposts'>) => void;
   completeStep: (args: { escrowId: Id<'escrowSmartContracts'>; stepNumber: number; txHash?: string }) => Promise<void>;
+  completeStep4Settlement: (args: { escrowId: Id<'escrowSmartContracts'>; txHash?: string }) => Promise<void>;
+  checkDeadlines: (escrowId: Id<'escrowSmartContracts'>) => Promise<void>;
+  forceCompleteRentalProcess: (args: { escrowId: Id<'escrowSmartContracts'>; txHash?: string }) => Promise<void>;
   cancelEscrow: (escrowId: Id<'escrowSmartContracts'>) => Promise<void>;
   defaultEscrow: (escrowId: Id<'escrowSmartContracts'>) => Promise<void>;
   settleEscrow: (escrowId: Id<'escrowSmartContracts'>) => Promise<void>;
@@ -39,11 +42,10 @@ export const EscrowLifecycleProvider = ({ children }: { children: ReactNode }) =
   const rentalPost = useQuery(api.rentalpost.get, escrowData?.rentalPostId ? { id: escrowData.rentalPostId } : 'skip');
   const bid = useQuery(api.bids.getBidById, escrowData?.bidId ? { bidId: escrowData.bidId } : 'skip');
 
-  console.log('escrowData', escrowData);
-  console.log('rentalPost', rentalPost);
-  console.log('bid', bid);
-
   const completeStepMutation = useMutation(api.escrowSmartContractStep.completeStep);
+  const completeStep4SettlementMutation = useMutation(api.escrowSmartContractStep.completeStep4Settlement);
+  const checkDeadlinesMutation = useMutation(api.escrowSmartContractStep.checkDeadlines);
+  const forceCompleteRentalProcessMutation = useMutation(api.escrowSmartContract.forceCompleteRentalProcess);
   const cancelEscrowMutation = useMutation(api.escrowSmartContract.cancelEscrow);
   const defaultEscrowMutation = useMutation(api.escrowSmartContract.defaultEscrow);
   const settleEscrowMutation = useMutation(api.escrowSmartContract.settleEscrow);
@@ -58,6 +60,39 @@ export const EscrowLifecycleProvider = ({ children }: { children: ReactNode }) =
     setIsLoading(true);
     try {
       await completeStepMutation(args);
+    } catch (e) {
+      setError(e as Error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const completeStep4Settlement = async (args: { escrowId: Id<'escrowSmartContracts'>; txHash?: string }) => {
+    setIsLoading(true);
+    try {
+      await completeStep4SettlementMutation(args);
+    } catch (e) {
+      setError(e as Error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const checkDeadlines = async (escrowId: Id<'escrowSmartContracts'>) => {
+    setIsLoading(true);
+    try {
+      await checkDeadlinesMutation({ escrowId });
+    } catch (e) {
+      setError(e as Error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const forceCompleteRentalProcess = async (args: { escrowId: Id<'escrowSmartContracts'>; txHash?: string }) => {
+    setIsLoading(true);
+    try {
+      await forceCompleteRentalProcessMutation(args);
     } catch (e) {
       setError(e as Error);
     } finally {
@@ -116,11 +151,14 @@ export const EscrowLifecycleProvider = ({ children }: { children: ReactNode }) =
     rentalPost: rentalPost || null,
     bid: bid || null,
     timeRemainingStep2: escrowData?.step2ExpiresAt || 0,
-    timeRemainingStep4: escrowData?.step4ExpiresAt || 0,
+    rentalDuration: bid?.rentalDuration || 0,
     isLoading: isLoading || (escrowData === undefined && rentalPostId !== null),
     error,
     setRentalPostId,
     completeStep,
+    completeStep4Settlement,
+    checkDeadlines,
+    forceCompleteRentalProcess,
     cancelEscrow,
     defaultEscrow,
     settleEscrow,

@@ -17,7 +17,6 @@ export const escrowSmartContract = defineTable({
   rentalPostOwnerAddress: v.string(),
   status: EscrowSmartContractStatus,
   step2ExpiresAt: v.optional(v.number()), // Step 2 deadline (lender sends NFT)
-  step4ExpiresAt: v.optional(v.number()), // Step 4 deadline (renter returns NFT)
 })
   .index('by_rentalPostId', ['rentalPostId'])
   .index('by_rentalPostRenterAddress', ['rentalPostRenterAddress'])
@@ -53,8 +52,8 @@ export const createEscrowSmartContract = mutation({
         stepNumber: 1,
         status: 'ACTIVE' as const,
         title: 'Renter Pays',
-        description: 'Renter deposits collateral and rental fee into escrow.',
-        details: 'The renter must pay the total amount to proceed.',
+        description: 'Renter deposits rental fee into escrow.',
+        details: 'The renter must pay the rental fee to proceed.',
         timestamp: Date.now(),
       },
       {
@@ -62,8 +61,8 @@ export const createEscrowSmartContract = mutation({
         stepNumber: 2,
         status: 'PENDING' as const,
         title: 'Lender Sends NFT',
-        description: 'Lender must send the NFT to the escrow contract.',
-        details: 'The lender has 24 hours to send the NFT.',
+        description: 'Lender must send the NFT to the escrow contract registry.',
+        details: 'The lender has 24 hours to send the NFT to the smart contract registry.',
         warning: 'If the deadline is missed, the escrow will be cancelled.',
         timestamp: 0,
       },
@@ -73,26 +72,16 @@ export const createEscrowSmartContract = mutation({
         status: 'PENDING' as const,
         title: 'Rental Period',
         description: 'The rental period begins.',
-        details: 'The NFT is held in escrow during the rental period.',
+        details: 'The NFT is held in the smart contract registry during the rental period.',
         timestamp: 0,
       },
       {
         escrowId,
         stepNumber: 4,
         status: 'PENDING' as const,
-        title: 'Renter Returns NFT',
-        description: 'Renter must return the NFT to the lender.',
-        details: 'The renter has 3 days to return the NFT after the rental period ends.',
-        warning: 'If the deadline is missed, the collateral will be forfeited.',
-        timestamp: 0,
-      },
-      {
-        escrowId,
-        stepNumber: 5,
-        status: 'PENDING' as const,
         title: 'Settlement',
-        description: 'Payouts are distributed.',
-        details: 'The rental fee is sent to the lender and the collateral is returned to the renter.',
+        description: 'Automatic settlement and NFT return.',
+        details: 'The rental fee is sent to the lender and the NFT is automatically returned from the registry.',
         timestamp: 0,
       },
     ];
@@ -155,5 +144,115 @@ export const settleEscrow = mutation({
   },
   handler: async (ctx, args) => {
     await ctx.db.patch(args.id, { status: 'COMPLETED' });
+  },
+});
+
+// Get escrow contracts by user address (as renter)
+export const getEscrowContractsByRenter = query({
+  args: {
+    renterAddress: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const escrows = await ctx.db
+      .query('escrowSmartContracts')
+      .withIndex('by_rentalPostRenterAddress', (q) => q.eq('rentalPostRenterAddress', args.renterAddress))
+      .collect();
+
+    // Get steps for each escrow
+    const escrowsWithSteps = await Promise.all(
+      escrows.map(async (escrow) => {
+        const steps = await ctx.db
+          .query('escrowSmartContractSteps')
+          .filter((q) => q.eq(q.field('escrowId'), escrow._id))
+          .collect();
+        return { ...escrow, steps };
+      }),
+    );
+
+    return escrowsWithSteps;
+  },
+});
+
+// Get escrow contracts by user address (as lender/owner)
+export const getEscrowContractsByOwner = query({
+  args: {
+    ownerAddress: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const escrows = await ctx.db
+      .query('escrowSmartContracts')
+      .withIndex('by_rentalPostOwnerAddress', (q) => q.eq('rentalPostOwnerAddress', args.ownerAddress))
+      .collect();
+
+    // Get steps for each escrow
+    const escrowsWithSteps = await Promise.all(
+      escrows.map(async (escrow) => {
+        const steps = await ctx.db
+          .query('escrowSmartContractSteps')
+          .filter((q) => q.eq(q.field('escrowId'), escrow._id))
+          .collect();
+        return { ...escrow, steps };
+      }),
+    );
+
+    return escrowsWithSteps;
+  },
+});
+
+// Get all escrow contracts with their steps
+export const getAllEscrowContracts = query({
+  args: {},
+  handler: async (ctx) => {
+    const escrows = await ctx.db.query('escrowSmartContracts').collect();
+
+    // Get steps for each escrow
+    const escrowsWithSteps = await Promise.all(
+      escrows.map(async (escrow) => {
+        const steps = await ctx.db
+          .query('escrowSmartContractSteps')
+          .filter((q) => q.eq(q.field('escrowId'), escrow._id))
+          .collect();
+        return { ...escrow, steps };
+      }),
+    );
+
+    return escrowsWithSteps;
+  },
+});
+
+// Force complete step 4 (settlement) (for testing or manual intervention)
+export const forceCompleteRentalProcess = mutation({
+  args: {
+    escrowId: v.id('escrowSmartContracts'),
+    txHash: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const { escrowId, txHash } = args;
+
+    // Get the escrow contract
+    const escrow = await ctx.db.get(escrowId);
+    if (!escrow) {
+      throw new Error('Escrow contract not found');
+    }
+
+    // Complete step 4 (settlement)
+    const step4 = await ctx.db
+      .query('escrowSmartContractSteps')
+      .filter((q) => q.eq(q.field('escrowId'), escrowId))
+      .filter((q) => q.eq(q.field('stepNumber'), 4))
+      .unique();
+
+    if (step4) {
+      await ctx.db.patch(step4._id, {
+        status: 'COMPLETED',
+        timestamp: Date.now(),
+        txHash: txHash || '0xabc123de...89abc123',
+      });
+    }
+
+    // Mark escrow as completed
+    await ctx.db.patch(escrowId, { status: 'COMPLETED' });
+
+    return { success: true, message: 'Rental process completed successfully' };
   },
 });

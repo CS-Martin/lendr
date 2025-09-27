@@ -34,22 +34,22 @@ export const NFTCard = ({ nft, onViewNFT, onListNFT }: NFTCardProps) => {
   }, []);
 
   return (
-    <Card3D className='group h-full cursor-pointer'>
+    <Card3D className='group  cursor-pointer'>
       <motion.div
         onClick={onViewNFT}
         ref={cardRef}
-        className='relative flex flex-col h-full bg-gradient-to-br from-slate-900/90 to-slate-800/90 backdrop-blur-xl border border-slate-700/50 hover:border-lendr-400/50 rounded-xl overflow-hidden shadow-2xl hover:shadow-lendr-400/30 transition-all duration-500'
+        className='relative h-full max-h-[320px] flex flex-col bg-gradient-to-br from-slate-900/90 to-slate-800/90 backdrop-blur-xl border border-slate-700/50 hover:border-lendr-400/50 rounded-xl overflow-hidden shadow-2xl hover:shadow-lendr-400/30 transition-all duration-500'
         whileHover={{
-          y: -15,
-          boxShadow: '0 25px 80px rgba(220, 243, 71, 0.25)',
+          y: -8,
+          boxShadow: '0 15px 40px rgba(220, 243, 71, 0.25)',
         }}
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}>
-        <div className='relative overflow-hidden '>
+        <div className='relative overflow-hidden'>
           <motion.div
             ref={imageRef}
-            whileHover={{ scale: 1.1 }}
+            whileHover={{ scale: 1.05 }}
             transition={{ duration: 0.5 }}>
             <Image
               src={nft.image.cachedUrl || nft.image.thumbnailUrl || nft.image.originalUrl || '/placeholder.svg'}
@@ -60,7 +60,7 @@ export const NFTCard = ({ nft, onViewNFT, onListNFT }: NFTCardProps) => {
                 e.currentTarget.src = '/placeholder.svg';
               }}
               unoptimized
-              className='w-full h-64 object-cover group-hover:scale-105 transition-all duration-500'
+              className='w-full h-48 object-cover group-hover:scale-105 transition-all duration-500'
             />
           </motion.div>
 
@@ -72,9 +72,9 @@ export const NFTCard = ({ nft, onViewNFT, onListNFT }: NFTCardProps) => {
         </div>
 
         {/* Content */}
-        <div className='relative p-2 py-3 flex-1'>
+        <div className='relative p-3 pb-4'>
           <motion.h3
-            className='text-sm font-bold line-clamp-1 text-white mb-2 group-hover:text-lendr-400 transition-colors duration-300'
+            className='text-sm font-bold line-clamp-1 text-white mb-1 group-hover:text-lendr-400 transition-colors duration-300'
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}>
@@ -82,32 +82,28 @@ export const NFTCard = ({ nft, onViewNFT, onListNFT }: NFTCardProps) => {
           </motion.h3>
 
           <motion.p
-            className='text-sm text-slate-400 line-clamp-1'
+            className='text-xs text-slate-400 line-clamp-2 mb-3'
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.5 }}>
             {nft.description}
           </motion.p>
 
-          {/* {session?.user?.address === profileAddress && ( */}
           <motion.div
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.9 }}
-            className='absolute w-[90%] -bottom-10 group-hover:-translate-y-13 left-1/2 -translate-x-1/2 transition-all duration-500'>
+            transition={{ delay: 0.9 }}>
             <LendrButton
               onClick={(e) => {
                 e.stopPropagation();
-
                 onListNFT?.();
               }}
-              className='w-full rounded-md bg-gradient-to-r from-lendr-400 to-lendr-500 hover:from-lendr-500 hover:to-lendr-600 text-slate-950 border-0 font-bold shadow-md shadow-lendr-400/30 hover:shadow-lendr-400/50 transition-all duration-500 overflow-hidden'>
+              className='w-full rounded-md bg-gradient-to-r from-lendr-400 to-lendr-500 hover:from-lendr-500 hover:to-lendr-600 text-slate-950 border-0 font-bold shadow-md shadow-lendr-400/30 hover:shadow-lendr-400/50 transition-all duration-500 overflow-hidden text-sm py-2'>
               List NFT
             </LendrButton>
           </motion.div>
-          {/* )} */}
         </div>
       </motion.div>
     </Card3D>

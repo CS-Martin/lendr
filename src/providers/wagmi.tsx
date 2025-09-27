@@ -7,6 +7,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { SessionProvider } from 'next-auth/react';
 import { RainbowKitSiweNextAuthProvider } from '@rainbow-me/rainbowkit-siwe-next-auth';
 import { getWagmiConfig } from '@/lib/wagmi';
+import { polygonAmoy } from 'viem/chains';
 
 const queryClient = new QueryClient();
 
@@ -27,7 +28,13 @@ export function CustomWagmiProvider({ children, initialState }: { children: Reac
                 borderRadius: 'medium',
                 fontStack: 'system',
                 overlayBlur: 'small',
-              })}>
+              })}
+              appInfo={{
+                appName: 'Lendr',
+                learnMoreUrl: 'https://lendr.app',
+              }}
+              initialChain={polygonAmoy}
+              showRecentTransactions={false}>
               {children}
             </RainbowKitProvider>
           </RainbowKitSiweNextAuthProvider>

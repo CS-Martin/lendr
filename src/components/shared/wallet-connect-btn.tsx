@@ -85,8 +85,7 @@ export const WalletConnectButton = () => {
                 <button
                   type='button'
                   onClick={openChainModal}
-                  className='hidden md:flex items-center gap-2 hover:bg-gray-700/20 rounded-md cursor-pointer px-2 py-2'
-                >
+                  className='hidden md:flex items-center gap-2 hover:bg-gray-700/20 rounded-md cursor-pointer px-2 py-2'>
                   {chain?.hasIcon && chain?.iconUrl && (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
@@ -127,8 +126,7 @@ export const WalletConnectButton = () => {
                       <DropdownMenuSeparator className='bg-gray-700' />
                       <DropdownMenuItem
                         className='cursor-pointer focus:text-white focus:bg-white/20'
-                        onClick={openChainModal}
-                      >
+                        onClick={openChainModal}>
                         <Globe2 className='w-4 h-4 text-white mr-2' />
                         <span>Change network</span>
                       </DropdownMenuItem>
