@@ -5,6 +5,13 @@ const config = {
   network: Network.MATIC_AMOY,
 };
 
+const getAlchemyClient = (network: Network) => {
+  return new Alchemy({
+    apiKey: config.apiKey,
+    network,
+  });
+};
+
 // Map wagmi/viem chain ids to Alchemy Network enum. Defaults to ETH_MAINNET.
 const mapChainIdToAlchemyNetwork = (chainId?: number): Network => {
   switch (chainId) {
