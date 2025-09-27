@@ -31,16 +31,16 @@ export function EscrowLifecycle() {
   // Check if escrow is completed (all steps completed or escrow status is COMPLETED)
   const isCompleted = escrow?.status === 'COMPLETED' || completedSteps === steps.length;
 
-  console.log('isCompleted', isCompleted);
-  console.log('completedSteps', completedSteps);
-  console.log('steps.length', steps.length);
-  console.log('escrow', escrow);
-  console.log('bid', bid);
-  console.log('rentalPost', rentalPost);
-
   // Show completed UI if escrow is completed
   if (isCompleted && escrow && bid && rentalPost) {
-    return <CompletedEscrowUI escrow={escrow} bid={bid} rentalPost={rentalPost} steps={steps} />;
+    return (
+      <CompletedEscrowUI
+        escrow={escrow}
+        bid={bid}
+        rentalPost={rentalPost}
+        steps={steps}
+      />
+    );
   }
 
   // If no steps or no current step (and not completed), return null

@@ -75,7 +75,8 @@ export function Step4Active() {
           </LendrButton>
 
           <div className='text-xs text-blue-200 bg-blue-900/30 p-3 rounded-md'>
-            <strong>Note:</strong> Click the button above to review and confirm the settlement details before completion.
+            <strong>Note:</strong> Click the button above to review and confirm the settlement details before
+            completion.
           </div>
         </div>
       )}

@@ -196,7 +196,7 @@ export function BiddingForm({ rentalPost }: BiddingFormProps) {
             <Slider
               value={[rentalDuration]}
               onValueChange={([value]) => setValue('rentalDuration', value)}
-              max={(rentalPost.rentalDuration) * 24}
+              max={rentalPost.rentalDuration * 24}
               min={BIDDING_CONSTANTS.MIN_RENTAL_DURATION}
               step={1}
               className='mt-2'

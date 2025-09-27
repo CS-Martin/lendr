@@ -5,7 +5,8 @@ import { useEscrowLifecycle } from '../../providers/escrow-provider';
 import LendrButton from '@/components/shared/lendr-btn';
 
 export function Step2Active() {
-  const { escrow, bid, rentalPost, rentalStartTime, completeStep, isLoading, isLender, isRenter } = useEscrowLifecycle();
+  const { escrow, bid, rentalPost, rentalStartTime, completeStep, isLoading, isLender, isRenter } =
+    useEscrowLifecycle();
   const [open, setOpen] = useState(false);
 
   if (!escrow || !rentalPost) {
@@ -63,13 +64,13 @@ export function Step2Active() {
                     {/* Get deadline from rentalStartTime + rentalDuration (in hours) */}
                     {bid?.rentalDuration && rentalStartTime
                       ? new Date(rentalStartTime + bid.rentalDuration * 60 * 60 * 1000).toLocaleDateString('en-US', {
-                        weekday: 'long',
-                        month: 'long',
-                        day: 'numeric',
-                        year: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })
+                          weekday: 'long',
+                          month: 'long',
+                          day: 'numeric',
+                          year: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })
                       : 'N/A'}
                   </span>
                 </div>
