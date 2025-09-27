@@ -14,8 +14,7 @@ import { CountdownTimer } from '@/features/marketplace/components/countdown-time
  * - Step 4 → no deadline (automatic settlement)
  */
 export function DeadlineTimer() {
-  const { escrow, currentStep, rentalDuration, timeRemainingStep2, defaultEscrow, completeStep } =
-    useEscrowLifecycle();
+  const { escrow, currentStep, rentalDuration, timeRemainingStep2, defaultEscrow, completeStep } = useEscrowLifecycle();
 
   /**
    * Compute deadline (endTime) based on the current step.
