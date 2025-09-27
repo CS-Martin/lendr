@@ -22,6 +22,9 @@ interface EscrowLifecycleContextType {
   error: Error | null;
   setRentalPostId: (rentalPostId: Id<'rentalposts'>) => void;
   completeStep: (args: { escrowId: Id<'escrowSmartContracts'>; stepNumber: number; txHash?: string }) => Promise<void>;
+  completeStep4ReturnNFT: (args: { escrowId: Id<'escrowSmartContracts'>; txHash?: string }) => Promise<void>;
+  checkDeadlines: (escrowId: Id<'escrowSmartContracts'>) => Promise<void>;
+  forceCompleteRentalProcess: (args: { escrowId: Id<'escrowSmartContracts'>; txHash?: string }) => Promise<void>;
   cancelEscrow: (escrowId: Id<'escrowSmartContracts'>) => Promise<void>;
   defaultEscrow: (escrowId: Id<'escrowSmartContracts'>) => Promise<void>;
   settleEscrow: (escrowId: Id<'escrowSmartContracts'>) => Promise<void>;
@@ -41,6 +44,9 @@ export const EscrowLifecycleProvider = ({ children }: { children: ReactNode }) =
   const bid = useQuery(api.bids.getBidById, escrowData?.bidId ? { bidId: escrowData.bidId } : 'skip');
 
   const completeStepMutation = useMutation(api.escrowSmartContractStep.completeStep);
+  const completeStep4ReturnNFTMutation = useMutation(api.escrowSmartContractStep.completeStep4ReturnNFT);
+  const checkDeadlinesMutation = useMutation(api.escrowSmartContractStep.checkDeadlines);
+  const forceCompleteRentalProcessMutation = useMutation(api.escrowSmartContract.forceCompleteRentalProcess);
   const cancelEscrowMutation = useMutation(api.escrowSmartContract.cancelEscrow);
   const defaultEscrowMutation = useMutation(api.escrowSmartContract.defaultEscrow);
   const settleEscrowMutation = useMutation(api.escrowSmartContract.settleEscrow);
@@ -55,6 +61,39 @@ export const EscrowLifecycleProvider = ({ children }: { children: ReactNode }) =
     setIsLoading(true);
     try {
       await completeStepMutation(args);
+    } catch (e) {
+      setError(e as Error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const completeStep4ReturnNFT = async (args: { escrowId: Id<'escrowSmartContracts'>; txHash?: string }) => {
+    setIsLoading(true);
+    try {
+      await completeStep4ReturnNFTMutation(args);
+    } catch (e) {
+      setError(e as Error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const checkDeadlines = async (escrowId: Id<'escrowSmartContracts'>) => {
+    setIsLoading(true);
+    try {
+      await checkDeadlinesMutation({ escrowId });
+    } catch (e) {
+      setError(e as Error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const forceCompleteRentalProcess = async (args: { escrowId: Id<'escrowSmartContracts'>; txHash?: string }) => {
+    setIsLoading(true);
+    try {
+      await forceCompleteRentalProcessMutation(args);
     } catch (e) {
       setError(e as Error);
     } finally {
@@ -119,6 +158,9 @@ export const EscrowLifecycleProvider = ({ children }: { children: ReactNode }) =
     error,
     setRentalPostId,
     completeStep,
+    completeStep4ReturnNFT,
+    checkDeadlines,
+    forceCompleteRentalProcess,
     cancelEscrow,
     defaultEscrow,
     settleEscrow,

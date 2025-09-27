@@ -69,13 +69,14 @@ export const RentalPostCard = ({ post, viewMode, onViewRentalPost }: RentalPostC
   };
 
   return (
-    <Card3D className='relative group'>
+    <Card3D className='relative group h-full'>
       <motion.div
         onClick={(e) => onViewRentalPost(e)}
         ref={cardRef}
         className={cn(
-          'relative cursor-pointer bg-gradient-to-br from-slate-900/90 to-slate-800/90 backdrop-blur-xl border border-slate-700/50 hover:border-lendr-400/50 rounded-2xl overflow-hidden shadow-2xl hover:shadow-lendr-400/30 transition-all duration-500',
-          viewMode === 'list' && 'flex max-h-30', // List view specific styles
+          'relative h-full flex flex-col cursor-pointer bg-gradient-to-br from-slate-900/90 to-slate-800/90 backdrop-blur-xl border border-slate-700/50 hover:border-lendr-400/50 rounded-2xl overflow-hidden shadow-2xl hover:shadow-lendr-400/30 transition-all duration-500',
+          viewMode === 'list' && 'flex-row max-h-32', // List view specific styles
+          viewMode === 'grid' && 'max-h-[400px]', // Grid view specific styles
         )}
         whileHover={{
           y: viewMode === 'grid' ? -15 : 0, // Only lift in grid view
@@ -85,12 +86,16 @@ export const RentalPostCard = ({ post, viewMode, onViewRentalPost }: RentalPostC
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}>
         {/* Image Section - Left */}
-        <div className={cn('relative overflow-hidden', viewMode === 'list' && 'w-1/2 md:w-[100px] xl:w-[160px]')}>
+        <div className={cn(
+          'relative overflow-hidden flex-shrink-0',
+          viewMode === 'list' && 'w-1/2 md:w-[100px] xl:w-[160px]',
+          viewMode === 'grid' && 'h-48'
+        )}>
           <motion.div
             ref={imageRef}
-            whileHover={{ scale: viewMode === 'grid' ? 1.1 : 1 }}
+            whileHover={{ scale: viewMode === 'grid' ? 1.05 : 1 }}
             transition={{ duration: 0.5 }}
-            className={cn('w-full h-full', viewMode === 'list' && 'h-30')}>
+            className='w-full h-full'>
             <Image
               src={
                 post.nftMetadata.image.cachedUrl ||
@@ -102,7 +107,10 @@ export const RentalPostCard = ({ post, viewMode, onViewRentalPost }: RentalPostC
               width={500}
               height={500}
               unoptimized
-              className={cn('w-full h-full object-cover', viewMode === 'grid' ? 'h-64' : 'h-30')}
+              className={cn(
+                'w-full h-full object-cover',
+                viewMode === 'grid' ? 'h-48' : 'h-full'
+              )}
             />
           </motion.div>
 
@@ -157,12 +165,12 @@ export const RentalPostCard = ({ post, viewMode, onViewRentalPost }: RentalPostC
         {/* Content Section - Center */}
         <div
           className={cn(
-            'p-4 flex flex-col justify-between transition-all duration-500',
+            'p-3 flex flex-col flex-1 transition-all duration-500',
             viewMode === 'list' ? 'w-full p-2.5' : 'group-hover:-translate-y-2',
           )}>
-          <div>
+          <div className='flex-1'>
             <motion.h3
-              className='text-sm mb-2 md:text-md font-mono font-bold text-white group-hover:text-lendr-400 transition-colors duration-300 line-clamp-1'
+              className='text-sm mb-1 md:text-md font-mono font-bold text-white group-hover:text-lendr-400 transition-colors duration-300 line-clamp-1'
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 }}>
@@ -171,8 +179,8 @@ export const RentalPostCard = ({ post, viewMode, onViewRentalPost }: RentalPostC
 
             <motion.p
               className={cn(
-                'text-sm text-slate-400 mb-2 text-ellipsis',
-                viewMode === 'grid' ? 'line-clamp-1' : 'line-clamp-1',
+                'text-xs text-slate-400 mb-3 text-ellipsis',
+                viewMode === 'grid' ? 'line-clamp-2' : 'line-clamp-1',
               )}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -181,14 +189,14 @@ export const RentalPostCard = ({ post, viewMode, onViewRentalPost }: RentalPostC
             </motion.p>
           </div>
 
-          <div className={cn('grid mb-4', viewMode === 'grid' ? 'grid-cols-2' : 'grid-cols-2')}>
+          <div className={cn('grid', viewMode === 'grid' ? 'grid-cols-2 gap-2' : 'grid-cols-2 gap-2')}>
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.6 }}>
-              <div className='text-sm text-slate-400'>Hourly Rate</div>
+              <div className='text-xs text-slate-400'>Hourly Rate</div>
               <motion.div
-                className={cn('text-md font-bold text-lendr-400 font-mono', viewMode === 'list' ? 'text-sm' : '')}
+                className={cn('text-sm font-bold text-lendr-400 font-mono', viewMode === 'list' ? 'text-xs' : '')}
                 animate={{
                   textShadow: [
                     '0 0 5px rgba(220, 243, 71, 0.5)',
@@ -207,8 +215,8 @@ export const RentalPostCard = ({ post, viewMode, onViewRentalPost }: RentalPostC
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.7 }}>
-              <div className='text-sm text-slate-400'>Collateral</div>
-              <div className={cn('text-md font-bold text-cyan-400 font-mono', viewMode === 'list' ? 'text-sm' : '')}>
+              <div className='text-xs text-slate-400'>Collateral</div>
+              <div className={cn('text-sm font-bold text-cyan-400 font-mono', viewMode === 'list' ? 'text-xs' : '')}>
                 {post.collateral} ETH
               </div>
             </motion.div>
@@ -218,98 +226,97 @@ export const RentalPostCard = ({ post, viewMode, onViewRentalPost }: RentalPostC
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.8 }}
                 className={cn(viewMode === 'list' ? 'hidden' : 'block')}>
-                <div className='text-sm text-slate-400'>Category</div>
-                <div className='text-md font-bold text-purple-400 font-mono'>{post.category}</div>
+                <div className='text-xs text-slate-400'>Category</div>
+                <div className='text-sm font-bold text-purple-400 font-mono'>{post.category}</div>
               </motion.div>
             )}
           </div>
         </div>
 
-        {/* If user is not the poster */}
-        {viewMode === 'grid' && post.posterAddress !== session?.user?.address && post.status === 'AVAILABLE' && (
-          <div className='absolute -translate-y-0 group-hover:-translate-y-16 w-full p-4 transition-all duration-500'>
-            <motion.div
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.9 }}>
-              <LendrButton
-                className='w-full overflow-hidden rounded-md'
-                disabled={post.status !== 'AVAILABLE'}
-                onClick={(e) => {
-                  e.stopPropagation();
+        {/* Action Buttons */}
+        {viewMode === 'grid' && (
+          <div className='p-3 pt-0'>
+            {post.posterAddress !== session?.user?.address && post.status === 'AVAILABLE' ? (
+              <motion.div
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.9 }}>
+                <LendrButton
+                  className='w-full overflow-hidden rounded-md text-sm py-2'
+                  disabled={post.status !== 'AVAILABLE'}
+                  onClick={(e) => {
+                    e.stopPropagation();
 
-                  if (!session) {
-                    toast.error('You must be signed in to place a bid.');
-                    return;
-                  }
+                    if (!session) {
+                      toast.error('You must be signed in to place a bid.');
+                      return;
+                    }
 
-                  router.push(`/rentals/${post._id}`);
-                }}>
+                    router.push(`/rentals/${post._id}`);
+                  }}>
+                  <motion.div
+                    className='absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent'
+                    initial={{ x: '-100%' }}
+                    whileHover={{ x: '100%' }}
+                    transition={{ duration: 0.6 }}
+                  />
+                  <span className='relative z-10'>{post.status === 'AVAILABLE' ? 'Place Bid' : 'Unavailable'}</span>
+                </LendrButton>
+              </motion.div>
+            ) : session && post.posterAddress === session?.user?.address ? (
+              <div className='flex flex-row items-center justify-between gap-2'>
                 <motion.div
-                  className='absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent'
-                  initial={{ x: '-100%' }}
-                  whileHover={{ x: '100%' }}
-                  transition={{ duration: 0.6 }}
-                />
-                <span className='relative z-10'>{post.status === 'AVAILABLE' ? 'Place Bid' : 'Unavailable'}</span>
-              </LendrButton>
-            </motion.div>
-          </div>
-        )}
+                  className='flex-1'
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.9 }}>
+                  <LendrButton
+                    className='w-full overflow-hidden rounded-md text-sm py-2'
+                    disabled={post.status !== 'AVAILABLE'}
+                    onClick={(e) => e.stopPropagation()}
+                    link={`/rentals/${post._id}/bids`}>
+                    <motion.div
+                      className='absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent'
+                      initial={{ x: '-100%' }}
+                      whileHover={{ x: '100%' }}
+                      transition={{ duration: 0.6 }}
+                    />
+                    <span className='relative z-10'>Manage Bids</span>
+                  </LendrButton>
+                </motion.div>
 
-        {/* If user is the poster */}
-        {session && viewMode === 'grid' && post.posterAddress === session?.user?.address && (
-          <div className='absolute -translate-y-0 group-hover:-translate-y-16 w-full p-4 transition-all duration-500 flex flex-row items-center justify-between gap-3'>
-            <motion.div
-              className='w-full'
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.9 }}>
-              <LendrButton
-                className='w-full overflow-hidden rounded-md'
-                disabled={post.status !== 'AVAILABLE'}
-                onClick={(e) => e.stopPropagation()}
-                link={`/rentals/${post._id}/bids`}>
                 <motion.div
-                  className='absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent'
-                  initial={{ x: '-100%' }}
-                  whileHover={{ x: '100%' }}
-                  transition={{ duration: 0.6 }}
-                />
-                <span className='relative z-10'>Manage Bids</span>
-              </LendrButton>
-            </motion.div>
-
-            <motion.div
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.9 }}
-              className='w-1/5 overflow-hidden rounded-md bg-red-500 hover:bg-red-600'
-              onClick={(e) => e.stopPropagation()}>
-              <Button
-                className='w-full overflow-hidden rounded-md bg-red-500 hover:bg-red-600'
-                disabled={post.status !== 'AVAILABLE'}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  deleteRentalPost({ id: post._id as Id<'rentalposts'> });
-                }}>
-                <motion.div
-                  className='absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent'
-                  initial={{ x: '-100%' }}
-                  whileHover={{ x: '100%' }}
-                  transition={{ duration: 0.6 }}
-                />
-                <span className='relative z-10'>
-                  <Trash2Icon className='w-4 h-4' />
-                </span>
-              </Button>
-            </motion.div>
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.9 }}
+                  className='flex-shrink-0'
+                  onClick={(e) => e.stopPropagation()}>
+                  <Button
+                    className='w-10 h-10 overflow-hidden rounded-md bg-red-500 hover:bg-red-600 p-0'
+                    disabled={post.status !== 'AVAILABLE'}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      deleteRentalPost({ id: post._id as Id<'rentalposts'> });
+                    }}>
+                    <motion.div
+                      className='absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent'
+                      initial={{ x: '-100%' }}
+                      whileHover={{ x: '100%' }}
+                      transition={{ duration: 0.6 }}
+                    />
+                    <span className='relative z-10'>
+                      <Trash2Icon className='w-4 h-4' />
+                    </span>
+                  </Button>
+                </motion.div>
+              </div>
+            ) : null}
           </div>
         )}
       </motion.div>

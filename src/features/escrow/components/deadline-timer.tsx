@@ -14,15 +14,8 @@ import { CountdownTimer } from '@/features/marketplace/components/countdown-time
  * - Step 4 → deadline comes from `timeRemainingStep4`
  */
 export function DeadlineTimer() {
-  const {
-    escrow,
-    currentStep,
-    rentalDuration,
-    timeRemainingStep2,
-    timeRemainingStep4,
-    defaultEscrow,
-    completeStep,
-  } = useEscrowLifecycle();
+  const { escrow, currentStep, rentalDuration, timeRemainingStep2, timeRemainingStep4, defaultEscrow, completeStep } =
+    useEscrowLifecycle();
 
   /**
    * Compute deadline (endTime) based on the current step.
@@ -79,7 +72,7 @@ export function DeadlineTimer() {
 
   // Expired state UI
   if (timeLeft <= 0) {
-    return <span className="text-red-400">Expired</span>;
+    return <span className='text-red-400'>Expired</span>;
   }
 
   // Default: render countdown

@@ -26,6 +26,7 @@ export default function UserProfilePage() {
   const [selectedNFTForDetails, setSelectedNFTForDetails] = useState<OwnedNft | null>(null);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
 
+
   // 👇 Sentinel ref for infinite scroll
   const sentinelRef = useRef<HTMLDivElement | null>(null);
 
@@ -70,7 +71,7 @@ export default function UserProfilePage() {
       <div className='max-w-7xl min-h-screen mx-auto py-20'>
         <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 min-h-[calc(100vh-20rem)]'>
           {nfts.map((nft: OwnedNft, index: number) =>
-            nft.contract.name ? (
+            nft.name ? (
               <Suspense
                 key={index}
                 fallback={<NFTCardSkeleton />}>

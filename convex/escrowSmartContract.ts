@@ -157,3 +157,128 @@ export const settleEscrow = mutation({
     await ctx.db.patch(args.id, { status: 'COMPLETED' });
   },
 });
+
+// Get escrow contracts by user address (as renter)
+export const getEscrowContractsByRenter = query({
+  args: {
+    renterAddress: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const escrows = await ctx.db
+      .query('escrowSmartContracts')
+      .withIndex('by_rentalPostRenterAddress', (q) => q.eq('rentalPostRenterAddress', args.renterAddress))
+      .collect();
+
+    // Get steps for each escrow
+    const escrowsWithSteps = await Promise.all(
+      escrows.map(async (escrow) => {
+        const steps = await ctx.db
+          .query('escrowSmartContractSteps')
+          .filter((q) => q.eq(q.field('escrowId'), escrow._id))
+          .collect();
+        return { ...escrow, steps };
+      }),
+    );
+
+    return escrowsWithSteps;
+  },
+});
+
+// Get escrow contracts by user address (as lender/owner)
+export const getEscrowContractsByOwner = query({
+  args: {
+    ownerAddress: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const escrows = await ctx.db
+      .query('escrowSmartContracts')
+      .withIndex('by_rentalPostOwnerAddress', (q) => q.eq('rentalPostOwnerAddress', args.ownerAddress))
+      .collect();
+
+    // Get steps for each escrow
+    const escrowsWithSteps = await Promise.all(
+      escrows.map(async (escrow) => {
+        const steps = await ctx.db
+          .query('escrowSmartContractSteps')
+          .filter((q) => q.eq(q.field('escrowId'), escrow._id))
+          .collect();
+        return { ...escrow, steps };
+      }),
+    );
+
+    return escrowsWithSteps;
+  },
+});
+
+// Get all escrow contracts with their steps
+export const getAllEscrowContracts = query({
+  args: {},
+  handler: async (ctx) => {
+    const escrows = await ctx.db.query('escrowSmartContracts').collect();
+
+    // Get steps for each escrow
+    const escrowsWithSteps = await Promise.all(
+      escrows.map(async (escrow) => {
+        const steps = await ctx.db
+          .query('escrowSmartContractSteps')
+          .filter((q) => q.eq(q.field('escrowId'), escrow._id))
+          .collect();
+        return { ...escrow, steps };
+      }),
+    );
+
+    return escrowsWithSteps;
+  },
+});
+
+// Force complete step 4 and 5 (for testing or manual intervention)
+export const forceCompleteRentalProcess = mutation({
+  args: {
+    escrowId: v.id('escrowSmartContracts'),
+    txHash: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const { escrowId, txHash } = args;
+
+    // Get the escrow contract
+    const escrow = await ctx.db.get(escrowId);
+    if (!escrow) {
+      throw new Error('Escrow contract not found');
+    }
+
+    // Complete step 4 (NFT return)
+    const step4 = await ctx.db
+      .query('escrowSmartContractSteps')
+      .filter((q) => q.eq(q.field('escrowId'), escrowId))
+      .filter((q) => q.eq(q.field('stepNumber'), 4))
+      .unique();
+
+    if (step4) {
+      await ctx.db.patch(step4._id, {
+        status: 'COMPLETED',
+        timestamp: Date.now(),
+        txHash: txHash || '0xabc123de...89abc123',
+      });
+    }
+
+    // Complete step 5 (settlement)
+    const step5 = await ctx.db
+      .query('escrowSmartContractSteps')
+      .filter((q) => q.eq(q.field('escrowId'), escrowId))
+      .filter((q) => q.eq(q.field('stepNumber'), 5))
+      .unique();
+
+    if (step5) {
+      await ctx.db.patch(step5._id, {
+        status: 'COMPLETED',
+        timestamp: Date.now(),
+        txHash: txHash || '0xabc123de...89abc123',
+      });
+    }
+
+    // Mark escrow as completed
+    await ctx.db.patch(escrowId, { status: 'COMPLETED' });
+
+    return { success: true, message: 'Rental process completed successfully' };
+  },
+});
