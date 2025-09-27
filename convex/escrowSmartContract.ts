@@ -1,6 +1,8 @@
 import { defineTable } from 'convex/server';
 import { v } from 'convex/values';
-import { mutation, query } from './_generated/server';
+import { mutation, query, action } from './_generated/server';
+import { api } from './_generated/api';
+import { Id } from './_generated/dataModel';
 
 // Escrow contract lifecycle statuses
 export const EscrowSmartContractStatus = v.union(
@@ -18,6 +20,7 @@ export const escrowSmartContract = defineTable({
   status: EscrowSmartContractStatus,
   step2ExpiresAt: v.optional(v.number()), // Step 2 deadline (lender sends NFT)
   rentalStartTime: v.optional(v.number()), // When step 3 (rental period) started
+  smartContractRentalId: v.optional(v.string()), // ID from delegation rental agreement API
 })
   .index('by_rentalPostId', ['rentalPostId'])
   .index('by_rentalPostRenterAddress', ['rentalPostRenterAddress'])
@@ -42,8 +45,21 @@ export const createEscrowSmartContract = mutation({
       throw new Error('This rental post is already associated with an escrow contract.');
     }
 
+    // Get bid and rental post data for API call
+    const bid = await ctx.db.get(args.bidId);
+    const rentalPost = await ctx.db.get(args.rentalPostId);
+
+    if (!bid || !rentalPost) {
+      throw new Error('Bid or rental post not found.');
+    }
+
+    // Note: API call will be handled in a separate action
+    // This mutation creates the escrow without the smart contract ID initially
+    const smartContractRentalId: string | undefined = undefined;
+
     const escrowId = await ctx.db.insert('escrowSmartContracts', {
       ...args,
+      smartContractRentalId,
     });
 
     // Create the steps
@@ -255,5 +271,108 @@ export const forceCompleteRentalProcess = mutation({
     await ctx.db.patch(escrowId, { status: 'COMPLETED' });
 
     return { success: true, message: 'Rental process completed successfully' };
+  },
+});
+
+// Mutation to update escrow smart contract rental ID
+export const updateEscrowSmartContractRentalId = mutation({
+  args: {
+    escrowId: v.id('escrowSmartContracts'),
+    smartContractRentalId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    await ctx.db.patch(args.escrowId, {
+      smartContractRentalId: args.smartContractRentalId,
+    });
+  },
+});
+
+// Action to create delegation rental agreement via external API
+export const createDelegationRentalAgreement = action({
+  args: {
+    lender: v.string(),
+    nftContract: v.string(),
+    tokenId: v.string(),
+    hourlyRentalFee: v.string(),
+    rentalDurationInHours: v.string(),
+    nftStandard: v.number(),
+    dealDuration: v.number(),
+  },
+  handler: async (ctx, args) => {
+    try {
+      const apiResponse = await fetch('https://lendr.gabcat.dev/factory/create-delegation-rental-agreement', {
+        method: 'POST',
+        headers: {
+          accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(args),
+      });
+
+      console.log('apiResponse', apiResponse);
+
+      if (!apiResponse.ok) {
+        throw new Error(`API call failed with status: ${apiResponse.status}`);
+      }
+
+      const result = await apiResponse.json();
+      return { success: true, smartContractRentalId: result.result };
+    } catch (error) {
+      console.error('Failed to create delegation rental agreement:', error);
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
+    }
+  },
+});
+
+// Action to create escrow smart contract with API integration
+export const createEscrowSmartContractWithAPI = action({
+  args: {
+    bidId: v.id('bids'),
+    rentalPostId: v.id('rentalposts'),
+    rentalPostRenterAddress: v.string(),
+    rentalPostOwnerAddress: v.string(),
+    status: EscrowSmartContractStatus,
+  },
+  handler: async (ctx, args): Promise<Id<'escrowSmartContracts'>> => {
+    // First, create the escrow smart contract using the mutation
+    const escrowId: Id<'escrowSmartContracts'> = await ctx.runMutation(
+      api.escrowSmartContract.createEscrowSmartContract,
+      args,
+    );
+
+    // Then, try to create the delegation rental agreement and update the escrow
+    try {
+      // Get bid and rental post data for API call
+      const bid = await ctx.runQuery(api.bids.getBidById, { bidId: args.bidId });
+      const rentalPost = await ctx.runQuery(api.rentalpost.get, { id: args.rentalPostId });
+
+      if (!bid || !rentalPost) {
+        throw new Error('Bid or rental post not found.');
+      }
+
+      // Call the delegation rental agreement API
+      const apiResult = await ctx.runAction(api.escrowSmartContract.createDelegationRentalAgreement, {
+        lender: args.rentalPostOwnerAddress,
+        nftContract: rentalPost.nftMetadata.contract?.address || '',
+        tokenId: rentalPost.nftMetadata.tokenId || '',
+        hourlyRentalFee: (bid.bidAmount * 1e18).toString(), // Convert to wei
+        rentalDurationInHours: bid.rentalDuration.toString(),
+        nftStandard: 0, // ERC721
+        dealDuration: 0, // SIX_HOURS
+      });
+
+      if (apiResult.success && apiResult.smartContractRentalId) {
+        // Update the escrow with the smart contract rental ID
+        await ctx.runMutation(api.escrowSmartContract.updateEscrowSmartContractRentalId, {
+          escrowId,
+          smartContractRentalId: apiResult.smartContractRentalId,
+        });
+      }
+    } catch (error) {
+      console.error('Failed to create delegation rental agreement:', error);
+      // Continue without the smart contract ID - the escrow is still created
+    }
+
+    return escrowId;
   },
 });

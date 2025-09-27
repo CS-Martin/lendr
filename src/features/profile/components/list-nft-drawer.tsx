@@ -447,7 +447,12 @@ export const ListNFTDrawer = ({ nft, isOpen, onClose, session }: ListNFTDrawerPr
                                       }
                                     }
                                   }}
-                                  disabled={(date) => date < new Date()}
+                                  disabled={(date) => {
+                                    // Allow today and future dates
+                                    const today = new Date();
+                                    today.setHours(0, 0, 0, 0);
+                                    return date < today;
+                                  }}
                                   initialFocus
                                   className='text-white'
                                 />
@@ -493,9 +498,14 @@ export const ListNFTDrawer = ({ nft, isOpen, onClose, session }: ListNFTDrawerPr
                                       });
                                     }
                                   }}
-                                  disabled={(date) =>
-                                    date < new Date() || (biddingStartTime ? date.getTime() < biddingStartTime : false)
-                                  }
+                                  disabled={(date) => {
+                                    // Allow today and future dates, but not before start date
+                                    const today = new Date();
+                                    today.setHours(0, 0, 0, 0);
+                                    const isBeforeToday = date < today;
+                                    const isBeforeStartDate = biddingStartTime ? date.getTime() < biddingStartTime : false;
+                                    return isBeforeToday || isBeforeStartDate;
+                                  }}
                                   initialFocus
                                   className='text-white'
                                 />

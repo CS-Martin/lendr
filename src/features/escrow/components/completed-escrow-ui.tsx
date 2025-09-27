@@ -189,6 +189,19 @@ export function CompletedEscrowUI({ escrow, bid, rentalPost, steps }: CompletedE
                   <Calendar className='w-4 h-4 text-slate-400' />
                 </div>
               </div>
+              {escrow.smartContractRentalId && (
+                <div>
+                  <span className='text-slate-400 text-sm'>Smart Contract Rental ID</span>
+                  <div className='flex items-center justify-between mt-1'>
+                    <span className='text-white font-mono text-sm'>{escrow.smartContractRentalId}</span>
+                    <button
+                      onClick={() => copyToClipboard(escrow.smartContractRentalId!, 'Smart Contract Rental ID')}
+                      className='text-slate-400 hover:text-white transition-colors'>
+                      <Copy className='w-4 h-4' />
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -212,9 +225,8 @@ export function CompletedEscrowUI({ escrow, bid, rentalPost, steps }: CompletedE
                 transition={{ delay: index * 0.1 }}
                 className='flex items-center space-x-4'>
                 <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                    step.status === 'COMPLETED' ? 'bg-green-600 text-white' : 'bg-slate-700 text-slate-400'
-                  }`}>
+                  className={`w-8 h-8 rounded-full flex items-center justify-center ${step.status === 'COMPLETED' ? 'bg-green-600 text-white' : 'bg-slate-700 text-slate-400'
+                    }`}>
                   {step.status === 'COMPLETED' ? (
                     <CheckCircle className='w-4 h-4' />
                   ) : (

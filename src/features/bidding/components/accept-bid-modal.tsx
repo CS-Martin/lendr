@@ -2,7 +2,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Button } from '@/components/ui/button';
 import { CheckCircle } from 'lucide-react';
 import { Doc, Id } from '@convex/_generated/dataModel';
-import { useMutation } from 'convex/react';
+import { useMutation, useAction } from 'convex/react';
 import { api } from '@convex/_generated/api';
 import { useSession } from 'next-auth/react';
 import { useProgress } from '@bprogress/next';
@@ -33,7 +33,7 @@ export const AcceptBidModal = ({
   const user = session?.user;
 
   const acceptBid = useMutation(api.bids.acceptBid);
-  const createEscrowSmartContract = useMutation(api.escrowSmartContract.createEscrowSmartContract);
+  const createEscrowSmartContract = useAction(api.escrowSmartContract.createEscrowSmartContractWithAPI);
   const updateRentalPost = useMutation(api.rentalpost.updateRentalPost);
 
   const handleAcceptBid = async () => {

@@ -13,6 +13,7 @@ import { useSession } from 'next-auth/react';
 import { api } from '@convex/_generated/api';
 import { formatDuration, truncateText } from '@/lib/utils';
 import { useMemo } from 'react';
+import Link from 'next/link';
 
 interface BiddingStatusProps {
   rentalPost: Doc<'rentalposts'>;
@@ -92,22 +93,20 @@ function BidItem({
 
   return (
     <div
-      className={`p-4 rounded-lg border ${
-        isCurrentUser ? 'bg-blue-900/20 border-blue-700/50' : 'bg-slate-800/30 border-slate-700/50'
-      }`}>
+      className={`p-4 rounded-lg border ${isCurrentUser ? 'bg-blue-900/20 border-blue-700/50' : 'bg-slate-800/30 border-slate-700/50'
+        }`}>
       <div className='flex justify-between items-start mb-2'>
         <div className='flex items-center space-x-2'>
           {/* Ranking badge based on total value */}
           <div
-            className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
-              rank === 1
-                ? 'bg-yellow-500 text-black'
-                : rank === 2
-                  ? 'bg-gray-400 text-black'
-                  : rank === 3
-                    ? 'bg-amber-700 text-white'
-                    : 'bg-slate-700 text-slate-300'
-            }`}>
+            className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${rank === 1
+              ? 'bg-yellow-500 text-black'
+              : rank === 2
+                ? 'bg-gray-400 text-black'
+                : rank === 3
+                  ? 'bg-amber-700 text-white'
+                  : 'bg-slate-700 text-slate-300'
+              }`}>
             #{rank}
           </div>
 
@@ -152,6 +151,19 @@ function BidItem({
           </Badge>
         )}
       </div>
+
+      {/* Proceed button for renters when their bid is accepted */}
+      {bid.isAccepted && isCurrentUser && (
+        <div className='mt-3'>
+          <Button
+            asChild
+            className='w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white border-0'>
+            <Link href={`/rentals/${bid.rentalPostId}/escrow`}>
+              Proceed to Rental Process
+            </Link>
+          </Button>
+        </div>
+      )}
 
       {bid.message && (
         <div className='mt-3 p-3 bg-slate-800/50 rounded-md'>
