@@ -45,7 +45,9 @@ export function Step5Pending() {
             <div className='border-t border-slate-600 pt-2 mt-2'>
               <div className='flex justify-between items-center'>
                 <span className='text-slate-300 font-semibold'>Total Transaction Value:</span>
-                <span className='text-white font-mono font-bold'>{totalToRenter + totalToLender + platformFee} ETH</span>
+                <span className='text-white font-mono font-bold'>
+                  {totalToRenter + totalToLender + platformFee} ETH
+                </span>
               </div>
             </div>
           </div>
@@ -57,8 +59,7 @@ export function Step5Pending() {
             <span className='text-sm font-semibold'>Automatic Processing</span>
           </div>
           <p className='text-xs text-blue-200'>
-            Once step 4 is completed, this settlement will be processed automatically.
-            No additional action required.
+            Once step 4 is completed, this settlement will be processed automatically. No additional action required.
           </p>
         </div>
       </div>

@@ -38,9 +38,7 @@ export function Step4Pending() {
       {isRenter && (
         <div className='space-y-4'>
           <div>
-            <label className='block text-sm font-medium text-slate-300 mb-2'>
-              Transaction Hash (Optional)
-            </label>
+            <label className='block text-sm font-medium text-slate-300 mb-2'>Transaction Hash (Optional)</label>
             <input
               type='text'
               value={txHash}
@@ -71,8 +69,8 @@ export function Step4Pending() {
           </LendrButton>
 
           <div className='text-xs text-slate-500 bg-slate-700/50 p-3 rounded-md'>
-            <strong>Note:</strong> This action will automatically complete both step 4 (NFT return) and step 5 (settlement).
-            The rental fee will be sent to the lender and your collateral will be returned.
+            <strong>Note:</strong> This action will automatically complete both step 4 (NFT return) and step 5
+            (settlement). The rental fee will be sent to the lender and your collateral will be returned.
           </div>
         </div>
       )}

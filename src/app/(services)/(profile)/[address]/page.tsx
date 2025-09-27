@@ -26,7 +26,6 @@ export default function UserProfilePage() {
   const [selectedNFTForDetails, setSelectedNFTForDetails] = useState<OwnedNft | null>(null);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
 
-
   // 👇 Sentinel ref for infinite scroll
   const sentinelRef = useRef<HTMLDivElement | null>(null);
 

@@ -86,11 +86,12 @@ export const RentalPostCard = ({ post, viewMode, onViewRentalPost }: RentalPostC
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}>
         {/* Image Section - Left */}
-        <div className={cn(
-          'relative overflow-hidden flex-shrink-0',
-          viewMode === 'list' && 'w-1/2 md:w-[100px] xl:w-[160px]',
-          viewMode === 'grid' && 'h-48'
-        )}>
+        <div
+          className={cn(
+            'relative overflow-hidden flex-shrink-0',
+            viewMode === 'list' && 'w-1/2 md:w-[100px] xl:w-[160px]',
+            viewMode === 'grid' && 'h-48',
+          )}>
           <motion.div
             ref={imageRef}
             whileHover={{ scale: viewMode === 'grid' ? 1.05 : 1 }}
@@ -107,10 +108,7 @@ export const RentalPostCard = ({ post, viewMode, onViewRentalPost }: RentalPostC
               width={500}
               height={500}
               unoptimized
-              className={cn(
-                'w-full h-full object-cover',
-                viewMode === 'grid' ? 'h-48' : 'h-full'
-              )}
+              className={cn('w-full h-full object-cover', viewMode === 'grid' ? 'h-48' : 'h-full')}
             />
           </motion.div>
 
