@@ -68,7 +68,7 @@ export default function UserProfilePage() {
       <ProfileHeader user={user} />
 
       <div className='max-w-7xl min-h-screen mx-auto py-20'>
-        <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 min-h-[calc(100vh-20rem)]'>
+        <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4'>
           {nfts.map((nft: OwnedNft, index: number) =>
             nft.name ? (
               <Suspense

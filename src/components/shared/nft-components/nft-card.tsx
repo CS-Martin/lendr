@@ -34,11 +34,11 @@ export const NFTCard = ({ nft, onViewNFT, onListNFT }: NFTCardProps) => {
   }, []);
 
   return (
-    <Card3D className='group  cursor-pointer'>
+    <Card3D className='group h-full cursor-pointer'>
       <motion.div
         onClick={onViewNFT}
         ref={cardRef}
-        className='relative h-full max-h-[320px] flex flex-col bg-gradient-to-br from-slate-900/90 to-slate-800/90 backdrop-blur-xl border border-slate-700/50 hover:border-lendr-400/50 rounded-xl overflow-hidden shadow-2xl hover:shadow-lendr-400/30 transition-all duration-500'
+        className='relative h-full max-h-[350px] flex flex-col bg-gradient-to-br from-slate-900/90 to-slate-800/90 backdrop-blur-xl border border-slate-700/50 hover:border-lendr-400/50 rounded-xl overflow-hidden shadow-2xl hover:shadow-lendr-400/30 transition-all duration-500'
         whileHover={{
           y: -8,
           boxShadow: '0 15px 40px rgba(220, 243, 71, 0.25)',
@@ -46,7 +46,7 @@ export const NFTCard = ({ nft, onViewNFT, onListNFT }: NFTCardProps) => {
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}>
-        <div className='relative overflow-hidden'>
+        <div className='relative overflow-hidden flex-shrink-0'>
           <motion.div
             ref={imageRef}
             whileHover={{ scale: 1.05 }}
@@ -72,22 +72,24 @@ export const NFTCard = ({ nft, onViewNFT, onListNFT }: NFTCardProps) => {
         </div>
 
         {/* Content */}
-        <div className='relative p-3 pb-4'>
-          <motion.h3
-            className='text-sm font-bold line-clamp-1 text-white mb-1 group-hover:text-lendr-400 transition-colors duration-300'
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}>
-            {nft.name}
-          </motion.h3>
+        <div className='relative p-3 pb-4 flex-1 flex flex-col justify-between'>
+          <div>
+            <motion.h3
+              className='text-sm font-bold line-clamp-1 text-white mb-1 group-hover:text-lendr-400 transition-colors duration-300'
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}>
+              {nft.name}
+            </motion.h3>
 
-          <motion.p
-            className='text-xs text-slate-400 line-clamp-2 mb-3'
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.5 }}>
-            {nft.description}
-          </motion.p>
+            <motion.p
+              className='text-xs text-slate-400 line-clamp-2 mb-3'
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.5 }}>
+              {nft.description}
+            </motion.p>
+          </div>
 
           <motion.div
             whileHover={{ scale: 1.02 }}

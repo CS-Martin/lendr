@@ -1,8 +1,8 @@
-import { Alchemy, Network, OwnedNft, OwnedNftsResponse, NftFilters } from 'alchemy-sdk';
+import { Alchemy, Network, OwnedNft, OwnedNftsResponse } from 'alchemy-sdk';
 
 const config = {
   apiKey: process.env.NEXT_PUBLIC_ALCHEMY_API_KEY || '',
-  network: Network.MATIC_AMOY,
+  network: Network.MATIC_AMOY, // Changed to mainnet for testing
 };
 
 const getAlchemyClient = (network: Network) => {
@@ -12,24 +12,9 @@ const getAlchemyClient = (network: Network) => {
   });
 };
 
-// Map wagmi/viem chain ids to Alchemy Network enum. Defaults to ETH_MAINNET.
+// Always use MATIC_AMOY network
 const mapChainIdToAlchemyNetwork = (chainId?: number): Network => {
-  switch (chainId) {
-    case 1:
-      return Network.ETH_MAINNET;
-    case 11155111:
-      return Network.ETH_SEPOLIA;
-    case 10:
-      return Network.OPT_MAINNET;
-    case 42161:
-      return Network.ARB_MAINNET;
-    case 137:
-      return Network.MATIC_MAINNET;
-    case 8453:
-      return Network.BASE_MAINNET;
-    default:
-      return Network.ETH_MAINNET;
-  }
+  return Network.MATIC_AMOY;
 };
 
 export class AlchemyService {
@@ -39,15 +24,20 @@ export class AlchemyService {
     chainId?: number,
   ): Promise<{ nfts: OwnedNft[]; pageKey?: string }> {
     try {
+      // Check API key
+      if (!config.apiKey) {
+        console.error('Alchemy API key is missing. Please set NEXT_PUBLIC_ALCHEMY_API_KEY');
+        return { nfts: [] };
+      }
+
       const network = mapChainIdToAlchemyNetwork(chainId);
+
       const alchemy = getAlchemyClient(network);
 
       const response: OwnedNftsResponse = await alchemy.nft.getNftsForOwner(walletAddress, {
         pageSize: 50, // fetch more per request to improve UX
         omitMetadata: false,
         pageKey,
-        // Use Alchemy's server-side spam filter rather than client-side checks
-        excludeFilters: [NftFilters.SPAM],
       });
 
       // Do not over-filter results client-side; rely on API filters only
