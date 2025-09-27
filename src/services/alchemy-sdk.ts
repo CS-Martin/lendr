@@ -2,7 +2,7 @@ import { Alchemy, Network, OwnedNft, OwnedNftsResponse } from 'alchemy-sdk';
 
 const config = {
   apiKey: process.env.NEXT_PUBLIC_ALCHEMY_API_KEY || '',
-  network: Network.ETH_MAINNET,
+  network: Network.MATIC_AMOY,
 };
 
 const alchemy = new Alchemy(config);

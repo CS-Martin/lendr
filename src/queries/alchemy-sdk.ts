@@ -16,6 +16,8 @@ export const useGetNFTsForAddress = (address: string) => {
         start();
         const { nfts: newNfts } = await alchemyService.getNFTsForAddress(address);
 
+        console.log('newNfts', newNfts);
+
         setNfts(newNfts);
       } catch (err) {
         setError(err as Error);
@@ -48,6 +50,8 @@ export const useShowMoreNFTs = (walletAddress: string) => {
         walletAddress,
         initialLoad ? undefined : pageKey,
       );
+
+      console.log('newNfts', newNfts);
 
       setNfts((prev) => (initialLoad ? newNfts : [...prev, ...newNfts]));
       setPageKey(newPageKey);

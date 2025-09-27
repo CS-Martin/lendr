@@ -17,6 +17,7 @@ interface EscrowLifecycleContextType {
   bid: Doc<'bids'> | null;
   timeRemainingStep2: number;
   timeRemainingStep4: number;
+  rentalDuration: number;
   isLoading: boolean;
   error: Error | null;
   setRentalPostId: (rentalPostId: Id<'rentalposts'>) => void;
@@ -38,10 +39,6 @@ export const EscrowLifecycleProvider = ({ children }: { children: ReactNode }) =
   const escrowData = useQuery(api.escrowSmartContract.getEscrowSmartContract, rentalPostId ? { rentalPostId } : 'skip');
   const rentalPost = useQuery(api.rentalpost.get, escrowData?.rentalPostId ? { id: escrowData.rentalPostId } : 'skip');
   const bid = useQuery(api.bids.getBidById, escrowData?.bidId ? { bidId: escrowData.bidId } : 'skip');
-
-  console.log('escrowData', escrowData);
-  console.log('rentalPost', rentalPost);
-  console.log('bid', bid);
 
   const completeStepMutation = useMutation(api.escrowSmartContractStep.completeStep);
   const cancelEscrowMutation = useMutation(api.escrowSmartContract.cancelEscrow);
@@ -117,6 +114,7 @@ export const EscrowLifecycleProvider = ({ children }: { children: ReactNode }) =
     bid: bid || null,
     timeRemainingStep2: escrowData?.step2ExpiresAt || 0,
     timeRemainingStep4: escrowData?.step4ExpiresAt || 0,
+    rentalDuration: bid?.rentalDuration || 0,
     isLoading: isLoading || (escrowData === undefined && rentalPostId !== null),
     error,
     setRentalPostId,
