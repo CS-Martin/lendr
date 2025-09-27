@@ -2,7 +2,7 @@
 
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { motion } from 'framer-motion';
-import { ChevronDown, Wallet, User, Settings } from 'lucide-react';
+import { ChevronDown, Wallet, User, Settings, Globe2 } from 'lucide-react';
 import Link from 'next/link';
 import { EthereumIcon } from './icons/lendr.icons';
 import {
@@ -81,6 +81,22 @@ export const WalletConnectButton = () => {
                   </div>
                 )}
 
+                {/* Chain switcher (always available) */}
+                <button
+                  type='button'
+                  onClick={openChainModal}
+                  className='hidden md:flex items-center gap-2 hover:bg-gray-700/20 rounded-md cursor-pointer px-2 py-2'>
+                  {chain?.hasIcon && chain?.iconUrl && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      alt={chain?.name ?? 'Chain icon'}
+                      src={chain.iconUrl}
+                      className='w-4 h-4 rounded-full'
+                    />
+                  )}
+                  <span className='text-sm font-medium'>{chain?.name ?? 'Select Network'}</span>
+                </button>
+
                 {/* Dropdown menu */}
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -107,6 +123,13 @@ export const WalletConnectButton = () => {
                       alignOffset={20}
                       className='w-56 bg-gray-900/80 border-gray-700 text-white'>
                       <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                      <DropdownMenuSeparator className='bg-gray-700' />
+                      <DropdownMenuItem
+                        className='cursor-pointer focus:text-white focus:bg-white/20'
+                        onClick={openChainModal}>
+                        <Globe2 className='w-4 h-4 text-white mr-2' />
+                        <span>Change network</span>
+                      </DropdownMenuItem>
                       <DropdownMenuSeparator className='bg-gray-700' />
                       <DropdownMenuItem className='cursor-pointer focus:text-white focus:bg-white/20'>
                         <Link

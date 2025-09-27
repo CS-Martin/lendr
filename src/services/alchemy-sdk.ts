@@ -1,40 +1,52 @@
-import { Alchemy, Network, OwnedNft, OwnedNftsResponse } from 'alchemy-sdk';
+import { Alchemy, Network, OwnedNft, OwnedNftsResponse, NftFilters } from 'alchemy-sdk';
 
 const config = {
   apiKey: process.env.NEXT_PUBLIC_ALCHEMY_API_KEY || '',
   network: Network.MATIC_AMOY,
 };
 
-const alchemy = new Alchemy(config);
+// Map wagmi/viem chain ids to Alchemy Network enum. Defaults to ETH_MAINNET.
+const mapChainIdToAlchemyNetwork = (chainId?: number): Network => {
+  switch (chainId) {
+    case 1:
+      return Network.ETH_MAINNET;
+    case 11155111:
+      return Network.ETH_SEPOLIA;
+    case 10:
+      return Network.OPT_MAINNET;
+    case 42161:
+      return Network.ARB_MAINNET;
+    case 137:
+      return Network.MATIC_MAINNET;
+    case 8453:
+      return Network.BASE_MAINNET;
+    default:
+      return Network.ETH_MAINNET;
+  }
+};
 
 export class AlchemyService {
   public async getNFTsForAddress(
     walletAddress: string,
     pageKey?: string,
+    chainId?: number,
   ): Promise<{ nfts: OwnedNft[]; pageKey?: string }> {
     try {
+      const network = mapChainIdToAlchemyNetwork(chainId);
+      const alchemy = getAlchemyClient(network);
+
       const response: OwnedNftsResponse = await alchemy.nft.getNftsForOwner(walletAddress, {
-        pageSize: 50, // Increased from 10 to 50 to get more NFTs
+        pageSize: 50, // fetch more per request to improve UX
         omitMetadata: false,
         pageKey,
+        // Use Alchemy's server-side spam filter rather than client-side checks
+        excludeFilters: [NftFilters.SPAM],
       });
 
-      // Filter out spam NFTs and those without a name
-      const filteredNfts = response.ownedNfts.filter(
-        (nft) => !nft.contract.isSpam && nft.name && nft.name.trim() !== '',
-      );
-
-      // If we don't have enough NFTs after filtering, try to get more
-      if (filteredNfts.length < 10 && response.pageKey) {
-        const nextPage = await this.getNFTsForAddress(walletAddress, response.pageKey);
-        return {
-          nfts: [...filteredNfts, ...nextPage.nfts].slice(0, 10), // Return up to 10 NFTs
-          pageKey: nextPage.pageKey,
-        };
-      }
-
+      // Do not over-filter results client-side; rely on API filters only
+      // and return a bounded slice for UI rendering.
       return {
-        nfts: filteredNfts.slice(0, 10), // Return up to 10 NFTs
+        nfts: response.ownedNfts.slice(0, 10),
         pageKey: response.pageKey,
       };
     } catch (error) {
