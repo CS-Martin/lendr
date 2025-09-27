@@ -34,7 +34,7 @@ export const NFTCard = ({ nft, onViewNFT, onListNFT }: NFTCardProps) => {
   }, []);
 
   return (
-    <Card3D className='group h-full cursor-pointer'>
+    <Card3D className='group  cursor-pointer'>
       <motion.div
         onClick={onViewNFT}
         ref={cardRef}
