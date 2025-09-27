@@ -16,13 +16,12 @@ interface EscrowLifecycleContextType {
   rentalPost: Doc<'rentalposts'> | null;
   bid: Doc<'bids'> | null;
   timeRemainingStep2: number;
-  timeRemainingStep4: number;
   rentalDuration: number;
   isLoading: boolean;
   error: Error | null;
   setRentalPostId: (rentalPostId: Id<'rentalposts'>) => void;
   completeStep: (args: { escrowId: Id<'escrowSmartContracts'>; stepNumber: number; txHash?: string }) => Promise<void>;
-  completeStep4ReturnNFT: (args: { escrowId: Id<'escrowSmartContracts'>; txHash?: string }) => Promise<void>;
+  completeStep4Settlement: (args: { escrowId: Id<'escrowSmartContracts'>; txHash?: string }) => Promise<void>;
   checkDeadlines: (escrowId: Id<'escrowSmartContracts'>) => Promise<void>;
   forceCompleteRentalProcess: (args: { escrowId: Id<'escrowSmartContracts'>; txHash?: string }) => Promise<void>;
   cancelEscrow: (escrowId: Id<'escrowSmartContracts'>) => Promise<void>;
@@ -44,7 +43,7 @@ export const EscrowLifecycleProvider = ({ children }: { children: ReactNode }) =
   const bid = useQuery(api.bids.getBidById, escrowData?.bidId ? { bidId: escrowData.bidId } : 'skip');
 
   const completeStepMutation = useMutation(api.escrowSmartContractStep.completeStep);
-  const completeStep4ReturnNFTMutation = useMutation(api.escrowSmartContractStep.completeStep4ReturnNFT);
+  const completeStep4SettlementMutation = useMutation(api.escrowSmartContractStep.completeStep4Settlement);
   const checkDeadlinesMutation = useMutation(api.escrowSmartContractStep.checkDeadlines);
   const forceCompleteRentalProcessMutation = useMutation(api.escrowSmartContract.forceCompleteRentalProcess);
   const cancelEscrowMutation = useMutation(api.escrowSmartContract.cancelEscrow);
@@ -68,10 +67,10 @@ export const EscrowLifecycleProvider = ({ children }: { children: ReactNode }) =
     }
   };
 
-  const completeStep4ReturnNFT = async (args: { escrowId: Id<'escrowSmartContracts'>; txHash?: string }) => {
+  const completeStep4Settlement = async (args: { escrowId: Id<'escrowSmartContracts'>; txHash?: string }) => {
     setIsLoading(true);
     try {
-      await completeStep4ReturnNFTMutation(args);
+      await completeStep4SettlementMutation(args);
     } catch (e) {
       setError(e as Error);
     } finally {
@@ -152,13 +151,12 @@ export const EscrowLifecycleProvider = ({ children }: { children: ReactNode }) =
     rentalPost: rentalPost || null,
     bid: bid || null,
     timeRemainingStep2: escrowData?.step2ExpiresAt || 0,
-    timeRemainingStep4: escrowData?.step4ExpiresAt || 0,
     rentalDuration: bid?.rentalDuration || 0,
     isLoading: isLoading || (escrowData === undefined && rentalPostId !== null),
     error,
     setRentalPostId,
     completeStep,
-    completeStep4ReturnNFT,
+    completeStep4Settlement,
     checkDeadlines,
     forceCompleteRentalProcess,
     cancelEscrow,

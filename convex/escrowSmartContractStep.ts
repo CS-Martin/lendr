@@ -71,24 +71,19 @@ export const completeStep = mutation({
       await ctx.db.patch(escrowId, { step2ExpiresAt: Date.now() + 24 * 60 * 60 * 1000 });
     }
 
-    if (nextStepNumber === 4) {
-      // Step 4: Renter has 72 hours to return NFT
-      await ctx.db.patch(escrowId, { step4ExpiresAt: Date.now() + 72 * 60 * 60 * 1000 });
-    }
-
     if (nextStep) {
       await ctx.db.patch(nextStep._id, { status: 'ACTIVE', timestamp: Date.now() });
     }
 
-    // Special handling for step 5 (settlement) - automatically complete the escrow
-    if (stepNumber === 5) {
+    // Special handling for step 4 (settlement) - automatically complete the escrow
+    if (stepNumber === 4) {
       await ctx.db.patch(escrowId, { status: 'COMPLETED' });
     }
   },
 });
 
-// New mutation specifically for completing step 4 (NFT return)
-export const completeStep4ReturnNFT = mutation({
+// New mutation for completing step 4 (settlement)
+export const completeStep4Settlement = mutation({
   args: {
     escrowId: v.id('escrowSmartContracts'),
     txHash: v.optional(v.string()),
@@ -106,12 +101,7 @@ export const completeStep4ReturnNFT = mutation({
       throw new Error('Escrow contract is not in active state');
     }
 
-    // Check if step 4 deadline has passed
-    if (escrow.step4ExpiresAt && Date.now() > escrow.step4ExpiresAt) {
-      throw new Error('Step 4 deadline has passed. The renter has defaulted.');
-    }
-
-    // Complete step 4
+    // Complete step 4 (settlement)
     const step4 = await ctx.db
       .query('escrowSmartContractSteps')
       .filter((q) => q.eq(q.field('escrowId'), escrowId))
@@ -126,25 +116,10 @@ export const completeStep4ReturnNFT = mutation({
       });
     }
 
-    // Automatically proceed to step 5 (settlement)
-    const step5 = await ctx.db
-      .query('escrowSmartContractSteps')
-      .filter((q) => q.eq(q.field('escrowId'), escrowId))
-      .filter((q) => q.eq(q.field('stepNumber'), 5))
-      .unique();
-
-    if (step5) {
-      await ctx.db.patch(step5._id, {
-        status: 'COMPLETED',
-        timestamp: Date.now(),
-        txHash: txHash || '0xabc123de...89abc123',
-      });
-    }
-
     // Mark escrow as completed
     await ctx.db.patch(escrowId, { status: 'COMPLETED' });
 
-    return { success: true, message: 'NFT returned successfully and settlement completed' };
+    return { success: true, message: 'Settlement completed successfully' };
   },
 });
 
@@ -179,21 +154,7 @@ export const checkDeadlines = mutation({
       }
     }
 
-    // Check step 4 deadline (renter didn't return NFT)
-    if (escrow.step4ExpiresAt && now > escrow.step4ExpiresAt) {
-      // Check if step 4 is still pending (renter didn't complete it)
-      const step4 = await ctx.db
-        .query('escrowSmartContractSteps')
-        .filter((q) => q.eq(q.field('escrowId'), escrowId))
-        .filter((q) => q.eq(q.field('stepNumber'), 4))
-        .unique();
-
-      if (step4 && step4.status === 'PENDING') {
-        // Default the escrow (collateral goes to lender)
-        await ctx.db.patch(escrowId, { status: 'DEFAULTED' });
-        return { action: 'DEFAULTED', reason: 'Renter failed to return NFT within deadline' };
-      }
-    }
+    // No additional deadline checks needed since step 4 is automatic settlement
 
     return { action: 'NONE', reason: 'No deadlines exceeded' };
   },

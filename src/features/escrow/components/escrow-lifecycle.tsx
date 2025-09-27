@@ -69,18 +69,6 @@ export function EscrowLifecycle() {
       )}
 
       {/* Step 4 - Deadline Approaching */}
-      {currentStep.stepNumber === 4 && (
-        <Card className='bg-gradient-to-r from-orange-900/50 to-red-900/50 border-orange-800'>
-          <CardContent className='p-2 text-center'>
-            <h3 className='text-base lg:text-xl font-semibold text-white mb-2'>⚠️ Return Deadline Approaching</h3>
-            <p className='text-orange-200 mb-4'>Renter must return NFT within:</p>
-            <DeadlineTimer />
-            <div className='text-sm text-red-300'>
-              If deadline passes → Escrow will be DEFAULTED and collateral goes to lender
-            </div>
-          </CardContent>
-        </Card>
-      )}
 
       <div className='space-y-4'>
         {steps.map((step, index) => (
