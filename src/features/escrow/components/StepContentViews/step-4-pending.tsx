@@ -5,7 +5,7 @@ import LendrButton from '@/components/shared/lendr-btn';
 import { toast } from 'sonner';
 
 export function Step4Pending() {
-  const { escrow, isRenter, completeStep4Settlement, isLoading, rentalPost, bid } = useEscrowLifecycle();
+  const { escrow, isRenter, completeStep4Settlement, isLoading, bid } = useEscrowLifecycle();
   const [txHash, setTxHash] = useState('');
 
   const handleCompleteSettlement = async () => {

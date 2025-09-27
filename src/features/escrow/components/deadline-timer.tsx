@@ -6,15 +6,15 @@ import { CountdownTimer } from '@/features/marketplace/components/countdown-time
  * DeadlineTimer
  *
  * Displays a countdown timer for the current escrow step.
- * Handles expiry logic for step 2, step 3 (rental period), and step 4.
+ * Handles expiry logic for step 2 and step 3 (rental period).
  *
  * Step behavior:
  * - Step 2 → deadline comes from `timeRemainingStep2`
  * - Step 3 → rental period, deadline = now + rentalDuration (days)
- * - Step 4 → deadline comes from `timeRemainingStep4`
+ * - Step 4 → no deadline (automatic settlement)
  */
 export function DeadlineTimer() {
-  const { escrow, currentStep, rentalDuration, timeRemainingStep2, timeRemainingStep4, defaultEscrow, completeStep } =
+  const { escrow, currentStep, rentalDuration, timeRemainingStep2, defaultEscrow, completeStep } =
     useEscrowLifecycle();
 
   /**
@@ -32,12 +32,13 @@ export function DeadlineTimer() {
         return Date.now() + (rentalDuration || 0) * 24 * 60 * 60 * 1000;
 
       case 4:
-        return new Date(timeRemainingStep4).getTime();
+        // Step 4 (settlement) has no deadline - automatic processing
+        return 0;
 
       default:
         return 0;
     }
-  }, [currentStep, rentalDuration, timeRemainingStep2, timeRemainingStep4]);
+  }, [currentStep, rentalDuration, timeRemainingStep2]);
 
   console.log('endTime', endTime);
 
@@ -47,7 +48,7 @@ export function DeadlineTimer() {
    * Effect: update countdown every second and handle expiry logic.
    */
   useEffect(() => {
-    if (!endTime || !escrow) return;
+    if (!endTime || !escrow || currentStep?.stepNumber === 4) return; // Skip timer for step 4
 
     const tick = () => {
       const remaining = endTime - Date.now();
@@ -69,6 +70,11 @@ export function DeadlineTimer() {
 
     return () => clearInterval(interval);
   }, [endTime, escrow, currentStep, completeStep, defaultEscrow]);
+
+  // Step 4 (settlement) has no deadline
+  if (currentStep?.stepNumber === 4) {
+    return <span className='text-blue-400'>No deadline - Automatic processing</span>;
+  }
 
   // Expired state UI
   if (timeLeft <= 0) {
