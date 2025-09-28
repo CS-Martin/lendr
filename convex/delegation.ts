@@ -104,3 +104,38 @@ export const activateDelegation = action({
     }
   },
 });
+
+// Action to complete delegation rental (Settlement Step)
+export const completeDelegationRental = action({
+  args: {
+    rentalId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    console.log('Complete Delegation Rental Request:', args);
+    try {
+      const apiResponse = await fetch('https://lendr.gabcat.dev/delegation/complete-delegation-rental', {
+        method: 'POST',
+        headers: {
+          accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          rentalId: args.rentalId,
+        }),
+      });
+
+      console.log('Complete Delegation Rental Response:', apiResponse);
+
+      if (!apiResponse.ok) {
+        const errorText = await apiResponse.text();
+        throw new Error(`Delegation completion failed with status: ${apiResponse.status} - ${errorText}`);
+      }
+
+      const result = await apiResponse.json();
+      return { success: true, result };
+    } catch (error) {
+      console.error('Failed to complete delegation rental:', error);
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
+    }
+  },
+});

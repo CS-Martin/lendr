@@ -6,11 +6,13 @@ import { CheckCircle, Loader2 } from 'lucide-react';
 import { useAction } from 'convex/react';
 import { api } from '@convex/_generated/api';
 import { toast } from 'sonner';
+import { useProgress } from '@bprogress/next';
 
 export function Step1Active() {
   const { escrow, bid, rentalPost, completeStep, isLoading, isLender, isRenter } = useEscrowLifecycle();
   const [open, setOpen] = useState(false);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  const { start, stop } = useProgress();
 
   const initiatePayment = useAction(api.delegation.initiateDelegationRentalPayment);
 
@@ -25,6 +27,7 @@ export function Step1Active() {
     }
 
     setIsProcessingPayment(true);
+    start();
 
     try {
       // Calculate payment amount (rental fee in wei)
@@ -54,6 +57,7 @@ export function Step1Active() {
       toast.error(`Payment failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setIsProcessingPayment(false);
+      stop();
     }
   };
 

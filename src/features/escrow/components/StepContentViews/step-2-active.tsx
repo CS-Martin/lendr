@@ -6,12 +6,14 @@ import LendrButton from '@/components/shared/lendr-btn';
 import { useAction } from 'convex/react';
 import { api } from '@convex/_generated/api';
 import { toast } from 'sonner';
+import { useProgress } from '@bprogress/next';
 
 export function Step2Active() {
   const { escrow, bid, rentalPost, rentalStartTime, completeStep, isLoading, isLender, isRenter } =
     useEscrowLifecycle();
   const [open, setOpen] = useState(false);
   const [isProcessingNFT, setIsProcessingNFT] = useState(false);
+  const { start, stop } = useProgress();
 
   const approveNFT = useAction(api.customNftCollection.approveNftForDelegation);
   const depositNFT = useAction(api.delegation.depositNFTbyLender);
@@ -33,6 +35,7 @@ export function Step2Active() {
     }
 
     setIsProcessingNFT(true);
+    start();
 
     try {
       // Step 1: Approve the delegation registry to transfer the NFT
@@ -76,6 +79,7 @@ export function Step2Active() {
       toast.error(`NFT send failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setIsProcessingNFT(false);
+      stop();
     }
   };
 
@@ -132,13 +136,13 @@ export function Step2Active() {
                     {/* Get deadline from rentalStartTime + rentalDuration (in hours) */}
                     {bid?.rentalDuration && rentalStartTime
                       ? new Date(rentalStartTime + bid.rentalDuration * 60 * 60 * 1000).toLocaleDateString('en-US', {
-                          weekday: 'long',
-                          month: 'long',
-                          day: 'numeric',
-                          year: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })
+                        weekday: 'long',
+                        month: 'long',
+                        day: 'numeric',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })
                       : 'N/A'}
                   </span>
                 </div>
