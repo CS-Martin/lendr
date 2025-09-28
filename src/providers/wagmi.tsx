@@ -34,7 +34,8 @@ export function CustomWagmiProvider({ children, initialState }: { children: Reac
                 learnMoreUrl: 'https://lendr.app',
               }}
               initialChain={polygonAmoy}
-              showRecentTransactions={false}>
+              showRecentTransactions={false}
+            >
               {children}
             </RainbowKitProvider>
           </RainbowKitSiweNextAuthProvider>
