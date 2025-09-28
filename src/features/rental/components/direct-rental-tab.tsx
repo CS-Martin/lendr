@@ -19,12 +19,12 @@ function DirectRentalPrice({ rentalPost }: DirectRentalTabProps) {
         <div className='grid grid-cols-2 gap-6'>
           <div>
             <div className='text-slate-400 text-sm mb-1'>Fixed Price</div>
-            <div className='text-3xl font-bold text-purple-400'>{rentalPost.hourlyRate} ETH</div>
+            <div className='text-3xl font-bold text-purple-400'>{rentalPost.hourlyRate} POL</div>
             <div className='text-slate-400 text-sm'>per day</div>
           </div>
           <div>
             <div className='text-slate-400 text-sm mb-1'>Collateral Required</div>
-            <div className='text-3xl font-bold text-cyan-400'>{rentalPost.collateral} ETH</div>
+            <div className='text-3xl font-bold text-cyan-400'>{rentalPost.collateral} POL</div>
             <div className='text-slate-400 text-sm'>refundable</div>
           </div>
         </div>

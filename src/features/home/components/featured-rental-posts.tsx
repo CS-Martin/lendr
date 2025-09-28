@@ -142,12 +142,12 @@ export const FeaturedRentalPosts = () => {
                           duration: 2,
                           repeat: Number.POSITIVE_INFINITY,
                         }}>
-                        {nft.pricePerDay} ETH
+                        {nft.pricePerDay} POL
                       </motion.div>
                     </div>
                     <div>
                       <div className='text-sm text-slate-400'>Collateral</div>
-                      <div className='text-lg font-bold text-cyan-400'>{nft.collateral} ETH</div>
+                      <div className='text-lg font-bold text-cyan-400'>{nft.collateral} POL</div>
                     </div>
                   </div>
 

@@ -12,7 +12,7 @@ const topLenders = [
     avatarUrl: '/placeholder.svg?height=80&width=80',
     reputationScore: 4.9,
     successfulTransactions: 247,
-    totalEarned: '12.5 ETH',
+    totalEarned: '12.5 POL',
     rank: 1,
   },
   {
@@ -22,7 +22,7 @@ const topLenders = [
     avatarUrl: '/placeholder.svg?height=80&width=80',
     reputationScore: 4.8,
     successfulTransactions: 189,
-    totalEarned: '9.8 ETH',
+    totalEarned: '9.8 POL',
     rank: 2,
   },
   {
@@ -32,7 +32,7 @@ const topLenders = [
     avatarUrl: '/placeholder.svg?height=80&width=80',
     reputationScore: 4.7,
     successfulTransactions: 156,
-    totalEarned: '8.2 ETH',
+    totalEarned: '8.2 POL',
     rank: 3,
   },
   {
@@ -42,7 +42,7 @@ const topLenders = [
     avatarUrl: '/placeholder.svg?height=80&width=80',
     reputationScore: 4.6,
     successfulTransactions: 134,
-    totalEarned: '7.1 ETH',
+    totalEarned: '7.1 POL',
     rank: 4,
   },
   {
@@ -52,7 +52,7 @@ const topLenders = [
     avatarUrl: '/placeholder.svg?height=80&width=80',
     reputationScore: 4.5,
     successfulTransactions: 98,
-    totalEarned: '5.9 ETH',
+    totalEarned: '5.9 POL',
     rank: 5,
   },
   {
@@ -62,7 +62,7 @@ const topLenders = [
     avatarUrl: '/placeholder.svg?height=80&width=80',
     reputationScore: 4.4,
     successfulTransactions: 87,
-    totalEarned: '4.7 ETH',
+    totalEarned: '4.7 POL',
     rank: 6,
   },
   {
@@ -72,7 +72,7 @@ const topLenders = [
     avatarUrl: '/placeholder.svg?height=80&width=80',
     reputationScore: 4.3,
     successfulTransactions: 76,
-    totalEarned: '3.9 ETH',
+    totalEarned: '3.9 POL',
     rank: 7,
   },
   {
@@ -82,7 +82,7 @@ const topLenders = [
     avatarUrl: '/placeholder.svg?height=80&width=80',
     reputationScore: 4.2,
     successfulTransactions: 65,
-    totalEarned: '3.2 ETH',
+    totalEarned: '3.2 POL',
     rank: 8,
   },
   {
@@ -92,7 +92,7 @@ const topLenders = [
     avatarUrl: '/placeholder.svg?height=80&width=80',
     reputationScore: 4.2,
     successfulTransactions: 65,
-    totalEarned: '3.2 ETH',
+    totalEarned: '3.2 POL',
     rank: 10,
   },
   {
@@ -102,7 +102,7 @@ const topLenders = [
     avatarUrl: '/placeholder.svg?height=80&width=80',
     reputationScore: 4.2,
     successfulTransactions: 65,
-    totalEarned: '3.2 ETH',
+    totalEarned: '3.2 POL',
     rank: 10,
   },
 ];

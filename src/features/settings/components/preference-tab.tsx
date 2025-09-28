@@ -45,7 +45,7 @@ export const PreferenceTab = () => {
             <div>
               <Label className='text-white mb-3 block'>Currency Display</Label>
               <select className='w-full bg-gray-800/50 border border-gray-700/50 text-white rounded-lg px-3 py-2 focus:border-lendr-400/50'>
-                <option>ETH</option>
+                <option>POL</option>
                 <option>USD</option>
                 <option>EUR</option>
               </select>

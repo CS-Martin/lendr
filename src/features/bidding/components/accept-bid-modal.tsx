@@ -133,7 +133,7 @@ export const AcceptBidModal = ({
             </div>
             <div className='flex justify-between'>
               <span className='text-slate-400'>Bid Amount</span>
-              <span className='text-green-400 font-bold'>{bid.bidAmount} ETH/day</span>
+              <span className='text-green-400 font-bold'>{bid.bidAmount} POL/day</span>
             </div>
             <div className='flex justify-between'>
               <span className='text-slate-400'>Duration</span>
@@ -142,7 +142,7 @@ export const AcceptBidModal = ({
             <div className='flex justify-between'>
               <span className='text-slate-400'>Total Earnings</span>
               <span className='text-purple-400 font-bold'>
-                {(Number.parseFloat(bid.bidAmount.toString()) * bid.rentalDuration).toFixed(3)} ETH
+                {(Number.parseFloat(bid.bidAmount.toString()) * bid.rentalDuration).toFixed(3)} POL
               </span>
             </div>
           </div>

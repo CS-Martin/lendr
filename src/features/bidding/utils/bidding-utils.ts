@@ -34,7 +34,7 @@ export const validateBidAgainstHighestBid = (
     if (newBidAmount <= rentalPost.hourlyRate) {
       return {
         isValid: false,
-        error: `Bid must be higher than the starting price (${rentalPost.hourlyRate} ETH)`,
+        error: `Bid must be higher than the starting price (${rentalPost.hourlyRate} POL)`,
       };
     }
     return { isValid: true };
@@ -47,7 +47,7 @@ export const validateBidAgainstHighestBid = (
   if (newBidTotalCost <= highestBidTotalCost) {
     return {
       isValid: false,
-      error: `Your total bid (${newBidTotalCost.toFixed(4)} ETH) must be higher than the current highest total bid (${highestBidTotalCost.toFixed(4)} ETH)`,
+      error: `Your total bid (${newBidTotalCost.toFixed(4)} POL) must be higher than the current highest total bid (${highestBidTotalCost.toFixed(4)} POL)`,
     };
   }
 
@@ -55,7 +55,7 @@ export const validateBidAgainstHighestBid = (
   if (newBidAmount <= highestBid.bidAmount) {
     return {
       isValid: false,
-      error: `Hourly bid amount (${newBidAmount} ETH) must be higher than the current highest hourly bid (${highestBid.bidAmount} ETH)`,
+      error: `Hourly bid amount (${newBidAmount} POL) must be higher than the current highest hourly bid (${highestBid.bidAmount} POL)`,
     };
   }
 

@@ -91,7 +91,7 @@ export function Step1Active() {
                 </div>
                 <div className='flex justify-between'>
                   <span className='text-slate-400'>Rental Fee</span>
-                  <span className='text-green-400 font-bold'>{bid?.totalBidAmount} ETH/day</span>
+                  <span className='text-green-400 font-bold'>{bid?.totalBidAmount} POL/day</span>
                 </div>
                 <div className='flex justify-between'>
                   <span className='text-slate-400'>Duration</span>
@@ -99,15 +99,15 @@ export function Step1Active() {
                 </div>
                 <div className='flex justify-between'>
                   <span className='text-slate-400'>Collateral</span>
-                  <span className='text-yellow-400 font-bold'>{rentalPost?.collateral} ETH</span>
+                  <span className='text-yellow-400 font-bold'>{rentalPost?.collateral} POL</span>
                 </div>
                 <div className='flex justify-between'>
                   <span className='text-slate-400'>Platform Fee</span>
-                  <span className='text-yellow-400 font-bold'>1 ETH</span>
+                  <span className='text-yellow-400 font-bold'>1 POL</span>
                 </div>
                 <div className='flex justify-between border-t border-slate-700 pt-2'>
                   <span className='text-slate-400'>Rental Fee</span>
-                  <span className='text-purple-400 font-bold'>{bid?.bidAmount.toFixed(4)} ETH</span>
+                  <span className='text-purple-400 font-bold'>{bid?.bidAmount.toFixed(4)} POL</span>
                 </div>
               </div>
 

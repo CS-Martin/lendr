@@ -13,15 +13,15 @@ export function Step5Pending() {
       <div className='space-y-1 text-xs'>
         <div className='flex justify-between'>
           <span className='text-slate-400'>→ Collateral to Renter:</span>
-          <span className='text-cyan-400'>{rentalPost.collateral} ETH</span>
+          <span className='text-cyan-400'>{rentalPost.collateral} POL</span>
         </div>
         <div className='flex justify-between'>
           <span className='text-slate-400'>→ Rental Fee to Lender:</span>
-          <span className='text-green-400'>{rentalPost.collateral} ETH</span>
+          <span className='text-green-400'>{rentalPost.collateral} POL</span>
         </div>
         <div className='flex justify-between'>
           <span className='text-slate-400'>→ Platform Fee:</span>
-          <span className='text-purple-400'>0.05 ETH</span>
+          <span className='text-purple-400'>0.05 POL</span>
         </div>
       </div>
     </div>

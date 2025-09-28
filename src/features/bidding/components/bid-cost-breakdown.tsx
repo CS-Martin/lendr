@@ -12,13 +12,13 @@ export function BidCostBreakdown({ costBreakdown, rentalDuration }: BidCostBreak
     <div className='bg-slate-800 rounded-lg p-4 space-y-3'>
       <div className='flex justify-between'>
         <span className='text-slate-400'>Bid Total ({formatDuration(rentalDuration)})</span>
-        <span className='text-white'>{costBreakdown.totalRentalCost.toFixed(4)} ETH</span>
+        <span className='text-white'>{costBreakdown.totalRentalCost.toFixed(4)} POL</span>
       </div>
 
       <Separator className='bg-slate-700' />
       <div className='flex justify-between font-semibold'>
         <span className='text-white'>Total Required</span>
-        <span className='text-orange-400'>{costBreakdown.totalRequired.toFixed(4)} ETH</span>
+        <span className='text-orange-400'>{costBreakdown.totalRequired.toFixed(4)} POL</span>
       </div>
     </div>
   );
