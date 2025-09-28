@@ -12,7 +12,7 @@ export function Step1Active() {
   const [open, setOpen] = useState(false);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
 
-  const initiatePayment = useAction(api.escrowSmartContract.initiateDelegationRentalPayment);
+  const initiatePayment = useAction(api.delegation.initiateDelegationRentalPayment);
 
   if (!escrow || !bid || !rentalPost) {
     return null;
@@ -36,13 +36,12 @@ export function Step1Active() {
         payment: paymentAmount,
       });
 
-
       if (paymentResult.success) {
         // Payment successful, complete the step
         await completeStep({
           escrowId: escrow._id,
           stepNumber: 1,
-          txHash: paymentResult.result?.txHash || '0xabc123de...89abc123'
+          txHash: paymentResult.result?.txHash || '0xabc123de...89abc123',
         });
 
         toast.success('Payment successful! Rental process initiated.');
@@ -104,9 +103,7 @@ export function Step1Active() {
                 </div>
                 <div className='flex justify-between border-t border-slate-700 pt-2'>
                   <span className='text-slate-400'>Rental Fee</span>
-                  <span className='text-purple-400 font-bold'>
-                    {bid?.bidAmount.toFixed(4)} ETH
-                  </span>
+                  <span className='text-purple-400 font-bold'>{bid?.bidAmount.toFixed(4)} ETH</span>
                 </div>
               </div>
 
