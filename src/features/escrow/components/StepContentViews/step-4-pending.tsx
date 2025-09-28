@@ -38,7 +38,6 @@ export function Step4Pending() {
     return Date.now() >= rentalEndTime;
   }, [rentalStartTime, rentalDuration]);
 
-
   // Calculate settlement amounts
   const rentalFee = bid?.bidAmount || 0;
   const platformFee = rentalFee * 0.025; // 2.5% platform fee
@@ -94,10 +93,11 @@ export function Step4Pending() {
           <LendrButton
             onClick={() => setShowConfirmationModal(true)}
             disabled={isLoading || !isDeadlineMet}
-            className={`w-full ${isDeadlineMet
-              ? 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700'
-              : 'bg-slate-600 cursor-not-allowed'
-              }`}>
+            className={`w-full ${
+              isDeadlineMet
+                ? 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700'
+                : 'bg-slate-600 cursor-not-allowed'
+            }`}>
             <div className='flex items-center space-x-2'>
               {!isDeadlineMet ? (
                 <>

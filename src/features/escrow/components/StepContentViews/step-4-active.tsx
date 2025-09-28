@@ -68,7 +68,6 @@ export function Step4Active() {
 
   if (!escrow) return null;
 
-
   return (
     <div className='bg-blue-900/20 border border-blue-800 rounded-lg p-4'>
       <div className='flex items-center space-x-3 mb-4'>
@@ -104,10 +103,11 @@ export function Step4Active() {
           <LendrButton
             onClick={() => setShowConfirmationModal(true)}
             disabled={isLoading || isProcessingSettlement || !isDeadlineMet}
-            className={`w-full ${isDeadlineMet
-              ? 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700'
-              : 'bg-slate-600 cursor-not-allowed'
-              }`}>
+            className={`w-full ${
+              isDeadlineMet
+                ? 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700'
+                : 'bg-slate-600 cursor-not-allowed'
+            }`}>
             <div className='flex items-center space-x-2'>
               {isProcessingSettlement ? (
                 <>
