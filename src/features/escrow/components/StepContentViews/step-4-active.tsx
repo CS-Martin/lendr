@@ -103,11 +103,10 @@ export function Step4Active() {
           <LendrButton
             onClick={() => setShowConfirmationModal(true)}
             disabled={isLoading || isProcessingSettlement || !isDeadlineMet}
-            className={`w-full ${
-              isDeadlineMet
+            className={`w-full ${isDeadlineMet
                 ? 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700'
                 : 'bg-slate-600 cursor-not-allowed'
-            }`}>
+              }`}>
             <div className='flex items-center space-x-2'>
               {isProcessingSettlement ? (
                 <>
