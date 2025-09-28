@@ -108,6 +108,9 @@ export const RentalPostCard = ({ post, viewMode, onViewRentalPost }: RentalPostC
               width={500}
               height={500}
               unoptimized
+              onError={(e) => {
+                e.currentTarget.src = '/placeholder.svg';
+              }}
               className={cn('w-full h-full object-cover', viewMode === 'grid' ? 'h-48' : 'h-full')}
             />
           </motion.div>
