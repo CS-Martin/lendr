@@ -34,15 +34,6 @@ export class AlchemyService {
 
       const alchemy = getAlchemyClient(network);
 
-      console.log('Making Alchemy request:', {
-        walletAddress,
-        network,
-        pageSize: 50,
-        hasPageKey: !!pageKey,
-        isHttps: window.location.protocol === 'https:',
-        userAgent: navigator.userAgent,
-      });
-
       const response: OwnedNftsResponse = await alchemy.nft.getNftsForOwner(walletAddress, {
         pageSize: 50, // fetch more per request to improve UX
         omitMetadata: false,
