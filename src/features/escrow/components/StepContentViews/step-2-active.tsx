@@ -66,7 +66,7 @@ export function Step2Active() {
       await completeStep({
         escrowId: escrow._id,
         stepNumber: 2,
-        txHash: activateResult.result?.txHash || '0xabc123de...89abc123'
+        txHash: activateResult.result?.txHash || '0xabc123de...89abc123',
       });
 
       toast.success('NFT sent and delegation activated successfully!');
@@ -78,7 +78,6 @@ export function Step2Active() {
       setIsProcessingNFT(false);
     }
   };
-
 
   return (
     <div className='rounded-lg'>
@@ -133,13 +132,13 @@ export function Step2Active() {
                     {/* Get deadline from rentalStartTime + rentalDuration (in hours) */}
                     {bid?.rentalDuration && rentalStartTime
                       ? new Date(rentalStartTime + bid.rentalDuration * 60 * 60 * 1000).toLocaleDateString('en-US', {
-                        weekday: 'long',
-                        month: 'long',
-                        day: 'numeric',
-                        year: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })
+                          weekday: 'long',
+                          month: 'long',
+                          day: 'numeric',
+                          year: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })
                       : 'N/A'}
                   </span>
                 </div>

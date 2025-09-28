@@ -42,8 +42,6 @@ export function DeadlineTimer() {
     }
   }, [currentStep, rentalDuration, rentalStartTime, timeRemainingStep2]);
 
-  console.log('endTime', endTime);
-
   const [timeLeft, setTimeLeft] = useState(endTime - Date.now());
 
   /**
