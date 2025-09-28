@@ -1,23 +1,83 @@
 import { useState } from 'react';
-import { Clock, CheckCircle } from 'lucide-react';
+import { Clock, CheckCircle, Loader2 } from 'lucide-react';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useEscrowLifecycle } from '../../providers/escrow-provider';
 import LendrButton from '@/components/shared/lendr-btn';
+import { useAction } from 'convex/react';
+import { api } from '@convex/_generated/api';
+import { toast } from 'sonner';
 
 export function Step2Active() {
-  const { escrow, bid, rentalPost, completeStep, isLoading, isLender, isRenter } = useEscrowLifecycle();
+  const { escrow, bid, rentalPost, rentalStartTime, completeStep, isLoading, isLender, isRenter } =
+    useEscrowLifecycle();
   const [open, setOpen] = useState(false);
+  const [isProcessingNFT, setIsProcessingNFT] = useState(false);
+
+  const approveNFT = useAction(api.customNftCollection.approveNftForDelegation);
+  const depositNFT = useAction(api.delegation.depositNFTbyLender);
+  const activateDelegation = useAction(api.delegation.activateDelegation);
 
   if (!escrow || !rentalPost) {
     return null;
   }
 
-  const handleSendNFT = () => {
-    completeStep({ escrowId: escrow._id, stepNumber: 2 });
-    setOpen(false);
-  };
+  const handleSendNFT = async () => {
+    if (!escrow.smartContractRentalId) {
+      toast.error('Smart contract rental ID not found. Please contact support.');
+      return;
+    }
 
-  console.log(bid?.rentalDuration);
+    if (!rentalPost.nftMetadata?.tokenId) {
+      toast.error('NFT token ID not found.');
+      return;
+    }
+
+    setIsProcessingNFT(true);
+
+    try {
+      // Step 1: Approve the delegation registry to transfer the NFT
+      const approveResult = await approveNFT({
+        tokenId: rentalPost.nftMetadata.tokenId,
+      });
+
+      if (!approveResult.success) {
+        throw new Error(approveResult.error || 'NFT approval failed');
+      }
+
+      // Step 2: Deposit NFT by lender
+      const depositResult = await depositNFT({
+        rentalId: escrow.smartContractRentalId,
+      });
+
+      if (!depositResult.success) {
+        throw new Error(depositResult.error || 'NFT deposit failed');
+      }
+
+      // Step 3: Activate delegation
+      const activateResult = await activateDelegation({
+        rentalId: escrow.smartContractRentalId,
+      });
+
+      if (!activateResult.success) {
+        throw new Error(activateResult.error || 'Delegation activation failed');
+      }
+
+      // All steps successful, complete the step
+      await completeStep({
+        escrowId: escrow._id,
+        stepNumber: 2,
+        txHash: activateResult.result?.txHash || '0xabc123de...89abc123',
+      });
+
+      toast.success('NFT sent and delegation activated successfully!');
+      setOpen(false);
+    } catch (error) {
+      console.error('NFT send error:', error);
+      toast.error(`NFT send failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setIsProcessingNFT(false);
+    }
+  };
 
   return (
     <div className='rounded-lg'>
@@ -29,15 +89,24 @@ export function Step2Active() {
             <DialogTrigger asChild>
               <LendrButton
                 className='w-full'
-                disabled={isLoading}>
-                <CheckCircle className='w-4 h-4 mr-2' />
-                {isLoading ? 'Processing...' : 'Send NFT to Escrow'}
+                disabled={isLoading || isProcessingNFT}>
+                {isProcessingNFT ? (
+                  <>
+                    <Loader2 className='w-4 h-4 mr-2 animate-spin' />
+                    Sending NFT...
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle className='w-4 h-4 mr-2' />
+                    Send NFT
+                  </>
+                )}
               </LendrButton>
             </DialogTrigger>
 
             <DialogContent className='bg-slate-900 border-slate-800 text-white w-90 lg:w-full lg:max-w-lg'>
               <DialogHeader>
-                <DialogTitle>Confirm NFT Transfer</DialogTitle>
+                <DialogTitle>Send NFT and Activate Delegation</DialogTitle>
               </DialogHeader>
 
               <div className='bg-slate-800 rounded-lg p-4 space-y-3 text-sm'>
@@ -55,14 +124,14 @@ export function Step2Active() {
                 </div>
                 <div className='flex justify-between'>
                   <span className='text-slate-400'>Rental Duration</span>
-                  <span className='text-white'>{bid?.rentalDuration} day(s)</span>
+                  <span className='text-white'>{bid?.rentalDuration} hour(s)</span>
                 </div>
                 <div className='flex flex-col lg:flex-row justify-between border-t border-slate-700 pt-2'>
                   <span className='text-slate-400'>Deadline</span>
                   <span className='text-orange-400 font-bold'>
-                    {/* Get deadline from now + rentalDuration, in Thursday, 24, 2025 12:00:00 */}
-                    {bid?.rentalDuration
-                      ? new Date(Date.now() + bid.rentalDuration * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', {
+                    {/* Get deadline from rentalStartTime + rentalDuration (in hours) */}
+                    {bid?.rentalDuration && rentalStartTime
+                      ? new Date(rentalStartTime + bid.rentalDuration * 60 * 60 * 1000).toLocaleDateString('en-US', {
                           weekday: 'long',
                           month: 'long',
                           day: 'numeric',
@@ -76,11 +145,11 @@ export function Step2Active() {
               </div>
 
               <div className='text-xs text-slate-400 space-y-1 mt-3'>
-                <p>• NFT will be locked in escrow and only released when rental ends.</p>
-                <p>• There is a risk the renter may not return the NFT.</p>
-                <p>• In such a case, the collateral will be transferred to you.</p>
-                <p>• Ensure that collateral is at least equal to the NFT&apos;s market value.</p>
-                <p>• Once confirmed, this action cannot be undone.</p>
+                <p>• This will approve the delegation registry to transfer your NFT.</p>
+                <p>• The NFT will be deposited to the delegation registry.</p>
+                <p>• The delegation will be activated for the rental period.</p>
+                <p>• Once activated, the NFT will be available for the renter to use.</p>
+                <p>• This is a required step to proceed with the rental process.</p>
               </div>
 
               <DialogFooter>
@@ -93,8 +162,15 @@ export function Step2Active() {
                 <LendrButton
                   className='w-full'
                   onClick={handleSendNFT}
-                  disabled={isLoading}>
-                  {isLoading ? 'Processing...' : 'Confirm & Send'}
+                  disabled={isLoading || isProcessingNFT}>
+                  {isProcessingNFT ? (
+                    <>
+                      <Loader2 className='w-4 h-4 mr-2 animate-spin' />
+                      Sending...
+                    </>
+                  ) : (
+                    'Confirm & Send'
+                  )}
                 </LendrButton>
               </DialogFooter>
             </DialogContent>

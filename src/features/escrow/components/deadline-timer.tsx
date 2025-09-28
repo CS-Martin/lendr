@@ -10,11 +10,12 @@ import { CountdownTimer } from '@/features/marketplace/components/countdown-time
  *
  * Step behavior:
  * - Step 2 → deadline comes from `timeRemainingStep2`
- * - Step 3 → rental period, deadline = now + rentalDuration (days)
+ * - Step 3 → rental period, deadline = rentalStartTime + rentalDuration (hours)
  * - Step 4 → no deadline (automatic settlement)
  */
 export function DeadlineTimer() {
-  const { escrow, currentStep, rentalDuration, timeRemainingStep2, defaultEscrow, completeStep } = useEscrowLifecycle();
+  const { escrow, currentStep, rentalDuration, rentalStartTime, timeRemainingStep2, defaultEscrow, completeStep } =
+    useEscrowLifecycle();
 
   /**
    * Compute deadline (endTime) based on the current step.
@@ -27,8 +28,10 @@ export function DeadlineTimer() {
         return new Date(timeRemainingStep2).getTime();
 
       case 3:
-        // Rental period = now + rentalDuration (in days)
-        return Date.now() + (rentalDuration || 0) * 24 * 60 * 60 * 1000;
+        // Rental period = rentalStartTime + rentalDuration (in hours)
+        // Only calculate if we have both rentalStartTime and rentalDuration
+        if (!rentalStartTime || !rentalDuration) return 0;
+        return rentalStartTime + rentalDuration * 60 * 60 * 1000;
 
       case 4:
         // Step 4 (settlement) has no deadline - automatic processing
@@ -37,9 +40,7 @@ export function DeadlineTimer() {
       default:
         return 0;
     }
-  }, [currentStep, rentalDuration, timeRemainingStep2]);
-
-  console.log('endTime', endTime);
+  }, [currentStep, rentalDuration, rentalStartTime, timeRemainingStep2]);
 
   const [timeLeft, setTimeLeft] = useState(endTime - Date.now());
 
@@ -54,11 +55,11 @@ export function DeadlineTimer() {
       setTimeLeft(remaining);
 
       if (remaining <= 0) {
-        if (currentStep?.stepNumber === 3) {
-          // Auto-complete rental step when rental period ends
+        if (currentStep?.stepNumber === 3 && rentalStartTime) {
+          // Auto-complete rental step when rental period ends (only if we're in step 3 and rental started)
           completeStep({ escrowId: escrow._id, stepNumber: 3 });
-        } else {
-          // Otherwise, default escrow on deadline expiry
+        } else if (currentStep?.stepNumber !== 3) {
+          // Otherwise, default escrow on deadline expiry (but not for step 3)
           defaultEscrow(escrow._id);
         }
       }
@@ -68,7 +69,7 @@ export function DeadlineTimer() {
     const interval = setInterval(tick, 1000);
 
     return () => clearInterval(interval);
-  }, [endTime, escrow, currentStep, completeStep, defaultEscrow]);
+  }, [endTime, escrow, currentStep, rentalStartTime, completeStep, defaultEscrow]);
 
   // Step 4 (settlement) has no deadline
   if (currentStep?.stepNumber === 4) {

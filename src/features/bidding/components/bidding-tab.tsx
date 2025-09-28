@@ -13,6 +13,7 @@ import { useSession } from 'next-auth/react';
 import { api } from '@convex/_generated/api';
 import { formatDuration, truncateText } from '@/lib/utils';
 import { useMemo } from 'react';
+import Link from 'next/link';
 
 interface BiddingStatusProps {
   rentalPost: Doc<'rentalposts'>;
@@ -152,6 +153,17 @@ function BidItem({
           </Badge>
         )}
       </div>
+
+      {/* Proceed button for renters when their bid is accepted */}
+      {bid.isAccepted && isCurrentUser && (
+        <div className='mt-3'>
+          <Button
+            asChild
+            className='w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white border-0'>
+            <Link href={`/rentals/${bid.rentalPostId}/escrow`}>Proceed to Rental Process</Link>
+          </Button>
+        </div>
+      )}
 
       {bid.message && (
         <div className='mt-3 p-3 bg-slate-800/50 rounded-md'>

@@ -4,11 +4,12 @@ import { EscrowLifecycleHeader } from './escrow-lifecycle-header';
 import { EscrowStep } from './escrow-step';
 import { DeadlineTimer } from './deadline-timer';
 import { HelpSection } from './help-section';
+import { CompletedEscrowUI } from './completed-escrow-ui';
 import { Card, CardContent } from '@/components/ui/card';
 import { useEscrowLifecycle } from '../providers/escrow-provider';
 
 export function EscrowLifecycle() {
-  const { steps, currentStep } = useEscrowLifecycle();
+  const { steps, currentStep, escrow, bid, rentalPost } = useEscrowLifecycle();
 
   const { completedSteps, progress } = useMemo(() => {
     if (!steps) {
@@ -27,6 +28,22 @@ export function EscrowLifecycle() {
     };
   }, [steps]);
 
+  // Check if escrow is completed (all steps completed or escrow status is COMPLETED)
+  const isCompleted = escrow?.status === 'COMPLETED' || completedSteps === steps.length;
+
+  // Show completed UI if escrow is completed
+  if (isCompleted && escrow && bid && rentalPost) {
+    return (
+      <CompletedEscrowUI
+        escrow={escrow}
+        bid={bid}
+        rentalPost={rentalPost}
+        steps={steps}
+      />
+    );
+  }
+
+  // If no steps or no current step (and not completed), return null
   if (!steps || !currentStep) {
     return null;
   }

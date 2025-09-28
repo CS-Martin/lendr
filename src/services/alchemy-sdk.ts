@@ -48,6 +48,20 @@ export class AlchemyService {
       };
     } catch (error) {
       console.error('Failed to fetch NFTs:', error);
+
+      // Check for specific authentication errors
+      if (error instanceof Error) {
+        if (error.message.includes('Must be authenticated') || error.message.includes('401')) {
+          console.error('Authentication error - check API key and network permissions');
+        }
+        if (error.message.includes('403')) {
+          console.error('Forbidden - API key may not have permission for this network');
+        }
+        if (error.message.includes('429')) {
+          console.error('Rate limited - too many requests');
+        }
+      }
+
       return { nfts: [] };
     }
   }

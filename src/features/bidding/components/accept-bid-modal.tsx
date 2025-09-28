@@ -1,12 +1,13 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { CheckCircle } from 'lucide-react';
+import { CheckCircle, Loader2 } from 'lucide-react';
 import { Doc, Id } from '@convex/_generated/dataModel';
-import { useMutation } from 'convex/react';
+import { useMutation, useAction } from 'convex/react';
 import { api } from '@convex/_generated/api';
 import { useSession } from 'next-auth/react';
 import { useProgress } from '@bprogress/next';
 import { toast } from 'sonner';
+import { useState } from 'react';
 
 interface AcceptBidModalProps {
   bid: Doc<'bids'>;
@@ -31,12 +32,16 @@ export const AcceptBidModal = ({
   const { start, stop } = useProgress();
   const { data: session } = useSession();
   const user = session?.user;
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const acceptBid = useMutation(api.bids.acceptBid);
-  const createEscrowSmartContract = useMutation(api.escrowSmartContract.createEscrowSmartContract);
+  const createEscrowSmartContract = useAction(api.escrowSmartContract.createEscrowSmartContractWithAPI);
   const updateRentalPost = useMutation(api.rentalpost.updateRentalPost);
 
   const handleAcceptBid = async () => {
+    if (isProcessing) return; // Prevent multiple clicks
+
+    setIsProcessing(true);
     start();
 
     try {
@@ -49,35 +54,27 @@ export const AcceptBidModal = ({
         throw new Error('Rental post information is missing. Please try refreshing the page.');
       }
 
-      // Execute all operations in a transaction-like manner
-      await Promise.all([
-        // 1. Accept the bid
-        acceptBid({ bidId: bid._id }).catch((error) => {
-          throw new Error(`Failed to accept bid: ${error.message}`);
-        }),
+      // Execute operations sequentially to ensure proper error handling
+      // 1. Create escrow smart contract first (this will fail if API call fails)
+      await createEscrowSmartContract({
+        bidId: bid._id,
+        rentalPostId: bid.rentalPostId,
+        rentalPostRenterAddress: bid.bidderAddress as Id<'users'>,
+        rentalPostOwnerAddress: user.address as Id<'users'>,
+        status: 'ACTIVE',
+      });
 
-        // 2. Create escrow smart contract
-        createEscrowSmartContract({
-          bidId: bid._id,
-          rentalPostId: bid.rentalPostId,
-          rentalPostRenterAddress: bid.bidderAddress as Id<'users'>,
-          rentalPostOwnerAddress: user.address as Id<'users'>,
-          status: 'ACTIVE',
-        }).catch((error) => {
-          throw new Error(`Failed to create escrow: ${error.message}`);
-        }),
+      // 2. Accept the bid only if escrow creation succeeded
+      await acceptBid({ bidId: bid._id });
 
-        // 3. Update rental post status
-        updateRentalPost({
-          id: bid.rentalPostId,
-          status: 'RENTED',
-          isBiddable: false,
-          // biddingStarttime: 0,
-          // biddingEndtime: 0,
-        }).catch((error) => {
-          throw new Error(`Failed to update rental post: ${error.message}`);
-        }),
-      ]);
+      // 3. Update rental post status only if both escrow creation and bid acceptance succeeded
+      await updateRentalPost({
+        id: bid.rentalPostId,
+        status: 'RENTED',
+        isBiddable: false,
+        // biddingStarttime: 0,
+        // biddingEndtime: 0,
+      });
 
       // Success - close modal and show success message
       toast.success('Bid accepted successfully!');
@@ -102,6 +99,7 @@ export const AcceptBidModal = ({
         console.error('Detailed error:', error);
       }
     } finally {
+      setIsProcessing(false);
       stop();
     }
   };
@@ -113,10 +111,10 @@ export const AcceptBidModal = ({
       <DialogTrigger asChild>
         <Button
           onClick={() => setSelectedBid(bid._id)}
-          disabled={disabled}
+          disabled={disabled || isProcessing}
           className='flex-1 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white border-0 disabled:opacity-50 disabled:cursor-not-allowed'>
-          <CheckCircle className='w-4 h-4' />
-          Accept Bid
+          {isProcessing ? <Loader2 className='w-4 h-4 animate-spin' /> : <CheckCircle className='w-4 h-4' />}
+          {isProcessing ? 'Processing...' : 'Accept Bid'}
         </Button>
       </DialogTrigger>
 
@@ -159,13 +157,22 @@ export const AcceptBidModal = ({
             <Button
               variant='outline'
               onClick={() => setShowAcceptModal(false)}
-              className='flex-1 border-slate-700 text-slate-300 hover:bg-slate-800 bg-transparent'>
+              disabled={isProcessing}
+              className='flex-1 border-slate-700 text-slate-300 hover:bg-slate-800 bg-transparent disabled:opacity-50 disabled:cursor-not-allowed'>
               Cancel
             </Button>
             <Button
               onClick={handleAcceptBid}
-              className='flex-1 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white border-0'>
-              Accept Bid
+              disabled={isProcessing}
+              className='flex-1 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white border-0 disabled:opacity-50 disabled:cursor-not-allowed'>
+              {isProcessing ? (
+                <>
+                  <Loader2 className='w-4 h-4 animate-spin mr-2' />
+                  Processing...
+                </>
+              ) : (
+                'Accept Bid'
+              )}
             </Button>
           </div>
         </div>

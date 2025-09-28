@@ -8,18 +8,14 @@ export const BIDDING_CONSTANTS = {
   MAX_MESSAGE_LENGTH: 500,
 } as const;
 
-export const calculateBidCosts = (
-  bidAmount: number,
-  rentalDuration: number,
-  collateralAmount: number,
-): BidCostBreakdown => {
+export const calculateBidCosts = (bidAmount: number, rentalDuration: number): BidCostBreakdown => {
   const totalRentalCost = bidAmount * rentalDuration;
-  const totalRequired = totalRentalCost + collateralAmount;
+  const totalRequired = totalRentalCost;
 
   return {
     hourlyCost: bidAmount,
     totalRentalCost,
-    collateral: collateralAmount,
+    collateral: 0,
     totalRequired,
   };
 };
@@ -27,12 +23,11 @@ export const calculateBidCosts = (
 export const validateBidAgainstHighestBid = (
   newBidAmount: number,
   newRentalDuration: number,
-  collateralAmount: number,
   highestBid: Doc<'bids'> | null,
   rentalPost: Doc<'rentalposts'>,
 ): { isValid: boolean; error?: string } => {
   // Calculate the total cost for the new bid
-  const newBidTotalCost = calculateBidCosts(newBidAmount, newRentalDuration, collateralAmount).totalRequired;
+  const newBidTotalCost = calculateBidCosts(newBidAmount, newRentalDuration).totalRequired;
 
   // If there's no highest bid yet, only check against minimum requirements
   if (!highestBid) {
@@ -48,7 +43,7 @@ export const validateBidAgainstHighestBid = (
   // Calculate the highest bid's total cost (should already be stored as totalBidAmount)
   const highestBidTotalCost = highestBid.totalBidAmount;
 
-  // Compare total costs (bid amount * duration + collateral)
+  // Compare total costs (bid amount * duration)
   if (newBidTotalCost <= highestBidTotalCost) {
     return {
       isValid: false,
