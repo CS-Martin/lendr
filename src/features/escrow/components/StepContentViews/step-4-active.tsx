@@ -1,27 +1,56 @@
-import { CheckCircle, Clock } from 'lucide-react';
+import { CheckCircle, Clock, Loader2 } from 'lucide-react';
 import { useEscrowLifecycle } from '../../providers/escrow-provider';
 import { useState } from 'react';
 import LendrButton from '@/components/shared/lendr-btn';
 import { toast } from 'sonner';
 import { SettlementConfirmationModal } from '../settlement-confirmation-modal';
+import { useAction } from 'convex/react';
+import { api } from '../../../../../convex/_generated/api';
+import { useProgress } from '@bprogress/next';
 
 export function Step4Active() {
   const { escrow, isRenter, completeStep4Settlement, isLoading, bid, rentalPost } = useEscrowLifecycle();
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
+  const [isProcessingSettlement, setIsProcessingSettlement] = useState(false);
+  const { start, stop } = useProgress();
+
+  const completeDelegation = useAction(api.delegation.completeDelegationRental);
 
   const handleCompleteSettlement = async (txHash?: string) => {
     if (!escrow) return;
 
+    if (!escrow.smartContractRentalId) {
+      toast.error('Smart contract rental ID not found. Please contact support.');
+      return;
+    }
+
+    setIsProcessingSettlement(true);
+    start();
+
     try {
+      // Step 1: Complete the delegation rental on the smart contract
+      const delegationResult = await completeDelegation({
+        rentalId: escrow.smartContractRentalId,
+      });
+
+      if (!delegationResult.success) {
+        throw new Error(delegationResult.error || 'Delegation completion failed');
+      }
+
+      // Step 2: Complete the settlement step in the escrow system
       await completeStep4Settlement({
         escrowId: escrow._id,
-        txHash: txHash,
+        txHash: delegationResult.result?.txHash || txHash,
       });
+
       toast.success('Settlement completed successfully!');
       setShowConfirmationModal(false);
     } catch (error) {
-      toast.error('Failed to complete settlement. Please try again.');
-      console.error('Error completing settlement:', error);
+      console.error('Settlement completion error:', error);
+      toast.error(`Settlement failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setIsProcessingSettlement(false);
+      stop();
     }
   };
 
@@ -66,11 +95,20 @@ export function Step4Active() {
         <div className='space-y-4'>
           <LendrButton
             onClick={() => setShowConfirmationModal(true)}
-            disabled={isLoading}
+            disabled={isLoading || isProcessingSettlement}
             className='w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700'>
             <div className='flex items-center space-x-2'>
-              <CheckCircle className='w-4 h-4' />
-              <span>Complete Settlement</span>
+              {isProcessingSettlement ? (
+                <>
+                  <Loader2 className='w-4 h-4 animate-spin' />
+                  <span>Processing Settlement...</span>
+                </>
+              ) : (
+                <>
+                  <CheckCircle className='w-4 h-4' />
+                  <span>Complete Settlement</span>
+                </>
+              )}
             </div>
           </LendrButton>
 
@@ -93,7 +131,7 @@ export function Step4Active() {
         isOpen={showConfirmationModal}
         onClose={() => setShowConfirmationModal(false)}
         onConfirm={handleCompleteSettlement}
-        isLoading={isLoading}
+        isLoading={isLoading || isProcessingSettlement}
         escrow={escrow}
         bid={bid}
         rentalPost={rentalPost}

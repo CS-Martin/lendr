@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { CheckCircle, AlertTriangle, Coins, Shield, Clock } from 'lucide-react';
 import { Doc } from '@convex/_generated/dataModel';
+import { useProgress } from '@bprogress/next';
 
 interface SettlementConfirmationModalProps {
   isOpen: boolean;
@@ -29,6 +30,7 @@ export function SettlementConfirmationModal({
   rentalPost,
 }: SettlementConfirmationModalProps) {
   const [txHash, setTxHash] = useState('');
+  const { start, stop } = useProgress();
 
   // Calculate settlement amounts
   const rentalFee = bid?.bidAmount || 0;
@@ -38,8 +40,13 @@ export function SettlementConfirmationModal({
   const totalToLender = totalRentalCost - platformFee;
 
   const handleConfirm = async () => {
-    await onConfirm(txHash || undefined);
-    setTxHash(''); // Reset form
+    start();
+    try {
+      await onConfirm(txHash || undefined);
+      setTxHash(''); // Reset form
+    } finally {
+      stop();
+    }
   };
 
   const handleClose = () => {

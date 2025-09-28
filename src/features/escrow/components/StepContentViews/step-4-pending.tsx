@@ -4,14 +4,17 @@ import { useState } from 'react';
 import LendrButton from '@/components/shared/lendr-btn';
 import { toast } from 'sonner';
 import { SettlementConfirmationModal } from '../settlement-confirmation-modal';
+import { useProgress } from '@bprogress/next';
 
 export function Step4Pending() {
   const { escrow, isRenter, completeStep4Settlement, isLoading, bid, rentalPost } = useEscrowLifecycle();
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
+  const { start, stop } = useProgress();
 
   const handleCompleteSettlement = async (txHash?: string) => {
     if (!escrow) return;
 
+    start();
     try {
       await completeStep4Settlement({
         escrowId: escrow._id,
@@ -22,6 +25,8 @@ export function Step4Pending() {
     } catch (error) {
       toast.error('Failed to complete settlement. Please try again.');
       console.error('Error completing settlement:', error);
+    } finally {
+      stop();
     }
   };
 
