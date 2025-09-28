@@ -24,11 +24,11 @@ const BiddingSidebar = ({ post }: { post?: Doc<'rentalposts'> }) => {
           </div>
           <div className='flex justify-between mt-2'>
             <p className='text-gray-400'>Highest Bid</p>
-            <p className='font-bold text-green-400'>{post?.collateral} ETH</p>
+            <p className='font-bold text-green-400'>{post?.collateral} POL</p>
           </div>
           <div className='flex justify-between mt-2'>
             <p className='text-gray-400'>Starting Price</p>
-            <p className='font-bold'>{post?.hourlyRate} ETH</p>
+            <p className='font-bold'>{post?.hourlyRate} POL</p>
           </div>
         </div>
       </CardContent>

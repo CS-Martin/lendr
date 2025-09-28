@@ -65,20 +65,20 @@ export function EscrowDetails() {
           <div className='bg-slate-800 rounded-lg p-4 space-y-2'>
             <div className='flex justify-between text-sm'>
               <span className='text-slate-400'>Rental Fee</span>
-              <span className='text-white'>{bid.bidAmount} ETH</span>
+              <span className='text-white'>{bid.bidAmount} POL</span>
             </div>
             <div className='flex justify-between text-sm'>
               <span className='text-slate-400'>Collateral</span>
-              <span className='text-cyan-400'>{rentalPost.collateral} ETH</span>
+              <span className='text-cyan-400'>{rentalPost.collateral} POL</span>
             </div>
             <div className='flex justify-between text-sm'>
               <span className='text-slate-400'>Platform Fee</span>
-              <span className='text-amber-400'>0.01 ETH</span>
+              <span className='text-amber-400'>0.01 POL</span>
             </div>
             <Separator className='bg-slate-700' />
             <div className='flex justify-between text-sm font-semibold'>
               <span className='text-white'>Total Locked</span>
-              <span className='text-purple-400'>{bid.bidAmount + rentalPost.collateral} ETH</span>
+              <span className='text-purple-400'>{bid.bidAmount + rentalPost.collateral} POL</span>
             </div>
           </div>
 

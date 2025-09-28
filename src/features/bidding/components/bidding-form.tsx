@@ -163,7 +163,7 @@ export function BiddingForm({ rentalPost }: BiddingFormProps) {
             <Label
               htmlFor='bidAmount'
               className='text-slate-300'>
-              Bid Amount (ETH per hour)
+              Bid Amount (POL per hour)
             </Label>
             <Input
               id='bidAmount'
@@ -180,11 +180,11 @@ export function BiddingForm({ rentalPost }: BiddingFormProps) {
               <div className='text-sm text-slate-400 space-y-1'>
                 {highestBidData ? (
                   <>
-                    <p>Current highest bid: {highestBidData.bidAmount} ETH/hour</p>
-                    <p>Total highest value: {highestBidData.totalBidAmount.toFixed(4)} ETH</p>
+                    <p>Current highest bid: {highestBidData.bidAmount} POL/hour</p>
+                    <p>Total highest value: {highestBidData.totalBidAmount.toFixed(4)} POL</p>
                   </>
                 ) : (
-                  <p>Starting price: {rentalPost.hourlyRate} ETH/hour</p>
+                  <p>Starting price: {rentalPost.hourlyRate} POL/hour</p>
                 )}
               </div>
             )}

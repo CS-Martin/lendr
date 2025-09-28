@@ -103,7 +103,7 @@ const BidCard = ({ bid, index, hasAcceptedBid, rentalPost }: BidCardProps) => {
             </div>
 
             <div className='text-left sm:text-right'>
-              <div className='text-xl sm:text-2xl font-bold text-green-400'>{bid.bidAmount} ETH</div>
+              <div className='text-xl sm:text-2xl font-bold text-green-400'>{bid.bidAmount} POL</div>
               <div className='text-sm text-slate-400'>per day</div>
             </div>
           </div>
@@ -118,7 +118,7 @@ const BidCard = ({ bid, index, hasAcceptedBid, rentalPost }: BidCardProps) => {
             <div>
               <div className='text-slate-400'>Total Value</div>
               <div className='text-purple-400 font-semibold'>
-                {(Number.parseFloat(bid.bidAmount.toString()) * bid.rentalDuration).toFixed(3)} ETH
+                {(Number.parseFloat(bid.bidAmount.toString()) * bid.rentalDuration).toFixed(3)} POL
               </div>
             </div>
           </div>

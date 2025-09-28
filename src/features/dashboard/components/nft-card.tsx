@@ -33,22 +33,22 @@ const NftCard = ({ post, onManageBids, viewMode = 'lender' }: NftCardProps) => {
             <div className='grid grid-cols-2 gap-4 mt-2'>
               <div>
                 <p className='text-sm text-gray-400'>Starting Price</p>
-                <p className='font-bold'>{post.hourlyRate} ETH</p>
+                <p className='font-bold'>{post.hourlyRate} POL</p>
               </div>
               <div>
                 <p className='text-sm text-gray-400'>Highest Bid</p>
-                <p className='font-bold text-green-400'>{post.collateral} ETH</p>
+                <p className='font-bold text-green-400'>{post.collateral} POL</p>
               </div>
             </div>
           ) : (
             <div className='grid grid-cols-2 gap-4 mt-2'>
               <div>
                 <p className='text-sm text-gray-400'>Price/Day</p>
-                <p className='font-bold'>{post.hourlyRate} ETH</p>
+                <p className='font-bold'>{post.hourlyRate} POL</p>
               </div>
               <div>
                 <p className='text-sm text-gray-400'>Earned</p>
-                <p className='font-bold text-green-400'>{post.collateral} ETH</p>
+                <p className='font-bold text-green-400'>{post.collateral} POL</p>
               </div>
             </div>
           )
@@ -56,7 +56,7 @@ const NftCard = ({ post, onManageBids, viewMode = 'lender' }: NftCardProps) => {
           <div className='grid grid-cols-2 gap-4 mt-2'>
             <div>
               <p className='text-sm text-gray-400'>Price/Day</p>
-              <p className='font-bold'>{post.hourlyRate} ETH</p>
+              <p className='font-bold'>{post.hourlyRate} POL</p>
             </div>
             <div>
               <p className='text-sm text-gray-400'>Rented by</p>

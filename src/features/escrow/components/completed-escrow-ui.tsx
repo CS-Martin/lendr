@@ -79,7 +79,7 @@ export function CompletedEscrowUI({ escrow, bid, rentalPost, steps }: CompletedE
             <div className='space-y-3'>
               <div className='flex justify-between items-center'>
                 <span className='text-slate-400'>Rental Fee (per hour)</span>
-                <span className='text-white font-mono'>{rentalFee.toFixed(4)} ETH</span>
+                <span className='text-white font-mono'>{rentalFee.toFixed(4)} POL</span>
               </div>
               <div className='flex justify-between items-center'>
                 <span className='text-slate-400'>Rental Duration</span>
@@ -87,18 +87,18 @@ export function CompletedEscrowUI({ escrow, bid, rentalPost, steps }: CompletedE
               </div>
               <div className='flex justify-between items-center'>
                 <span className='text-slate-400'>Total Rental Cost</span>
-                <span className='text-white font-mono'>{totalRentalCost.toFixed(4)} ETH</span>
+                <span className='text-white font-mono'>{totalRentalCost.toFixed(4)} POL</span>
               </div>
             </div>
 
             <div className='space-y-3'>
               <div className='flex justify-between items-center'>
                 <span className='text-slate-400'>Platform Fee (2.5%)</span>
-                <span className='text-slate-400 font-mono'>{platformFee.toFixed(4)} ETH</span>
+                <span className='text-slate-400 font-mono'>{platformFee.toFixed(4)} POL</span>
               </div>
               <div className='flex justify-between items-center'>
                 <span className='text-slate-400'>Distributed to Lender</span>
-                <span className='text-green-400 font-semibold font-mono'>{totalToLender.toFixed(4)} ETH</span>
+                <span className='text-green-400 font-semibold font-mono'>{totalToLender.toFixed(4)} POL</span>
               </div>
             </div>
           </div>
@@ -107,7 +107,7 @@ export function CompletedEscrowUI({ escrow, bid, rentalPost, steps }: CompletedE
 
           <div className='flex justify-between items-center'>
             <span className='text-lg font-semibold text-white'>Total Settlement</span>
-            <span className='text-2xl font-bold text-green-400 font-mono'>{totalRentalCost.toFixed(4)} ETH</span>
+            <span className='text-2xl font-bold text-green-400 font-mono'>{totalRentalCost.toFixed(4)} POL</span>
           </div>
         </CardContent>
       </Card>

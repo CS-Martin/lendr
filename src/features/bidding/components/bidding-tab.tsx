@@ -31,8 +31,8 @@ function BiddingStatus({ rentalPost, bids }: BiddingStatusProps) {
   const totalBids = bids.length;
   const uniqueBidders = new Set(bids.map((bid) => bid.bidderAddress)).size;
 
-  // Format ETH values consistently
-  const formatEth = (value: number) => value.toFixed(4);
+  // Format POL values consistently
+  const formatPol = (value: number) => value.toFixed(4);
 
   return (
     <Card className='bg-slate-900/50 border-slate-800'>
@@ -41,7 +41,7 @@ function BiddingStatus({ rentalPost, bids }: BiddingStatusProps) {
           {/* Starting Price */}
           <div className='space-y-1'>
             <div className='text-slate-400 text-sm'>Starting Price</div>
-            <div className='text-xl font-bold text-slate-300'>{formatEth(rentalPost.hourlyRate)} ETH</div>
+            <div className='text-xl font-bold text-slate-300'>{formatPol(rentalPost.hourlyRate)} POL</div>
             <div className='text-slate-500 text-xs'>per hour</div>
           </div>
 
@@ -49,7 +49,7 @@ function BiddingStatus({ rentalPost, bids }: BiddingStatusProps) {
           <div className='space-y-1'>
             <div className='text-slate-400 text-sm'>Highest Total</div>
             <div className='text-xl font-bold text-green-400'>
-              {highestTotalBid ? formatEth(highestTotalBid.totalBidAmount) : formatEth(rentalPost.hourlyRate)} ETH
+              {highestTotalBid ? formatPol(highestTotalBid.totalBidAmount) : formatPol(rentalPost.hourlyRate)} POL
             </div>
             <div className='text-slate-500 text-xs'>
               {highestTotalBid ? `by ${truncateText(highestTotalBid.bidderAddress)}` : 'No bids yet'}
@@ -60,7 +60,7 @@ function BiddingStatus({ rentalPost, bids }: BiddingStatusProps) {
           <div className='space-y-1'>
             <div className='text-slate-400 text-sm'>Highest Hourly Rate</div>
             <div className='text-xl font-bold text-blue-400'>
-              {highestHourlyBid ? formatEth(highestHourlyBid.bidAmount) : formatEth(rentalPost.hourlyRate)} ETH
+              {highestHourlyBid ? formatPol(highestHourlyBid.bidAmount) : formatPol(rentalPost.hourlyRate)} POL
             </div>
             <div className='text-slate-500 text-xs'>per hour</div>
           </div>
@@ -120,7 +120,7 @@ function BidItem({
 
         {/* Total Value (Primary ranking metric) */}
         <div className='text-right'>
-          <div className='text-lg font-bold text-green-400'>{totalValue + collateral} ETH</div>
+          <div className='text-lg font-bold text-green-400'>{totalValue + collateral} POL</div>
           <div className='text-sm text-slate-400'>total value</div>
         </div>
       </div>
@@ -128,7 +128,7 @@ function BidItem({
       <div className='grid grid-cols-2 gap-4 text-sm mt-3'>
         <div>
           <span className='text-slate-400'>Rate: </span>
-          <span className='text-amber-400 font-medium'>{hourlyRate} ETH/hr</span>
+          <span className='text-amber-400 font-medium'>{hourlyRate} POL/hr</span>
         </div>
         <div>
           <span className='text-slate-400'>Duration: </span>

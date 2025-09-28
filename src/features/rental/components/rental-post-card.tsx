@@ -209,7 +209,7 @@ export const RentalPostCard = ({ post, viewMode, onViewRentalPost }: RentalPostC
                   duration: 2,
                   repeat: Number.POSITIVE_INFINITY,
                 }}>
-                {post.hourlyRate} ETH
+                {post.hourlyRate} POL
               </motion.div>
             </motion.div>
             <motion.div
@@ -218,7 +218,7 @@ export const RentalPostCard = ({ post, viewMode, onViewRentalPost }: RentalPostC
               transition={{ delay: 0.7 }}>
               <div className='text-xs text-slate-400'>Collateral</div>
               <div className={cn('text-sm font-bold text-cyan-400 font-mono', viewMode === 'list' ? 'text-xs' : '')}>
-                {post.collateral} ETH
+                {post.collateral} POL
               </div>
             </motion.div>
             {viewMode === 'list' && (

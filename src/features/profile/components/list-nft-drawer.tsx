@@ -329,7 +329,7 @@ export const ListNFTDrawer = ({ nft, isOpen, onClose, session }: ListNFTDrawerPr
                       <Label
                         htmlFor='hourlyRate'
                         className='text-gray-300'>
-                        Hourly Rate (ETH)
+                        Hourly Rate (POL)
                       </Label>
                       <div className='relative'>
                         <Clock className='absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400' />
@@ -352,7 +352,7 @@ export const ListNFTDrawer = ({ nft, isOpen, onClose, session }: ListNFTDrawerPr
                       <Label
                         htmlFor='collateral'
                         className='text-gray-300'>
-                        Collateral (ETH)
+                        Collateral (POL)
                       </Label>
                       <div className='relative'>
                         <Shield className='absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400' />

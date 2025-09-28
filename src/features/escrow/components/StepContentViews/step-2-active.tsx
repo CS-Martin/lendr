@@ -124,7 +124,7 @@ export function Step2Active() {
                 </div>
                 <div className='flex justify-between'>
                   <span className='text-slate-400'>Collateral Provided</span>
-                  <span className='text-yellow-400 font-bold'>{rentalPost?.collateral} ETH</span>
+                  <span className='text-yellow-400 font-bold'>{rentalPost?.collateral} POL</span>
                 </div>
                 <div className='flex justify-between'>
                   <span className='text-slate-400'>Rental Duration</span>

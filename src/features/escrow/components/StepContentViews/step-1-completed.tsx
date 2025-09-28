@@ -14,7 +14,7 @@ export function Step1Completed() {
         <CheckCircle className='w-4 h-4' />
         <span className='font-semibold'>Payment Successful</span>
       </div>
-      <div className='text-sm text-slate-300'>Total deposited: {bid?.bidAmount} ETH</div>
+      <div className='text-sm text-slate-300'>Total deposited: {bid?.bidAmount} POL</div>
     </div>
   );
 }
