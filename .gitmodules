@@ -1,0 +1,6 @@
+[submodule "custom-mint-nft/lib/forge-std"]
+	path = custom-mint-nft/lib/forge-std
+	url = https://github.com/foundry-rs/forge-std
+[submodule "custom-mint-nft/lib/openzeppelin-contracts"]
+	path = custom-mint-nft/lib/openzeppelin-contracts
+	url = https://github.com/OpenZeppelin/openzeppelin-contracts
